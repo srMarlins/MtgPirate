@@ -4,12 +4,15 @@ import model.DeckEntry
 import model.Section
 
 object DecklistParser {
+    // Pre-compile regex patterns for performance
     private val qtyRegex = Regex("""^(?:SB:)?\s*(\d+)\b""", RegexOption.IGNORE_CASE)
     private val setParenRegex = Regex("""\(([^()]+)\)\s*$""")
     private val collectorRegex = Regex("""^(?<set>[A-Za-z0-9]{2,5})(?:[\s-]+(?<num>\d+[a-zA-Z]?))?$""")
     private val htmlTagRegex = Regex("<[^>]+>")
     private val setLabelRegex = Regex("(?i)\\bSet: *([A-Za-z0-9]{2,5})\\b")
     private val cardNameLabelRegex = Regex("(?i)^Card Name: *")
+    private val whitespaceRegex = Regex("\\s+")
+    private val setEndRegex = Regex("(?i) Set$")
 
     fun parse(text: String, includeSideboard: Boolean, includeCommanders: Boolean): List<DeckEntry> {
         val lines = text.lines()
@@ -29,7 +32,7 @@ object DecklistParser {
             line = line.replace("&nbsp;", " ", ignoreCase = true)
             line = line.replace("&amp;", "&", ignoreCase = true)
             line = line.replace("\u00A0", " ") // non-breaking space
-            line = line.replace("\\s+".toRegex(), " ").trim()
+            line = whitespaceRegex.replace(line, " ").trim()
 
             if (line.equals("SIDEBOARD:", true)) {
                 section = Section.SIDEBOARD
@@ -79,9 +82,9 @@ object DecklistParser {
 
             remainder = remainder.substringBefore(" - ").trim()
             // Collapse extra spaces & stray commas spacing introduced by sanitization
-            remainder = remainder.replace("\\s+".toRegex(), " ").trim().trim(',').trim()
+            remainder = whitespaceRegex.replace(remainder, " ").trim().trim(',').trim()
             // If remainder still contains an embedded " Set " fragment (without colon) at end due to partial copy, attempt to remove
-            remainder = remainder.replace(Regex("(?i) Set$"), "").trim()
+            remainder = setEndRegex.replace(remainder, "").trim()
 
             val cardName = remainder.ifEmpty { continue }
             val include = when (section) {

@@ -3,6 +3,11 @@ package match
 import model.*
 
 object Matcher {
+    // Constants for fuzzy matching thresholds
+    private const val FUZZY_THRESHOLD_SHORT = 2
+    private const val FUZZY_THRESHOLD_LONG = 3
+    private const val FUZZY_NAME_LENGTH_CUTOFF = 15
+    
     data class MatchConfig(
         val variantPriority: List<String>,
         val setPriority: List<String>,
@@ -48,7 +53,7 @@ object Matcher {
             else DeckEntryMatch(entry, MatchStatus.AMBIGUOUS, null, norm.map { MatchCandidate(it, 0, "normalized") })
         }
         if (config.fuzzyEnabled) {
-            val fuzzyCandidates = fuzzy(normalized, Catalog(initialPool))
+            val fuzzyCandidates = fuzzy(normalized, initialPool)
             return if (fuzzyCandidates.isEmpty()) DeckEntryMatch(entry, MatchStatus.NOT_FOUND)
             else DeckEntryMatch(entry, MatchStatus.AMBIGUOUS, null, fuzzyCandidates)
         }
@@ -71,11 +76,11 @@ object Matcher {
         return if (idx >= 0) idx else list.size
     }
 
-    private fun fuzzy(targetNorm: String, catalog: Catalog): List<MatchCandidate> {
+    private fun fuzzy(targetNorm: String, variants: List<CardVariant>): List<MatchCandidate> {
+        val threshold = if (targetNorm.length <= FUZZY_NAME_LENGTH_CUTOFF) FUZZY_THRESHOLD_SHORT else FUZZY_THRESHOLD_LONG
         val results = mutableListOf<MatchCandidate>()
-        for (variant in catalog.variants) {
+        for (variant in variants) {
             val dist = Levenshtein.distance(targetNorm, variant.nameNormalized)
-            val threshold = if (targetNorm.length <= 15) 2 else 3
             if (dist <= threshold) {
                 results += MatchCandidate(variant, dist, "lev:$dist")
             }

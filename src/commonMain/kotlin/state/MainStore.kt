@@ -290,46 +290,46 @@ class MainStore(
         }
     }
 
-    private fun toggleIncludeSideboard(value: Boolean) {
+    private fun updatePreferenceWithState(
+        prefsUpdate: (Preferences) -> Preferences,
+        stateUpdate: (MainState) -> MainState,
+        logMessage: String
+    ) {
         val current = _state.value
-        val prefs = current.app.preferences.copy(includeSideboard = value)
+        val prefs = prefsUpdate(current.app.preferences)
         val newApp = current.app.copy(
             preferences = prefs,
-            logs = Logging.log(current.app.logs, "INFO", "Include sideboard updated: $value")
+            logs = Logging.log(current.app.logs, "INFO", logMessage)
         )
-        _state.value = current.copy(app = newApp, includeSideboard = value)
+        _state.value = stateUpdate(current.copy(app = newApp))
         // Persist asynchronously
         scope.launch {
             platformServices.savePreferences(prefs)
         }
+    }
+
+    private fun toggleIncludeSideboard(value: Boolean) {
+        updatePreferenceWithState(
+            prefsUpdate = { it.copy(includeSideboard = value) },
+            stateUpdate = { it.copy(includeSideboard = value) },
+            logMessage = "Include sideboard updated: $value"
+        )
     }
 
     private fun toggleIncludeCommanders(value: Boolean) {
-        val current = _state.value
-        val prefs = current.app.preferences.copy(includeCommanders = value)
-        val newApp = current.app.copy(
-            preferences = prefs,
-            logs = Logging.log(current.app.logs, "INFO", "Include commanders updated: $value")
+        updatePreferenceWithState(
+            prefsUpdate = { it.copy(includeCommanders = value) },
+            stateUpdate = { it.copy(includeCommanders = value) },
+            logMessage = "Include commanders updated: $value"
         )
-        _state.value = current.copy(app = newApp, includeCommanders = value)
-        // Persist asynchronously
-        scope.launch {
-            platformServices.savePreferences(prefs)
-        }
     }
 
     private fun toggleIncludeTokens(value: Boolean) {
-        val current = _state.value
-        val prefs = current.app.preferences.copy(includeTokens = value)
-        val newApp = current.app.copy(
-            preferences = prefs,
-            logs = Logging.log(current.app.logs, "INFO", "Include tokens updated: $value")
+        updatePreferenceWithState(
+            prefsUpdate = { it.copy(includeTokens = value) },
+            stateUpdate = { it.copy(includeTokens = value) },
+            logMessage = "Include tokens updated: $value"
         )
-        _state.value = current.copy(app = newApp, includeTokens = value)
-        // Persist asynchronously
-        scope.launch {
-            platformServices.savePreferences(prefs)
-        }
     }
 
     private fun loadSavedImports() {

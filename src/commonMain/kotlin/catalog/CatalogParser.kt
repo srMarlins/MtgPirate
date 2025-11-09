@@ -32,6 +32,22 @@ object CatalogParser {
         }
     }
 
+    private fun getPriceOrDefault(priceRaw: String, type: String): Int {
+        val priceCents = parsePrice(priceRaw)
+        return if (priceCents == 0) typePriceMap[type] ?: 0 else priceCents
+    }
+
+    private fun createCardVariant(name: String, set: String, sku: String, type: String, priceCents: Int): CardVariant {
+        return CardVariant(
+            nameOriginal = name,
+            nameNormalized = NameNormalizer.normalize(name),
+            setCode = set,
+            sku = sku,
+            variantType = type,
+            priceInCents = priceCents
+        )
+    }
+
     fun parse(html: String): Catalog {
         val doc = Ksoup.parse(html)
         val cardDivs = doc.select("div.bg-gray-50")
@@ -62,17 +78,8 @@ object CatalogParser {
                 val typeRaw = extractValue("Card Type:") ?: return@mapNotNull null
                 val type = canonicalType(typeRaw)
                 val priceRaw = extractValue("Base Price:") ?: ""
-                var priceCents = parsePrice(priceRaw)
-                if (priceCents == 0) priceCents = typePriceMap[type] ?: 0
-                val normalized = NameNormalizer.normalize(name)
-                CardVariant(
-                    nameOriginal = name,
-                    nameNormalized = normalized,
-                    setCode = set,
-                    sku = sku,
-                    variantType = type,
-                    priceInCents = priceCents
-                )
+                val priceCents = getPriceOrDefault(priceRaw, type)
+                createCardVariant(name, set, sku, type, priceCents)
             }
             return Catalog(variants)
         }
@@ -103,17 +110,8 @@ object CatalogParser {
             val type = canonicalType(typeRaw)
             val priceRaw = cells[priceIdx].text()
             if (name.isEmpty() || sku.isEmpty()) return@forEach
-            var priceCents = parsePrice(priceRaw)
-            if (priceCents == 0) priceCents = typePriceMap[type] ?: 0
-            val normalized = NameNormalizer.normalize(name)
-            variants += CardVariant(
-                nameOriginal = name,
-                nameNormalized = normalized,
-                setCode = set,
-                sku = sku,
-                variantType = type,
-                priceInCents = priceCents
-            )
+            val priceCents = getPriceOrDefault(priceRaw, type)
+            variants += createCardVariant(name, set, sku, type, priceCents)
         }
         val dedup = variants.groupBy { Triple(it.nameNormalized, it.setCode, it.variantType) }
             .values.map { group ->

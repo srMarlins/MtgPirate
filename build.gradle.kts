@@ -21,8 +21,32 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
+configurations.all {
+    resolutionStrategy {
+        // Force consistent versions for common dependencies
+        force("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+        
+        // Fail eagerly on version conflict
+        failOnVersionConflict()
+        
+        // Cache dynamic versions for 24 hours
+        cacheDynamicVersionsFor(24, "hours")
+        cacheChangingModulesFor(0, "seconds")
+    }
+}
+
 kotlin {
     jvm("desktop") {
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "17"
+                freeCompilerArgs += listOf(
+                    "-opt-in=kotlin.RequiresOptIn",
+                    "-Xjvm-default=all"
+                )
+            }
+        }
     }
     // Configure toolchain and compiler options for all JVM targets (Kotlin 2.x DSL)
     jvmToolchain(17)
