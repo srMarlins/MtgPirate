@@ -8,7 +8,12 @@ plugins {
 }
 
 group = "org.srmarlins"
-version = "1.0-SNAPSHOT"
+val appVersion = (project.findProperty("appVersion") as String?)
+    ?: System.getenv("APP_VERSION")
+    ?: "1.0.0"
+// Use numeric core (x.y.z) for native packageVersion to satisfy platform requirements
+val appVersionCore = appVersion.substringBefore('-').substringBefore('+')
+version = appVersion
 
 repositories {
     mavenCentral()
@@ -63,7 +68,7 @@ compose.desktop {
                 TargetFormat.Dmg
             )
             packageName = "MtgPirate"
-            packageVersion = "1.0.0"
+            packageVersion = appVersionCore
             // Optional metadata
             description = "MtgPirate - MTG Deck Import and Price Calculator"
 
