@@ -17,6 +17,18 @@ import model.DeckEntryMatch
 import model.MatchStatus
 import util.formatPrice
 
+enum class SortOption {
+    DEFAULT, // Original order
+    NAME_ASC,
+    NAME_DESC,
+    QTY_ASC,
+    QTY_DESC,
+    PRICE_ASC,
+    PRICE_DESC,
+    STATUS_ASC,
+    STATUS_DESC
+}
+
 @Composable
 fun ResultsScreen(
     matches: List<DeckEntryMatch>,
@@ -28,8 +40,10 @@ fun ResultsScreen(
     val totalMatched = matches.filter { it.selectedVariant != null }
     val totalCents = totalMatched.sumOf { it.selectedVariant!!.priceInCents * it.deckEntry.qty }
     val missed = matches.count { it.selectedVariant == null && it.deckEntry.include }
+    val ambiguous = matches.count { it.status == MatchStatus.AMBIGUOUS }
 
-    var filterMode by remember { mutableStateOf(0) } // 0 = All, 1 = Matched, 2 = Unmatched
+    var filterMode by remember { mutableStateOf(0) } // 0 = All, 1 = Matched, 2 = Unmatched, 3 = Ambiguous
+    var sortOption by remember { mutableStateOf(SortOption.DEFAULT) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Scanline effect
@@ -58,7 +72,7 @@ fun ResultsScreen(
             Spacer(Modifier.height(12.dp))
 
             // Summary Cards as clickable filters
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 // All Cards
                 Box(
                     modifier = Modifier
@@ -158,6 +172,39 @@ fun ResultsScreen(
                     }
                 }
 
+                // Ambiguous Cards
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .pixelBorder(
+                            borderWidth = if (filterMode == 3) 3.dp else 2.dp,
+                            enabled = true,
+                            glowAlpha = if (filterMode == 3) 0.5f else if (ambiguous > 0) 0.3f else 0.1f
+                        )
+                        .background(
+                            if (filterMode == 3) Color(0xFFFF9800).copy(alpha = 0.2f) else MaterialTheme.colors.surface,
+                            shape = PixelShape(cornerSize = 9.dp)
+                        )
+                        .clickable { filterMode = 3 }
+                        .padding(12.dp)
+                ) {
+                    Column {
+                        Text(
+                            "AMBIGUOUS",
+                            style = MaterialTheme.typography.caption,
+                            color = if (ambiguous > 0) Color(0xFFFF9800) else MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "$ambiguous",
+                            style = MaterialTheme.typography.h5,
+                            color = if (ambiguous > 0) Color(0xFFFF9800) else MaterialTheme.colors.onSurface,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
                 // Total Price (not clickable)
                 Box(
                     modifier = Modifier
@@ -186,7 +233,7 @@ fun ResultsScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Table Header with pixel styling
+            // Table Header with pixel styling and sorting
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -195,36 +242,93 @@ fun ResultsScreen(
                     .padding(12.dp)
             ) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        "QTY",
-                        Modifier.width(50.dp),
-                        style = MaterialTheme.typography.subtitle2,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "CARD NAME",
-                        Modifier.weight(0.35f),
-                        style = MaterialTheme.typography.subtitle2,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "STATUS",
-                        Modifier.weight(0.15f),
-                        style = MaterialTheme.typography.subtitle2,
-                        fontWeight = FontWeight.Bold
-                    )
+                    // Sortable Qty header
+                    Row(
+                        Modifier.width(50.dp).clickable {
+                            sortOption = when (sortOption) {
+                                SortOption.QTY_ASC -> SortOption.QTY_DESC
+                                SortOption.QTY_DESC -> SortOption.DEFAULT
+                                else -> SortOption.QTY_ASC
+                            }
+                        },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "QTY",
+                            style = MaterialTheme.typography.subtitle2,
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (sortOption == SortOption.QTY_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
+                        if (sortOption == SortOption.QTY_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
+                    }
+
+                    // Sortable Card Name header
+                    Row(
+                        Modifier.weight(0.35f).clickable {
+                            sortOption = when (sortOption) {
+                                SortOption.NAME_ASC -> SortOption.NAME_DESC
+                                SortOption.NAME_DESC -> SortOption.DEFAULT
+                                else -> SortOption.NAME_ASC
+                            }
+                        },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "CARD NAME",
+                            style = MaterialTheme.typography.subtitle2,
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (sortOption == SortOption.NAME_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
+                        if (sortOption == SortOption.NAME_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
+                    }
+
+                    // Sortable Status header
+                    Row(
+                        Modifier.weight(0.15f).clickable {
+                            sortOption = when (sortOption) {
+                                SortOption.STATUS_ASC -> SortOption.STATUS_DESC
+                                SortOption.STATUS_DESC -> SortOption.DEFAULT
+                                else -> SortOption.STATUS_ASC
+                            }
+                        },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "STATUS",
+                            style = MaterialTheme.typography.subtitle2,
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (sortOption == SortOption.STATUS_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
+                        if (sortOption == SortOption.STATUS_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
+                    }
+
                     Text(
                         "VARIANT",
                         Modifier.weight(0.15f),
                         style = MaterialTheme.typography.subtitle2,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(
-                        "UNIT",
-                        Modifier.width(70.dp),
-                        style = MaterialTheme.typography.subtitle2,
-                        fontWeight = FontWeight.Bold
-                    )
+
+                    // Sortable Unit Price header
+                    Row(
+                        Modifier.width(70.dp).clickable {
+                            sortOption = when (sortOption) {
+                                SortOption.PRICE_ASC -> SortOption.PRICE_DESC
+                                SortOption.PRICE_DESC -> SortOption.DEFAULT
+                                else -> SortOption.PRICE_ASC
+                            }
+                        },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "UNIT",
+                            style = MaterialTheme.typography.subtitle2,
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (sortOption == SortOption.PRICE_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
+                        if (sortOption == SortOption.PRICE_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
+                    }
+
                     Text(
                         "TOTAL",
                         Modifier.width(80.dp),
@@ -243,7 +347,21 @@ fun ResultsScreen(
             val filtered = when (filterMode) {
                 1 -> matches.filter { it.selectedVariant != null }
                 2 -> matches.filter { it.selectedVariant == null && it.deckEntry.include }
+                3 -> matches.filter { it.status == MatchStatus.AMBIGUOUS }
                 else -> matches
+            }
+
+            // Apply sorting
+            val sorted = when (sortOption) {
+                SortOption.NAME_ASC -> filtered.sortedBy { it.deckEntry.cardName.lowercase() }
+                SortOption.NAME_DESC -> filtered.sortedByDescending { it.deckEntry.cardName.lowercase() }
+                SortOption.QTY_ASC -> filtered.sortedBy { it.deckEntry.qty }
+                SortOption.QTY_DESC -> filtered.sortedByDescending { it.deckEntry.qty }
+                SortOption.PRICE_ASC -> filtered.sortedBy { it.selectedVariant?.priceInCents ?: Int.MAX_VALUE }
+                SortOption.PRICE_DESC -> filtered.sortedByDescending { it.selectedVariant?.priceInCents ?: -1 }
+                SortOption.STATUS_ASC -> filtered.sortedBy { it.status.ordinal }
+                SortOption.STATUS_DESC -> filtered.sortedByDescending { it.status.ordinal }
+                SortOption.DEFAULT -> filtered
             }
 
             // Results List with pixel card
@@ -253,7 +371,7 @@ fun ResultsScreen(
                 glowing = false
             ) {
                 LazyColumn(Modifier.fillMaxSize()) {
-                    itemsIndexed(filtered) { _, m ->
+                    itemsIndexed(sorted) { _, m ->
                         val globalIndex = matches.indexOf(m)
                         val variant = m.selectedVariant
                         val rowTotal = variant?.priceInCents?.let { it * m.deckEntry.qty }

@@ -55,6 +55,11 @@ class MainStore(
                 _state.value = _state.value.copy(wizardCompletedSteps = completed)
             }
             MainIntent.ToggleTheme -> _state.value = _state.value.copy(isDarkTheme = !_state.value.isDarkTheme)
+            is MainIntent.SetShowSavedImportsWindow -> _state.value = _state.value.copy(showSavedImportsWindow = intent.show)
+            MainIntent.LoadSavedImports -> loadSavedImports()
+            is MainIntent.SaveCurrentImport -> saveCurrentImport(intent.name)
+            is MainIntent.LoadSavedImport -> loadSavedImport(intent.importId)
+            is MainIntent.DeleteSavedImport -> deleteSavedImport(intent.importId)
         }
     }
 
@@ -74,6 +79,17 @@ class MainStore(
                     includeTokens = loaded.includeTokens
                 )
             }
+
+            // Load saved imports
+            val imports = platformServices.loadSavedImports()
+            val s = _state.value
+            _state.value = s.copy(
+                app = s.app.copy(
+                    savedImports = imports,
+                    logs = Logging.log(s.app.logs, "INFO", "Loaded ${imports.size} saved imports")
+                )
+            )
+
             // Auto-load catalog (remote-first) on startup
             log("Catalog auto-load starting...", level = "INFO")
             val catalog = platformServices.loadCatalog(forceRefresh = true) { msg -> log(msg) }
@@ -316,6 +332,105 @@ class MainStore(
         }
     }
 
+    private fun loadSavedImports() {
+        scope.launch {
+            val imports = platformServices.loadSavedImports()
+            val s = _state.value
+            _state.value = s.copy(
+                app = s.app.copy(
+                    savedImports = imports,
+                    logs = Logging.log(s.app.logs, "INFO", "Loaded ${imports.size} saved imports")
+                )
+            )
+        }
+    }
+
+    private fun saveCurrentImport(name: String) {
+        scope.launch {
+            val s = _state.value
+            if (s.deckText.isBlank()) {
+                log("Cannot save empty import", "ERROR")
+                return@launch
+            }
+
+            // Check for duplicate deck text (deduplicate identical imports)
+            val existingImports = s.app.savedImports
+            val isDuplicate = existingImports.any { it.deckText.trim() == s.deckText.trim() }
+            if (isDuplicate) {
+                log("Import already exists (duplicate deck text), skipping save", "INFO")
+                return@launch
+            }
+
+            // Parse the deck to get card count and commander name
+            val entries = if (s.app.deckEntries.isNotEmpty()) {
+                s.app.deckEntries
+            } else {
+                withContext(Dispatchers.Default) {
+                    DecklistParser.parse(s.deckText, s.includeSideboard, s.includeCommanders)
+                }
+            }
+
+            val cardCount = entries.size
+
+            // Extract commander name for the import name
+            val commanderEntry = entries.firstOrNull { it.section == model.Section.COMMANDER }
+            val autoName = if (commanderEntry != null) {
+                // Use commander name
+                commanderEntry.cardName
+            } else {
+                // Fallback to timestamp-based name
+                val timestamp = java.time.LocalDateTime.now()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"))
+                "Import - $timestamp"
+            }
+
+            val import = model.SavedImport(
+                id = java.util.UUID.randomUUID().toString(),
+                name = autoName,
+                deckText = s.deckText,
+                timestamp = java.time.Instant.now().toString(),
+                cardCount = cardCount,
+                includeSideboard = s.includeSideboard,
+                includeCommanders = s.includeCommanders,
+                includeTokens = s.includeTokens
+            )
+
+            platformServices.saveSavedImport(import)
+            log("Saved import: $autoName", "INFO")
+
+            // Reload the list
+            loadSavedImports()
+        }
+    }
+
+    private fun loadSavedImport(importId: String) {
+        val s = _state.value
+        val import = s.app.savedImports.find { it.id == importId }
+        if (import != null) {
+            _state.value = s.copy(
+                deckText = import.deckText,
+                includeSideboard = import.includeSideboard,
+                includeCommanders = import.includeCommanders,
+                includeTokens = import.includeTokens,
+                app = s.app.copy(
+                    logs = Logging.log(s.app.logs, "INFO", "Loaded import: ${import.name}")
+                ),
+                showSavedImportsWindow = false,
+                showResultsWindow = true // Open wizard/results window as if a new import was made
+            )
+        }
+    }
+
+    private fun deleteSavedImport(importId: String) {
+        scope.launch {
+            platformServices.deleteSavedImport(importId)
+            log("Deleted import", "INFO")
+
+            // Reload the list
+            loadSavedImports()
+        }
+    }
+
     fun log(message: String, level: String = "INFO") {
         val s = _state.value
         _state.value = s.copy(app = s.app.copy(logs = Logging.log(s.app.logs, level, message)))
@@ -335,5 +450,7 @@ interface PlatformServices {
         matches: List<model.DeckEntryMatch>,
         onComplete: (foundPath: String?, unfoundPath: String?) -> Unit
     )
+    suspend fun loadSavedImports(): List<model.SavedImport>
+    suspend fun saveSavedImport(import: model.SavedImport)
+    suspend fun deleteSavedImport(importId: String)
 }
-

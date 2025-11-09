@@ -338,11 +338,24 @@ fun main() = application {
 
                                 Row(
                                     Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
+                                    PixelButton(
+                                        text = "📚 View Saved Imports",
+                                        onClick = {
+                                            store.dispatch(MainIntent.SetShowSavedImportsWindow(true))
+                                        },
+                                        modifier = Modifier.weight(1f),
+                                        variant = PixelButtonVariant.SURFACE
+                                    )
+
                                     PixelButton(
                                         text = "Next: Configure →",
                                         onClick = {
+                                            // Auto-save the import (dedup happens in saveCurrentImport)
+                                            val autoName = "" // Name will be auto-generated from commander or timestamp
+                                            store.dispatch(MainIntent.SaveCurrentImport(autoName))
+
                                             store.dispatch(MainIntent.ParseDeck)
                                             store.dispatch(MainIntent.CompleteWizardStep(1))
                                             navController.navigate("preferences") {
@@ -350,7 +363,7 @@ fun main() = application {
                                             }
                                         },
                                         enabled = state.deckText.isNotBlank(),
-                                        modifier = Modifier.width(240.dp),
+                                        modifier = Modifier.weight(1f),
                                         variant = PixelButtonVariant.SECONDARY
                                     )
                                 }
@@ -507,6 +520,23 @@ fun main() = application {
                     }
                 }
                 }
+            }
+
+            // Show SavedImportsDialog when state indicates it should be shown
+            if (state.showSavedImportsWindow) {
+                SavedImportsDialog(
+                    savedImports = state.app.savedImports,
+                    onDismiss = {
+                        store.dispatch(MainIntent.SetShowSavedImportsWindow(false))
+                    },
+                    onSelectImport = { importId ->
+                        store.dispatch(MainIntent.LoadSavedImport(importId))
+                        // After loading, the wizard will open automatically
+                    },
+                    onDeleteImport = { importId ->
+                        store.dispatch(MainIntent.DeleteSavedImport(importId))
+                    }
+                )
             }
         }
     }

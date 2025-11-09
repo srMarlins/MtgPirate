@@ -62,7 +62,7 @@ data class Preferences(
     val includeSideboard: Boolean = false,
     val includeCommanders: Boolean = false,
     val includeTokens: Boolean = false,
-    val variantPriority: List<String> = listOf("Regular", "Foil", "Holo"),
+    val variantPriority: List<String> = listOf("Foil", "Holo", "Regular"),
     val setPriority: List<String> = emptyList(),
     val fuzzyEnabled: Boolean = true,
     val cacheMaxAgeHours: Int = 24
@@ -71,10 +71,23 @@ data class Preferences(
 @kotlinx.serialization.Serializable
 data class LogEntry(val level: String, val message: String, val timestamp: String)
 
+@Serializable
+data class SavedImport(
+    val id: String,
+    val name: String,
+    val deckText: String,
+    val timestamp: String,
+    val cardCount: Int,
+    val includeSideboard: Boolean = false,
+    val includeCommanders: Boolean = false,
+    val includeTokens: Boolean = false
+)
+
 data class AppState(
     var catalog: Catalog? = null,
     var deckEntries: List<DeckEntry> = emptyList(),
     var matches: List<DeckEntryMatch> = emptyList(),
     var preferences: Preferences = Preferences(),
-    var logs: List<LogEntry> = emptyList()
+    var logs: List<LogEntry> = emptyList(),
+    var savedImports: List<SavedImport> = emptyList()
 )

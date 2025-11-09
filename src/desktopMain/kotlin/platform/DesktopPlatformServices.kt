@@ -7,7 +7,9 @@ import kotlinx.coroutines.withContext
 import model.Catalog
 import model.DeckEntryMatch
 import model.Preferences
+import model.SavedImport
 import persistence.PreferencesStore
+import persistence.ImportsStore
 import state.PlatformServices
 import java.awt.Desktop
 
@@ -76,6 +78,24 @@ class DesktopPlatformServices : PlatformServices {
             } catch (e: Exception) {
                 // Log handled by caller
             }
+        }
+    }
+
+    override suspend fun loadSavedImports(): List<SavedImport> {
+        return withContext(Dispatchers.IO) {
+            ImportsStore.loadAll()
+        }
+    }
+
+    override suspend fun saveSavedImport(import: SavedImport) {
+        withContext(Dispatchers.IO) {
+            ImportsStore.add(import)
+        }
+    }
+
+    override suspend fun deleteSavedImport(importId: String) {
+        withContext(Dispatchers.IO) {
+            ImportsStore.delete(importId)
         }
     }
 }

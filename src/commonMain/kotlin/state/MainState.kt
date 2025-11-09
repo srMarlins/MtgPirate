@@ -19,6 +19,7 @@ data class MainState(
     val showCatalogWindow: Boolean = false,
     val showMatchesWindow: Boolean = false,
     val showResultsWindow: Boolean = false,
+    val showSavedImportsWindow: Boolean = false,
     // Wizard step tracking
     val wizardCompletedSteps: Set<Int> = emptySet(),
     // Theme
@@ -57,5 +58,10 @@ sealed class MainIntent {
     data class UpdateVariantPriority(val value: List<String>) : MainIntent()
     data class CompleteWizardStep(val step: Int) : MainIntent()
     data object ToggleTheme : MainIntent()
+    data class SetShowSavedImportsWindow(val show: Boolean) : MainIntent()
+    data object LoadSavedImports : MainIntent()
+    data class SaveCurrentImport(val name: String) : MainIntent()
+    data class LoadSavedImport(val importId: String) : MainIntent()
+    data class DeleteSavedImport(val importId: String) : MainIntent()
 }
 
