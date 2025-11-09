@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
@@ -21,14 +20,19 @@ import androidx.compose.ui.window.rememberWindowState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import platform.DesktopPlatformServices
+import state.MainStore
+import state.MainIntent
 import ui.*
 
 fun main() = application {
     val scope = rememberCoroutineScope()
-    val store = remember { MainStore(scope) }
+    val platformServices = remember { DesktopPlatformServices() }
+    val store = remember { MainStore(scope, platformServices) }
     val state by store.state.collectAsState()
 
     LaunchedEffect(Unit) { store.dispatch(MainIntent.Init) }
+
 
     // Define wizard steps based on state
     val wizardSteps = remember(state.wizardCompletedSteps, state.app.deckEntries.isNotEmpty(), state.app.matches.isNotEmpty()) {
@@ -155,26 +159,25 @@ fun main() = application {
 
                                     PixelButton(
                                         text = if (state.loadingCatalog) "LOADING..." else "CATALOG",
-                                        onClick = { store.dispatch(MainIntent.LoadCatalog(true)) },
-                                        variant = PixelButtonVariant.PRIMARY,
-                                        enabled = !state.loadingCatalog
-                                    )
-
-                                    PixelButton(
-                                        text = "BROWSE",
                                         onClick = {
-                                            if (navController.currentDestination?.route != "catalog") {
-                                                navController.navigate("catalog") {
-                                                    popUpTo(navController.graph.startDestinationId) {
-                                                        saveState = false
+                                            if (state.app.catalog != null) {
+                                                // Navigate to catalog if already loaded
+                                                if (navController.currentDestination?.route != "catalog") {
+                                                    navController.navigate("catalog") {
+                                                        popUpTo(navController.graph.startDestinationId) {
+                                                            saveState = false
+                                                        }
+                                                        launchSingleTop = true
+                                                        restoreState = false
                                                     }
-                                                    launchSingleTop = true
-                                                    restoreState = false
                                                 }
+                                            } else {
+                                                // Load catalog if not loaded yet
+                                                store.dispatch(MainIntent.LoadCatalog(true))
                                             }
                                         },
-                                        enabled = state.app.catalog != null,
-                                        variant = PixelButtonVariant.SURFACE
+                                        variant = PixelButtonVariant.PRIMARY,
+                                        enabled = !state.loadingCatalog
                                     )
 
                                     PixelButton(
@@ -215,22 +218,6 @@ fun main() = application {
                                             }
                                         },
                                         enabled = state.app.matches.isNotEmpty(),
-                                        variant = PixelButtonVariant.SURFACE
-                                    )
-
-                                    PixelButton(
-                                        text = "CONFIG",
-                                        onClick = {
-                                            if (navController.currentDestination?.route != "prefs") {
-                                                navController.navigate("prefs") {
-                                                    popUpTo(navController.graph.startDestinationId) {
-                                                        saveState = false
-                                                    }
-                                                    launchSingleTop = true
-                                                    restoreState = false
-                                                }
-                                            }
-                                        },
                                         variant = PixelButtonVariant.SURFACE
                                     )
                                 }
@@ -310,34 +297,32 @@ fun main() = application {
                                     .padding(24.dp),
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                // Title with pixel styling
+                                // Title with pixel styling - compact layout
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
                                         "▸ DECK IMPORT",
-                                        style = MaterialTheme.typography.h3,
+                                        style = MaterialTheme.typography.h4,
                                         color = MaterialTheme.colors.primary,
                                         fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    PixelBadge(
+                                        text = "STEP 1/3",
+                                        color = MaterialTheme.colors.secondary
                                     )
                                     Spacer(Modifier.width(8.dp))
                                     BlinkingCursor()
                                 }
 
-                                Spacer(Modifier.height(8.dp))
-
-                                PixelBadge(
-                                    text = "STEP 1/3",
-                                    color = MaterialTheme.colors.secondary
-                                )
-
-                                Spacer(Modifier.height(8.dp))
+                                Spacer(Modifier.height(4.dp))
 
                                 Text(
                                     "└─ Paste your decklist below. Format: [quantity] [cardname]",
-                                    style = MaterialTheme.typography.body2,
+                                    style = MaterialTheme.typography.caption,
                                     color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
                                 )
 
-                                Spacer(Modifier.height(24.dp))
+                                Spacer(Modifier.height(16.dp))
 
                                 PixelCard(glowing = state.deckText.isBlank()) {
                                     PixelTextField(
@@ -403,9 +388,11 @@ fun main() = application {
                     ) {
                         // Step 2: Preferences (Wizard Middle)
                         PreferencesWizardScreen(
+                            includeSideboard = state.includeSideboard,
                             includeCommanders = state.includeCommanders,
                             includeTokens = state.includeTokens,
                             variantPriority = state.app.preferences.variantPriority,
+                            onIncludeSideboardChange = { store.dispatch(MainIntent.ToggleIncludeSideboard(it)) },
                             onIncludeCommandersChange = { store.dispatch(MainIntent.ToggleIncludeCommanders(it)) },
                             onIncludeTokensChange = { store.dispatch(MainIntent.ToggleIncludeTokens(it)) },
                             onVariantPriorityChange = { store.dispatch(MainIntent.UpdateVariantPriority(it)) },
@@ -517,25 +504,6 @@ fun main() = application {
                                 Button(onClick = { navController.navigateUp() }) { Text("Back") }
                             }
                         }
-                    }
-                    composable(
-                        "prefs",
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None }
-                    ) {
-                        PreferencesScreen(
-                            initialVariantPriority = state.app.preferences.variantPriority,
-                            initialSetPriority = state.app.preferences.setPriority,
-                            initialFuzzy = state.app.preferences.fuzzyEnabled,
-                            onSave = { vp, sp, fuzzy ->
-                                store.dispatch(MainIntent.SavePreferences(vp, sp, fuzzy))
-                                store.dispatch(MainIntent.RunMatch)
-                                navController.navigate("results") {
-                                    launchSingleTop = true
-                                }
-                            },
-                            onCancel = { navController.navigateUp() }
-                        )
                     }
                 }
                 }

@@ -2,19 +2,14 @@ package ui
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -23,9 +18,11 @@ import androidx.compose.ui.zIndex
 
 @Composable
 fun PreferencesWizardScreen(
+    includeSideboard: Boolean,
     includeCommanders: Boolean,
     includeTokens: Boolean,
     variantPriority: List<String>,
+    onIncludeSideboardChange: (Boolean) -> Unit,
     onIncludeCommandersChange: (Boolean) -> Unit,
     onIncludeTokensChange: (Boolean) -> Unit,
     onVariantPriorityChange: (List<String>) -> Unit,
@@ -34,89 +31,100 @@ fun PreferencesWizardScreen(
 ) {
     // State for the reorderable list
     var variantList by remember { mutableStateOf(variantPriority.ifEmpty { listOf("Regular", "Foil", "Holo") }) }
-    var newVariantText by remember { mutableStateOf("") }
-    var includeSideboard by remember { mutableStateOf(false) }
     var draggedItem by remember { mutableStateOf<String?>(null) }
     var hoveredIndex by remember { mutableStateOf<Int?>(null) }
 
-    Column(Modifier.fillMaxSize().padding(24.dp)) {
-        // Header
-        Text("Step 2: Configure Options", style = MaterialTheme.typography.h4)
-        Spacer(Modifier.height(4.dp))
-        Text(
-            "Customize how cards should be matched and prioritized",
-            style = MaterialTheme.typography.body1,
-            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-        )
-        Spacer(Modifier.height(16.dp))
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Scanline effect
+        ScanlineEffect(alpha = 0.03f)
 
-        // Card Inclusion Section
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = 2.dp,
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Row(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        Column(Modifier.fillMaxSize().padding(24.dp)) {
+            // Header with pixel styling - compact layout
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "Card Inclusion:",
-                    style = MaterialTheme.typography.body1,
-                    fontWeight = FontWeight.Medium
+                    "▸ CONFIGURE",
+                    style = MaterialTheme.typography.h4,
+                    color = MaterialTheme.colors.primary,
+                    fontWeight = FontWeight.Bold
                 )
+                Spacer(Modifier.width(8.dp))
+                PixelBadge(text = "STEP 2/3", color = MaterialTheme.colors.secondary)
+                Spacer(Modifier.width(8.dp))
+                BlinkingCursor()
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "└─ Customize how cards should be matched and prioritized",
+                style = MaterialTheme.typography.caption,
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+            )
+            Spacer(Modifier.height(12.dp))
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = includeSideboard, onCheckedChange = { includeSideboard = it })
-                    Spacer(Modifier.width(4.dp))
-                    Text("Sideboard", style = MaterialTheme.typography.body2)
-                }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = includeCommanders, onCheckedChange = onIncludeCommandersChange)
-                    Spacer(Modifier.width(4.dp))
-                    Text("Commanders", style = MaterialTheme.typography.body2)
-                }
+            // Card Inclusion Section with pixel styling
+            PixelCard(glowing = false) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "CARD INCLUSION:",
+                        style = MaterialTheme.typography.body1,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.primary
+                    )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = includeTokens, onCheckedChange = onIncludeTokensChange)
-                    Spacer(Modifier.width(4.dp))
-                    Text("Tokens", style = MaterialTheme.typography.body2)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = includeSideboard, onCheckedChange = onIncludeSideboardChange)
+                        Spacer(Modifier.width(4.dp))
+                        Text("Sideboard", style = MaterialTheme.typography.body2)
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = includeCommanders, onCheckedChange = onIncludeCommandersChange)
+                        Spacer(Modifier.width(4.dp))
+                        Text("Commanders", style = MaterialTheme.typography.body2)
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = includeTokens, onCheckedChange = onIncludeTokensChange)
+                        Spacer(Modifier.width(4.dp))
+                        Text("Tokens", style = MaterialTheme.typography.body2)
+                    }
                 }
             }
-        }
 
-        Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
 
-        // Variant Priority Section
-        Card(
-            modifier = Modifier.fillMaxWidth().weight(1f),
-            elevation = 2.dp,
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Column(Modifier.padding(16.dp)) {
-                Text("Variant Preferences", style = MaterialTheme.typography.h6)
+            // Variant Priority Section with pixel styling
+            PixelCard(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                glowing = false
+            ) {
+                Text("VARIANT PREFERENCES", style = MaterialTheme.typography.h6, fontWeight = FontWeight.Bold, color = MaterialTheme.colors.primary)
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "Drag items or use arrows to reorder. Top items are preferred.",
+                    "└─ Drag items or use arrows to reorder. Top items are preferred.",
                     style = MaterialTheme.typography.caption,
                     color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
                 )
                 Spacer(Modifier.height(12.dp))
 
                 // Reorderable List with drag support
-                Card(
-                    modifier = Modifier.fillMaxWidth().height(200.dp),
-                    elevation = 0.dp,
-                    shape = RoundedCornerShape(4.dp),
-                    backgroundColor = MaterialTheme.colors.surface
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f) // Use weight instead of fixed height
+                        .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
+                        .background(MaterialTheme.colors.surface.copy(alpha = 0.5f), shape = PixelShape(cornerSize = 6.dp))
+                        .padding(12.dp) // Increased padding
                 ) {
                     val density = LocalDensity.current
                     val itemHeightPx = with(density) { 64.dp.toPx() } // Item + spacing in pixels
 
                     Column(
-                        modifier = Modifier.fillMaxSize().padding(8.dp),
+                        modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         variantList.forEachIndexed { index, item ->
@@ -200,69 +208,33 @@ fun PreferencesWizardScreen(
                                         variantList = newList
                                         onVariantPriorityChange(newList)
                                     }
-                                },
-                                onRemove = {
-                                    val newList = variantList.toMutableList()
-                                    newList.removeAt(index)
-                                    variantList = newList
-                                    onVariantPriorityChange(newList)
                                 }
                             )
                         }
                     }
                 }
-
-                Spacer(Modifier.height(12.dp))
-
-                // Add new variant
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = newVariantText,
-                        onValueChange = { newVariantText = it },
-                        label = { Text("Add Variant") },
-                        placeholder = { Text("e.g., Etched, Extended") },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                    Button(
-                        onClick = {
-                            if (newVariantText.isNotBlank() && !variantList.contains(newVariantText.trim())) {
-                                val newList = variantList + newVariantText.trim()
-                                variantList = newList
-                                onVariantPriorityChange(newList)
-                                newVariantText = ""
-                            }
-                        },
-                        enabled = newVariantText.isNotBlank()
-                    ) {
-                        Text("Add")
-                    }
-                }
             }
-        }
 
-        Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
 
-        // Navigation Buttons
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            OutlinedButton(
-                onClick = onBack,
-                modifier = Modifier.height(48.dp).width(150.dp)
+
+            // Navigation Buttons with pixel styling
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("← Back")
-            }
-            Button(
-                onClick = onNext,
-                modifier = Modifier.height(48.dp).width(200.dp)
-            ) {
-                Text("Match Cards & View Results →")
+                PixelButton(
+                    text = "← Back",
+                    onClick = onBack,
+                    variant = PixelButtonVariant.SURFACE,
+                    modifier = Modifier.width(180.dp)
+                )
+                PixelButton(
+                    text = "Match Cards & View Results →",
+                    onClick = onNext,
+                    variant = PixelButtonVariant.SECONDARY,
+                    modifier = Modifier.width(280.dp)
+                )
             }
         }
     }
@@ -278,8 +250,7 @@ fun DraggableVariantItem(
     onDrag: (Float) -> Unit,
     onDragEnd: () -> Unit,
     onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
-    onRemove: () -> Unit
+    onMoveDown: () -> Unit
 ) {
     val colors = MaterialTheme.colors
     val density = LocalDensity.current
@@ -446,11 +417,6 @@ fun DraggableVariantItem(
                         icon = "↓",
                         onClick = onMoveDown,
                         variant = PixelIconButtonVariant.SECONDARY
-                    )
-                    PixelIconButton(
-                        icon = "×",
-                        onClick = onRemove,
-                        variant = PixelIconButtonVariant.DANGER
                     )
                 }
             }

@@ -10,7 +10,11 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 object PreferencesStore {
-    private val json = Json { prettyPrint = true }
+    private val json = Json {
+        prettyPrint = true
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+    }
     private val dataDir = Path.of("data")
     private val file = dataDir.resolve("preferences.json")
 
