@@ -20,14 +20,25 @@ object PreferencesStore {
 
     fun load(): Preferences? {
         return try {
-            if (!file.exists()) null else json.decodeFromString<Preferences>(file.readText())
-        } catch (_: Exception) { null }
+            if (!file.exists()) {
+                null
+            } else {
+                json.decodeFromString<Preferences>(file.readText())
+            }
+        } catch (e: Exception) {
+            System.err.println("Error loading preferences: ${e.message}")
+            null
+        }
     }
 
     fun save(prefs: Preferences) {
         try {
-            if (!dataDir.exists()) java.nio.file.Files.createDirectories(dataDir)
+            if (!dataDir.exists()) {
+                java.nio.file.Files.createDirectories(dataDir)
+            }
             file.writeText(json.encodeToString(prefs))
-        } catch (_: Exception) { /* ignore */ }
+        } catch (e: Exception) {
+            System.err.println("Error saving preferences: ${e.message}")
+        }
     }
 }

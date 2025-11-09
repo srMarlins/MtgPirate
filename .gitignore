@@ -64,8 +64,12 @@ DerivedData/
 *.log
 /data/app.log
 
-# Runtime data cache (project-specific)
-/data/
+# Runtime data cache (project-specific) - exclude JSON files but keep directory structure
+/data/*.json
+!/data/.gitkeep
+
+# Detekt reports
+/build/reports/detekt/
 
 # Compose Multiplatform
 .compose/

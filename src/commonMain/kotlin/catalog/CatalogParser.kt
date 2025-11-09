@@ -49,6 +49,14 @@ object CatalogParser {
     }
 
     fun parse(html: String): Catalog {
+        // Basic input validation
+        if (html.isBlank()) {
+            throw IllegalArgumentException("Cannot parse empty HTML")
+        }
+        if (html.length > 50_000_000) { // 50MB limit
+            throw IllegalArgumentException("HTML input too large (>${html.length} bytes)")
+        }
+        
         val doc = Ksoup.parse(html)
         val cardDivs = doc.select("div.bg-gray-50")
         if (cardDivs.isNotEmpty()) {

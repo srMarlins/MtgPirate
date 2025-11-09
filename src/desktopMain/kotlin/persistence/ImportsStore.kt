@@ -20,18 +20,26 @@ object ImportsStore {
 
     fun loadAll(): List<SavedImport> {
         return try {
-            if (!file.exists()) emptyList()
-            else json.decodeFromString<List<SavedImport>>(file.readText())
-        } catch (_: Exception) {
+            if (!file.exists()) {
+                emptyList()
+            } else {
+                json.decodeFromString<List<SavedImport>>(file.readText())
+            }
+        } catch (e: Exception) {
+            System.err.println("Error loading imports: ${e.message}")
             emptyList()
         }
     }
 
     fun saveAll(imports: List<SavedImport>) {
         try {
-            if (!dataDir.exists()) java.nio.file.Files.createDirectories(dataDir)
+            if (!dataDir.exists()) {
+                java.nio.file.Files.createDirectories(dataDir)
+            }
             file.writeText(json.encodeToString(imports))
-        } catch (_: Exception) { /* ignore */ }
+        } catch (e: Exception) {
+            System.err.println("Error saving imports: ${e.message}")
+        }
     }
 
     fun add(import: SavedImport) {
@@ -45,4 +53,3 @@ object ImportsStore {
         saveAll(imports)
     }
 }
-
