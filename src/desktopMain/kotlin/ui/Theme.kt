@@ -12,44 +12,46 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 // ========================================
-// RETRO PIXEL ART COLOR PALETTE
+// FANTASY PIXEL ART COLOR PALETTE
 // ========================================
 
-// Dark Theme - CRT Monitor / Arcade Cabinet Aesthetic
-private val PixelDarkPrimary = Color(0xFF00FFFF) // Bright cyan (classic terminal)
-private val PixelDarkPrimaryVariant = Color(0xFF00AAAA) // Deeper cyan
-private val PixelDarkSecondary = Color(0xFFFF00FF) // Hot magenta (neon accent)
-private val PixelDarkSecondaryVariant = Color(0xFFAA00AA) // Deeper magenta
-private val PixelDarkBackground = Color(0xFF0A0E27) // Deep space blue-black
-private val PixelDarkSurface = Color(0xFF1A1F3A) // Slightly lighter surface
-private val PixelDarkError = Color(0xFFFF3366) // Neon red
-private val PixelDarkOnPrimary = Color(0xFF000000) // Black text on cyan
-private val PixelDarkOnSecondary = Color(0xFF000000) // Black text on magenta
-private val PixelDarkOnBackground = Color(0xFF00FF88) // Bright green text (terminal style)
-private val PixelDarkOnSurface = Color(0xFFDDFFDD) // Light greenish text
-private val PixelDarkOnError = Color(0xFF000000) // Black text on error
+// Dark Theme - Enchanted Night / Mystical Dungeon Aesthetic
+private val PixelDarkPrimary = Color(0xFFB794F6) // Mystical purple (arcane magic)
+private val PixelDarkPrimaryVariant = Color(0xFF805AD5) // Deep enchanted purple
+private val PixelDarkSecondary = Color(0xFF63B3ED) // Crystal blue (magic crystals)
+private val PixelDarkSecondaryVariant = Color(0xFF4299E1) // Deep sapphire blue
+private val PixelDarkBackground = Color(0xFF1A0F2E) // Deep purple-black night
+private val PixelDarkSurface = Color(0xFF2D1B4E) // Mystical surface (darker purple)
+private val PixelDarkError = Color(0xFFFC8181) // Soft crimson (dragon fire)
+private val PixelDarkOnPrimary = Color(0xFF1A0F2E) // Dark text on glowing purple
+private val PixelDarkOnSecondary = Color(0xFF1A0F2E) // Dark text on crystal blue
+private val PixelDarkOnBackground = Color(0xFFF7FAFC) // Moonlight white text
+private val PixelDarkOnSurface = Color(0xFFE9D8FD) // Lavender mist text
+private val PixelDarkOnError = Color(0xFF1A0F2E) // Dark text on error
 
-// Light Theme - Game Boy / Retro Handheld Aesthetic
-private val PixelLightPrimary = Color(0xFF0F380F) // Dark green (Game Boy dark)
-private val PixelLightPrimaryVariant = Color(0xFF306230) // Medium green
-private val PixelLightSecondary = Color(0xFF8BAC0F) // Lime green accent
-private val PixelLightSecondaryVariant = Color(0xFF9BBC0F) // Brighter lime
-private val PixelLightBackground = Color(0xFF9BBC0F) // Game Boy light green background
-private val PixelLightSurface = Color(0xFF8BAC0F) // Slightly darker surface
-private val PixelLightError = Color(0xFF8B0000) // Dark red
-private val PixelLightOnPrimary = Color(0xFFDDFFDD) // Light text on dark green
-private val PixelLightOnSecondary = Color(0xFF0F380F) // Dark text on lime
-private val PixelLightOnBackground = Color(0xFF0F380F) // Dark green text
-private val PixelLightOnSurface = Color(0xFF0F380F) // Dark green text on surface
-private val PixelLightOnError = Color(0xFFFFFFFF) // White text on error
+// Light Theme - Enchanted Forest / Fairy Tale Aesthetic
+private val PixelLightPrimary = Color(0xFF38A169) // Emerald forest green
+private val PixelLightPrimaryVariant = Color(0xFF2F855A) // Deep forest shadow
+private val PixelLightSecondary = Color(0xFFED8936) // Autumn gold (magic amber)
+private val PixelLightSecondaryVariant = Color(0xFFDD6B20) // Deep golden amber
+private val PixelLightBackground = Color(0xFFF0FFF4) // Morning mist (pale mint)
+private val PixelLightSurface = Color(0xFFE6FFFA) // Fairy dust (pale cyan)
+private val PixelLightError = Color(0xFFC53030) // Ruby red warning
+private val PixelLightOnPrimary = Color(0xFFF0FFF4) // Light text on forest green
+private val PixelLightOnSecondary = Color(0xFF1A202C) // Dark text on gold
+private val PixelLightOnBackground = Color(0xFF1A202C) // Deep shadow text
+private val PixelLightOnSurface = Color(0xFF1A365D) // Deep blue-grey text
+private val PixelLightOnError = Color(0xFFFFF5F5) // Light text on ruby
 
-// Additional Pixel Art Colors
-val PixelAccent1 = Color(0xFFFFFF00) // Bright yellow (coins/stars)
-val PixelAccent2 = Color(0xFFFF6600) // Orange (fire/warning)
-val PixelAccent3 = Color(0xFF00FF00) // Lime green (success)
-val PixelAccent4 = Color(0xFF8800FF) // Purple (magic/special)
-val PixelGlow = Color(0xFF00FFFF) // Cyan glow
-val PixelShadow = Color(0xFF000033) // Deep shadow
+// Additional Fantasy Pixel Art Colors
+val PixelAccent1 = Color(0xFFFBD38D) // Golden coins (treasure)
+val PixelAccent2 = Color(0xFFFC8181) // Phoenix fire (warm glow)
+val PixelAccent3 = Color(0xFF68D391) // Life energy (healing green)
+val PixelAccent4 = Color(0xFFB794F6) // Mystical aura (magic purple)
+val PixelAccent5 = Color(0xFF76E4F7) // Ice crystal (frost blue)
+val PixelAccent6 = Color(0xFFFBB6CE) // Rose quartz (soft pink)
+val PixelGlow = Color(0xFFB794F6) // Purple arcane glow
+val PixelShadow = Color(0xFF1A0F2E) // Deep mystical shadow
 
 val AppDarkColors = darkColors(
     primary = PixelDarkPrimary,

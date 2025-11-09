@@ -19,10 +19,48 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Path
+
+// ========================================
+// PIXEL SHAPE (for matching border clipping)
+// ========================================
+class PixelShape(private val cornerSize: Dp = 6.dp) : Shape {
+    override fun createOutline(
+        size: Size,
+        layoutDirection: androidx.compose.ui.unit.LayoutDirection,
+        density: androidx.compose.ui.unit.Density
+    ): androidx.compose.ui.graphics.Outline {
+        val cornerPx = with(density) { cornerSize.toPx() }
+        return androidx.compose.ui.graphics.Outline.Generic(
+            path = Path().apply {
+                // Start at top-left corner (after the chamfer)
+                moveTo(cornerPx, 0f)
+                // Top edge
+                lineTo(size.width - cornerPx, 0f)
+                // Top-right chamfer
+                lineTo(size.width, cornerPx)
+                // Right edge
+                lineTo(size.width, size.height - cornerPx)
+                // Bottom-right chamfer
+                lineTo(size.width - cornerPx, size.height)
+                // Bottom edge
+                lineTo(cornerPx, size.height)
+                // Bottom-left chamfer
+                lineTo(0f, size.height - cornerPx)
+                // Left edge
+                lineTo(0f, cornerPx)
+                // Top-left chamfer (close the path)
+                close()
+            }
+        )
+    }
+}
 
 // ========================================
 // PIXEL BUTTON COMPONENT
@@ -69,7 +107,7 @@ fun PixelButton(
                 enabled = enabled,
                 glowAlpha = if (enabled) glowAlpha else 0f
             )
-            .background(backgroundColor)
+            .background(backgroundColor, shape = PixelShape(cornerSize = 9.dp))
             .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
@@ -105,7 +143,7 @@ fun PixelTextField(
     Column(modifier = modifier) {
         if (label.isNotEmpty()) {
             Text(
-                text = "▸ $label",
+                text = "✦ $label",
                 style = MaterialTheme.typography.caption,
                 color = colors.primary,
                 fontWeight = FontWeight.Bold,
@@ -117,7 +155,7 @@ fun PixelTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
-                .background(colors.surface)
+                .background(colors.surface, shape = PixelShape(cornerSize = 6.dp))
                 .padding(12.dp)
         ) {
             TextField(
@@ -171,7 +209,7 @@ fun PixelCard(
                 enabled = true,
                 glowAlpha = if (glowing) glowAlpha else 0.1f
             )
-            .background(colors.surface)
+            .background(colors.surface, shape = PixelShape(cornerSize = 9.dp))
             .padding(16.dp)
     ) {
         content()
@@ -251,21 +289,23 @@ fun PixelProgressBar(
             .height(height)
             .fillMaxWidth()
             .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
-            .background(colors.surface)
+            .background(colors.surface, shape = PixelShape(cornerSize = 6.dp))
     ) {
-        // Progress fill
+        // Progress fill - Mystical gradient
         Box(
             modifier = Modifier
                 .fillMaxHeight()
                 .fillMaxWidth(animatedProgress)
                 .background(
-                    Brush.horizontalGradient(
+                    brush = Brush.horizontalGradient(
                         colors = listOf(
-                            colors.primary,
-                            colors.secondary,
-                            colors.primary
+                            Color(0xFFB794F6), // Mystical purple
+                            Color(0xFF63B3ED), // Crystal blue
+                            Color(0xFFFBD38D), // Golden treasure
+                            Color(0xFFB794F6)  // Back to purple
                         )
-                    )
+                    ),
+                    shape = PixelShape(cornerSize = 6.dp)
                 )
         )
 
@@ -333,11 +373,11 @@ fun Modifier.pixelBorder(
         // Corner size for pixel art effect
         val cornerSize = strokeWidth * 3
 
-        // Main border color
+        // Main border color - Fantasy themed!
         val borderColor = if (enabled) {
-            Color(0xFF00FFFF) // Cyan
+            Color(0xFFB794F6) // Mystical purple (arcane glow)
         } else {
-            Color.Gray
+            Color(0xFF6B7280) // Muted grey
         }
 
         // Draw outer glow if enabled
@@ -363,7 +403,9 @@ private fun DrawScope.drawPixelBorder(
     color: Color,
     inner: Boolean = false
 ) {
-    val offset = if (inner) strokeWidth else 0f
+    // Calculate offset accounting for stroke width (stroke is centered on the line)
+    val halfStroke = strokeWidth / 2f
+    val offset = if (inner) strokeWidth else halfStroke
 
     // Top line
     drawLine(
@@ -440,16 +482,17 @@ fun PixelBadge(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colors.primary
 ) {
+    val colors = MaterialTheme.colors
     Box(
         modifier = modifier
             .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
-            .background(color)
+            .background(color, shape = PixelShape(cornerSize = 6.dp))
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(
             text = text.uppercase(),
             style = MaterialTheme.typography.caption,
-            color = Color.Black,
+            color = colors.onPrimary,
             fontWeight = FontWeight.Bold
         )
     }
@@ -476,6 +519,294 @@ fun BlinkingCursor(
         text = "█",
         color = MaterialTheme.colors.primary.copy(alpha = alpha),
         modifier = modifier
+    )
+}
+
+// ========================================
+// MAGICAL SPARKLE EFFECT
+// ========================================
+@Composable
+fun MagicalSparkles(
+    modifier: Modifier = Modifier,
+    count: Int = 5,
+    color: Color = Color(0xFFB794F6)
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val sparklePhase by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+
+    Box(
+        modifier = modifier.drawBehind {
+            repeat(count) { index ->
+                val angle = (sparklePhase + (index * 360f / count)) % 360f
+                val radius = size.minDimension / 3f
+                val x = center.x + radius * kotlin.math.cos(Math.toRadians(angle.toDouble())).toFloat()
+                val y = center.y + radius * kotlin.math.sin(Math.toRadians(angle.toDouble())).toFloat()
+
+                // Draw sparkle
+                val sparkleSize = 3f + (kotlin.math.sin(Math.toRadians((sparklePhase * 2 + index * 60).toDouble())) * 2f).toFloat()
+                drawCircle(
+                    color = color.copy(alpha = 0.8f),
+                    radius = sparkleSize,
+                    center = Offset(x, y)
+                )
+
+                // Draw sparkle glow
+                drawCircle(
+                    color = color.copy(alpha = 0.3f),
+                    radius = sparkleSize * 2,
+                    center = Offset(x, y)
+                )
+            }
+        }
+    )
+}
+
+// ========================================
+// FANTASY STAR DECORATION
+// ========================================
+@Composable
+fun FantasyStarIcon(
+    modifier: Modifier = Modifier,
+    color: Color = Color(0xFFFBD38D),
+    animated: Boolean = true
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = if (animated) {
+            infiniteRepeatable(
+                animation = tween(4000, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            )
+        } else {
+            infiniteRepeatable(
+                animation = tween(0),
+                repeatMode = RepeatMode.Restart
+            )
+        }
+    )
+
+    val twinkle by infiniteTransition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 1f,
+        animationSpec = if (animated) {
+            infiniteRepeatable(
+                animation = tween(1000, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            )
+        } else {
+            infiniteRepeatable(
+                animation = tween(0),
+                repeatMode = RepeatMode.Restart
+            )
+        }
+    )
+
+    Box(
+        modifier = modifier
+            .size(16.dp)
+            .drawBehind {
+                val rotationRad = Math.toRadians(rotation.toDouble())
+                val centerX = size.width / 2
+                val centerY = size.height / 2
+                val outerRadius = size.minDimension / 2
+                val innerRadius = outerRadius * 0.4f
+
+                // Draw 4-pointed star
+                val points = 8
+                val path = androidx.compose.ui.graphics.Path()
+
+                for (i in 0 until points) {
+                    val angle = rotationRad + (i * Math.PI / (points / 2))
+                    val radius = if (i % 2 == 0) outerRadius else innerRadius
+                    val x = centerX + (radius * kotlin.math.cos(angle).toFloat())
+                    val y = centerY + (radius * kotlin.math.sin(angle).toFloat())
+
+                    if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                }
+                path.close()
+
+                // Draw glow
+                drawPath(
+                    path = path,
+                    color = color.copy(alpha = twinkle * 0.3f),
+                    style = Stroke(width = 4f)
+                )
+
+                // Draw star
+                drawPath(
+                    path = path,
+                    color = color.copy(alpha = twinkle)
+                )
+            }
+    )
+}
+
+// ========================================
+// MYSTICAL TEXT WITH GLOW
+// ========================================
+@Composable
+fun MysticalText(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: TextStyle = MaterialTheme.typography.h6,
+    color: Color = MaterialTheme.colors.primary,
+    glowColor: Color = color.copy(alpha = 0.5f)
+) {
+    Box(modifier = modifier) {
+        // Glow layer
+        Text(
+            text = text,
+            style = style,
+            color = glowColor,
+            modifier = Modifier.offset(x = 2.dp, y = 2.dp)
+        )
+        Text(
+            text = text,
+            style = style,
+            color = glowColor,
+            modifier = Modifier.offset(x = (-2).dp, y = (-2).dp)
+        )
+
+        // Main text
+        Text(
+            text = text,
+            style = style,
+            color = color
+        )
+    }
+}
+
+// ========================================
+// FANTASY SECTION HEADER
+// ========================================
+@Composable
+fun FantasySectionHeader(
+    text: String,
+    modifier: Modifier = Modifier,
+    icon: String = "✦"
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        FantasyStarIcon(color = MaterialTheme.colors.primary, animated = true)
+        Spacer(modifier = Modifier.width(8.dp))
+
+        MysticalText(
+            text = "$icon $text $icon",
+            style = MaterialTheme.typography.h5,
+            color = MaterialTheme.colors.primary
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+        FantasyStarIcon(color = MaterialTheme.colors.secondary, animated = true)
+    }
+}
+
+// ========================================
+// ENCHANTED DIVIDER
+// ========================================
+@Composable
+fun EnchantedDivider(
+    modifier: Modifier = Modifier,
+    thickness: Dp = 2.dp
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val shimmer by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(thickness)
+            .drawBehind {
+                val colors = listOf(
+                    Color(0xFFB794F6),
+                    Color(0xFF63B3ED),
+                    Color(0xFF68D391),
+                    Color(0xFFFBD38D),
+                    Color(0xFFB794F6)
+                )
+
+                drawRect(
+                    brush = Brush.horizontalGradient(
+                        colors = colors,
+                        startX = -size.width + (shimmer * size.width * 2),
+                        endX = shimmer * size.width * 2
+                    )
+                )
+            }
+    )
+}
+
+// ========================================
+// MAGICAL LOADING SPINNER
+// ========================================
+@Composable
+fun MagicalLoadingSpinner(
+    modifier: Modifier = Modifier,
+    size: Dp = 48.dp
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+
+    Box(
+        modifier = modifier
+            .size(size)
+            .drawBehind {
+                val colors = listOf(
+                    Color(0xFFB794F6),
+                    Color(0xFF63B3ED),
+                    Color(0xFFB794F6).copy(alpha = 0.1f)
+                )
+
+                // Draw rotating magical circle
+                drawCircle(
+                    brush = Brush.sweepGradient(
+                        colors = colors,
+                        center = center
+                    ),
+                    radius = size.toPx() / 2,
+                    style = Stroke(width = 4.dp.toPx())
+                )
+
+                // Draw sparkles
+                repeat(4) { index ->
+                    val angle = rotation + (index * 90f)
+                    val radius = size.toPx() / 2
+                    val x = center.x + radius * kotlin.math.cos(Math.toRadians(angle.toDouble())).toFloat()
+                    val y = center.y + radius * kotlin.math.sin(Math.toRadians(angle.toDouble())).toFloat()
+
+                    drawCircle(
+                        color = Color(0xFFFBD38D),
+                        radius = 3.dp.toPx(),
+                        center = Offset(x, y)
+                    )
+                }
+            }
     )
 }
 

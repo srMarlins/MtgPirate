@@ -151,7 +151,7 @@ fun PixelStepNode(
                             enabled = true,
                             glowAlpha = 0.6f
                         )
-                        .background(circleColor.copy(alpha = 0.2f))
+                        .background(circleColor.copy(alpha = 0.2f), shape = PixelShape(cornerSize = 12.dp))
                 )
             }
 
@@ -165,7 +165,7 @@ fun PixelStepNode(
                         enabled = step.state != StepState.LOCKED,
                         glowAlpha = if (isActive) 0.8f else 0.3f
                     )
-                    .background(circleColor)
+                    .background(circleColor, shape = PixelShape(cornerSize = 9.dp))
             ) {
                 if (step.state == StepState.COMPLETED) {
                     // Pixel art checkmark
@@ -199,11 +199,12 @@ fun PixelStepNode(
                     glowAlpha = if (isActive) 0.4f else 0.1f
                 )
                 .background(
-                    when (step.state) {
+                    color = when (step.state) {
                         StepState.COMPLETED -> colors.primary.copy(alpha = 0.2f)
                         StepState.ACTIVE -> colors.secondary.copy(alpha = 0.3f)
                         StepState.LOCKED -> Color.Gray.copy(alpha = 0.1f)
-                    }
+                    },
+                    shape = PixelShape(cornerSize = 6.dp)
                 )
                 .padding(horizontal = 12.dp, vertical = 6.dp)
         ) {

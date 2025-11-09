@@ -136,7 +136,7 @@ fun main() = application {
                                         modifier = Modifier
                                             .size(40.dp)
                                             .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
-                                            .background(MaterialTheme.colors.primary.copy(alpha = 0.2f))
+                                            .background(MaterialTheme.colors.primary.copy(alpha = 0.2f), shape = PixelShape(cornerSize = 6.dp))
                                             .clickable { store.dispatch(MainIntent.ToggleTheme) }
                                             .padding(8.dp),
                                         contentAlignment = Alignment.Center
