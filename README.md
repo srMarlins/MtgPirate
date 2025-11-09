@@ -168,6 +168,60 @@ Access preferences via the settings menu to configure:
 - Ensure you have write permissions in the export directory
 - Check that all cards are resolved (no red highlights)
 
+## Development
+
+### Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/srMarlins/MtgPirate.git
+cd MtgPirate
+
+# Build the application
+./gradlew build
+
+# Run the application
+./gradlew run
+
+# Create distribution packages
+./gradlew packageReleaseDistributionForCurrentOS
+```
+
+### Code Quality
+
+The project uses several tools to maintain code quality:
+
+#### Static Analysis
+- **Detekt**: Kotlin static code analyzer
+  - Run: `./gradlew detekt`
+  - Configuration: `config/detekt.yml`
+  - Reports: `build/reports/detekt/`
+
+#### Build Optimizations
+- Kotlin compiler optimizations enabled (JVM target 17)
+- Dependency resolution strategy with version forcing
+- Pre-compiled regex patterns for performance
+- Eager catalog indexing for faster matching
+
+#### Code Standards
+- Follow Kotlin coding conventions
+- All regex patterns should be pre-compiled at object level
+- Use helper functions to reduce code duplication
+- Prefer immutable data structures
+- Add error handling with proper logging
+
+### Project Structure
+
+The codebase is organized with clear separation of concerns:
+- **commonMain**: Platform-agnostic business logic
+- **desktopMain**: Desktop-specific implementations
+- **config**: Configuration files for build tools
+
+Key design patterns:
+- **MVI Architecture**: Model-View-Intent for state management
+- **Dependency Injection**: Platform services injected via interfaces
+- **Repository Pattern**: Persistence layer abstraction
+
 ## Acknowledgments
 
 - Card data sourced from [USEA MTG Proxy](https://www.usmtgproxy.com/)
@@ -176,4 +230,5 @@ Access preferences via the settings menu to configure:
 ## Disclaimer
 
 This tool is for personal use with proxy card services. Magic: The Gathering is trademarked by Wizards of the Coast. This project is not affiliated with or endorsed by Wizards of the Coast.
+
 
