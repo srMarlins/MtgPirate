@@ -84,7 +84,6 @@ fun FrameWindowScope.CustomTitleBar(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    PixelPirateLogo(size = 28.dp)
                     Text(
                         "█▓▒░",
                         style = MaterialTheme.typography.body1,
