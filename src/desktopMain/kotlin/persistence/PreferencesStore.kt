@@ -4,6 +4,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString // used in load()
 import kotlinx.serialization.json.Json
 import model.Preferences
+import platform.AppDirectories
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.readText
@@ -15,8 +16,7 @@ object PreferencesStore {
         ignoreUnknownKeys = true
         encodeDefaults = true
     }
-    private val dataDir = Path.of("data")
-    private val file = dataDir.resolve("preferences.json")
+    private val file = AppDirectories.dataDir.resolve("preferences.json")
 
     fun load(): Preferences? {
         return try {
@@ -26,7 +26,6 @@ object PreferencesStore {
 
     fun save(prefs: Preferences) {
         try {
-            if (!dataDir.exists()) java.nio.file.Files.createDirectories(dataDir)
             file.writeText(json.encodeToString(prefs))
         } catch (_: Exception) { /* ignore */ }
     }

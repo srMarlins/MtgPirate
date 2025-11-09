@@ -4,6 +4,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import model.SavedImport
+import platform.AppDirectories
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.readText
@@ -15,8 +16,7 @@ object ImportsStore {
         ignoreUnknownKeys = true
         encodeDefaults = true
     }
-    private val dataDir = Path.of("data")
-    private val file = dataDir.resolve("saved-imports.json")
+    private val file = AppDirectories.dataDir.resolve("saved-imports.json")
 
     fun loadAll(): List<SavedImport> {
         return try {
@@ -29,7 +29,6 @@ object ImportsStore {
 
     fun saveAll(imports: List<SavedImport>) {
         try {
-            if (!dataDir.exists()) java.nio.file.Files.createDirectories(dataDir)
             file.writeText(json.encodeToString(imports))
         } catch (_: Exception) { /* ignore */ }
     }

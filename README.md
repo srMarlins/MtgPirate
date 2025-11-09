@@ -103,7 +103,6 @@ Application data is stored in the `data/` directory:
 - `catalog.json` - Cached card catalog from USEA
 - `preferences.json` - User preferences
 - `saved-imports.json` - Import history
-- `image-url-mappings.json` - Card image URLs
 
 ## Matching Algorithm
 

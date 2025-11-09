@@ -1,6 +1,7 @@
 package export
 
 import model.DeckEntryMatch
+import platform.AppDirectories
 import util.formatPrice
 import java.nio.file.Path
 import java.nio.file.Files
@@ -16,7 +17,7 @@ object CsvExporter {
     private val header = "Card Name,Set,SKU,Card Type,Quantity,Base Price"
 
     fun export(matches: List<DeckEntryMatch>, target: Path? = null): Path {
-        val file = target ?: Path.of("export-${timestamp()}.csv")
+        val file = target ?: AppDirectories.exportsDir.resolve("export-${timestamp()}.csv")
         val resolved = matches.filter { it.selectedVariant != null }
         // Aggregate identical selected variants
         val grouped = resolved.groupBy {
@@ -58,7 +59,7 @@ object CsvExporter {
         // Create found cards file
         val resolved = matches.filter { it.selectedVariant != null }
         val foundCardsPath = if (resolved.isNotEmpty()) {
-            val file = Path.of("found-cards-${timestamp}.csv")
+            val file = AppDirectories.exportsDir.resolve("found-cards-${timestamp}.csv")
             val lines = mutableListOf<String>()
             lines += header
 
@@ -100,7 +101,7 @@ object CsvExporter {
         // Create unfound cards file
         val unfound = matches.filter { it.selectedVariant == null && it.deckEntry.include }
         val unfoundCardsPath = if (unfound.isNotEmpty()) {
-            val file = Path.of("unfound-cards-${timestamp}.txt")
+            val file = AppDirectories.exportsDir.resolve("unfound-cards-${timestamp}.txt")
             val lines = mutableListOf<String>()
             unfound.forEach { match ->
                 lines += "${match.deckEntry.qty} ${match.deckEntry.cardName}"

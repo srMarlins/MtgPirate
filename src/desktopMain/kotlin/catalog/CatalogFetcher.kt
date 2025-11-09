@@ -4,6 +4,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import model.Catalog
+import platform.AppDirectories
 import java.nio.file.Files
 import java.nio.file.Path
 import java.net.HttpURLConnection
@@ -19,8 +20,7 @@ object CatalogFetcher {
     private val json = Json { prettyPrint = true }
     private const val URL_SOURCE = "https://www.usmtgproxy.com/wp-content/uploads/singlecardslist.html"
     private const val URL_API = "https://www.usmtgproxy.com/wp-content/uploads/single-card-list.csv"
-    private val dataDir: Path = Path.of("data")
-    private val cacheFile: Path = dataDir.resolve("catalog.json")
+    private val cacheFile: Path = AppDirectories.dataDir.resolve("catalog.json")
 
     private fun canonicalType(raw: String): String {
         val t = raw.trim().lowercase()
@@ -64,7 +64,6 @@ object CatalogFetcher {
      */
     fun loadWithCacheAge(maxAge: Duration, forceRefresh: Boolean = false, log: (String) -> Unit = {}): Catalog? {
         try {
-            if (!Files.exists(dataDir)) Files.createDirectories(dataDir)
             val cacheExists = cacheFile.exists()
             val cacheFresh = if (cacheExists) {
                 try {
