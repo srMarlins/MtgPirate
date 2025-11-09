@@ -70,8 +70,8 @@ jobs:
       - name: Build release distribution for current OS
         shell: cmd
         run: |
-          gradlew.bat --version
-          gradlew.bat -PappVersion=%APP_VERSION% packageReleaseDistributionForCurrentOS --stacktrace --no-daemon
+          ./gradlew.bat --version
+          ./gradlew.bat -PappVersion=%APP_VERSION% packageReleaseDistributionForCurrentOS --stacktrace --no-daemon
 
       - name: Upload build artifacts (compose binaries folder)
         uses: actions/upload-artifact@v4
