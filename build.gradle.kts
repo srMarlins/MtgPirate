@@ -1,3 +1,5 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.compose)
@@ -56,11 +58,32 @@ compose.desktop {
     application {
         mainClass = "app.MainKt"
         nativeDistributions {
-            targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe)
+            targetFormats(
+                TargetFormat.Exe,
+                TargetFormat.Dmg
+            )
             packageName = "MtgPirate"
             packageVersion = "1.0.0"
             // Optional metadata
             description = "MtgPirate - MTG Deck Import and Price Calculator"
+
+            macOS {
+                // App bundle identifier for macOS packaging
+                bundleID = "org.srmarlins.MtgPirate"
+
+                // Configure signing and notarization via environment variables set in CI
+                // Signing is enabled only when SIGN_MAC == "true"
+                val enableSign = System.getenv("SIGN_MAC")?.toBoolean() == true
+                signing {
+                    sign.set(enableSign)
+                    identity.set(System.getenv("MACOS_SIGNING_IDENTITY") ?: "")
+                }
+                notarization {
+                    // Notarization runs only if credentials are present
+                    appleID.set(System.getenv("MACOS_NOTARIZATION_APPLE_ID") ?: "")
+                    password.set(System.getenv("MACOS_NOTARIZATION_PASSWORD") ?: "")
+                }
+            }
         }
     }
 }

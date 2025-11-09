@@ -1,0 +1,134 @@
+name: Build and Upload Release Artifacts
+
+on:
+  # Build on published releases and on version tags (e.g., v1.2.3)
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      run_windows:
+        description: 'Build Windows (.exe)'
+        type: boolean
+        default: true
+        required: false
+      run_macos:
+        description: 'Build macOS (.dmg)'
+        type: boolean
+        default: true
+        required: false
+      sign_mac:
+        description: 'Sign and notarize macOS build (requires secrets)'
+        type: boolean
+        default: false
+        required: false
+      upload_to_release:
+        description: 'Upload artifacts to an existing GitHub Release'
+        type: boolean
+        default: false
+        required: false
+      release_tag:
+        description: 'Release tag name to upload assets to (required if upload_to_release=true)'
+        type: string
+        required: false
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    name: Build (Windows .exe)
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build release distribution for current OS
+        shell: cmd
+        run: |
+          gradlew.bat --version
+          gradlew.bat packageReleaseDistributionForCurrentOS --stacktrace --no-daemon
+
+      - name: Upload build artifacts (compose binaries folder)
+        uses: actions/upload-artifact@v4
+        with:
+          name: MtgPirate-Windows-binaries
+          path: |
+            build/compose/binaries/**
+          if-no-files-found: warn
+
+  build-macos:
+    name: Build (macOS .dmg)
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    env:
+      SIGN_MAC: ${{ secrets.SIGN_MAC || 'false' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Import Apple code signing certificates
+        if: ${{ env.SIGN_MAC == 'true' }}
+        uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.MACOS_P12_BASE64 }}
+          p12-password: ${{ secrets.MACOS_P12_PASSWORD }}
+
+      - name: Build release distribution for current OS (signed/notarized if secrets provided)
+        env:
+          SIGN_MAC: ${{ secrets.SIGN_MAC || 'false' }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.MACOS_NOTARIZATION_APPLE_ID }}
+          MACOS_NOTARIZATION_PASSWORD: ${{ secrets.MACOS_NOTARIZATION_PASSWORD }}
+        run: |
+          ./gradlew --version
+          ./gradlew packageReleaseDistributionForCurrentOS --stacktrace --no-daemon
+
+      - name: Upload build artifacts (compose binaries folder)
+        uses: actions/upload-artifact@v4
+        with:
+          name: MtgPirate-macOS-binaries
+          path: |
+            build/compose/binaries/**
+          if-no-files-found: warn
+
+  attach-to-release:
+    name: Attach artifacts to GitHub Release
+    needs: [build-windows, build-macos]
+    if: ${{ github.event_name == 'release' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
