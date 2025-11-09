@@ -1,24 +1,12 @@
-<h1>MtgPirate<img src="src/desktopMain/resources/scimitar_logo.svg" alt="MtgPirate Logo" width="48" height="48" style="vertical-align: middle; margin: 0 0 0 -4px; padding: 0; display: inline-block;"></h1>
+# MTG PIRATE
 
 A Kotlin Multiplatform desktop application for importing Magic: The Gathering decklists, matching cards against the USEA MTG Proxy catalog, and exporting optimized CSV orders.
 
-<!-- Once you record a demo GIF, uncomment the line below -->
-<!-- ![App Demo](./demo.gif) -->
-<!-- *Demo of MtgPirate in action* -->
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/2f6e4147-6a47-4de0-8e95-25e556a46ab9" alt="MtgPirate Demo" style="max-width: 70%;">
+</div>
 
-> 💡 **Quick Demo**: See [DEMO-GUIDE.md](./DEMO-GUIDE.md) for instructions on creating a demo GIF of the application.
 
-## Logo Design
-
-The MtgPirate logo features a fantasy pirate skull wearing a captain's hat with magical elements:
-- **Gradient skull** - Purple to pink gradient representing the mystical nature of Magic: The Gathering
-- **Glowing cyan eyes** - Magical energy and the digital nature of the tool
-- **Crossed swords** - Classic pirate symbolism
-- **Sparkles & stars** - Fantasy/magical theme elements
-- **Modern flat design** - Clean, simple, and professional appearance
-- **Pixelated variant** - Retro pixel-art version displayed in the app's title bar
-
-The logo is available in SVG format for scalability and can be found in `src/desktopMain/resources/`. A pixelated Compose Canvas version is rendered in the UI for a retro aesthetic.
 
 - 📋 **Decklist Import** - Paste decklists from various formats (MTGO, Arena, MTGGoldfish, etc.)
 - 🎯 **Intelligent Card Matching** - Fuzzy matching with set code hints and collector number support
@@ -36,33 +24,6 @@ The logo is available in SVG format for scalability and can be found in `src/des
 - **Kotlin Coroutines** - Async operations and state management
 - **Kotlin Serialization** - JSON persistence
 - **KSoup** - HTML parsing for catalog fetching
-
-## Getting Started
-
-### Prerequisites
-
-- JDK 17 or higher
-- Gradle 8.x (included via wrapper)
-
-### Building and Running
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd MtgPirate
-```
-
-2. Run the application:
-```bash
-./gradlew run
-```
-
-3. Build a distribution package:
-```bash
-./gradlew packageDistributionForCurrentOS
-```
-
-The packaged application will be available in `build/compose/binaries/main/`.
 
 ## How to Use
 
@@ -188,27 +149,6 @@ Access preferences via the settings menu to configure:
 - Theme settings (coming soon)
 - Export directory defaults
 
-## Development
-
-### Running Tests
-
-```bash
-./gradlew test
-```
-
-### Code Style
-
-The project follows Kotlin official code style guidelines.
-
-### Adding Features
-
-The architecture follows a unidirectional data flow pattern:
-
-1. User actions → `MainIntent`
-2. Intents processed by → `MainStore`
-3. State updates → `MainState`
-4. UI reacts to state changes
-
 ## Troubleshooting
 
 ### Catalog won't load
@@ -227,14 +167,6 @@ The architecture follows a unidirectional data flow pattern:
 
 - Ensure you have write permissions in the export directory
 - Check that all cards are resolved (no red highlights)
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit issues and pull requests.
-
-## License
-
-[Add your license here]
 
 ## Acknowledgments
 
