@@ -36,6 +36,8 @@ kotlin {
                 implementation("com.fleeksoft.ksoup:ksoup:${Versions.ksoup}")
                 implementation(compose.runtime)
                 implementation(compose.foundation)
+                // Navigation 3 (AndroidX Navigation Compose repackaged for Multiplatform)
+                implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.1")
             }
         }
         val commonTest by getting {

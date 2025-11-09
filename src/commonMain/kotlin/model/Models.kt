@@ -61,6 +61,7 @@ data class DeckEntryMatch(
 data class Preferences(
     val includeSideboard: Boolean = false,
     val includeCommanders: Boolean = false,
+    val includeTokens: Boolean = false,
     val variantPriority: List<String> = listOf("Regular", "Foil", "Holo"),
     val setPriority: List<String> = emptyList(),
     val fuzzyEnabled: Boolean = true,
