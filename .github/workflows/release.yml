@@ -72,12 +72,12 @@ jobs:
         run: ./gradlew.bat -PappVersion=%APP_VERSION% packageReleaseDistributionForCurrentOS --stacktrace --no-daemon
 
 
-      - name: Upload build artifacts (compose binaries folder)
+      - name: Upload build artifacts (Windows installer only)
         uses: actions/upload-artifact@v4
         with:
           name: MtgPirate-Windows-${{ env.APP_VERSION }}
           path: |
-            build/compose/binaries/**
+            build/compose/binaries/**/*.exe
           if-no-files-found: warn
 
   build-macos:
@@ -140,12 +140,12 @@ jobs:
           ./gradlew --version
           ./gradlew -PappVersion=$APP_VERSION packageReleaseDistributionForCurrentOS --stacktrace --no-daemon
 
-      - name: Upload build artifacts (compose binaries folder)
+      - name: Upload build artifacts (macOS DMG only)
         uses: actions/upload-artifact@v4
         with:
-          name: MtgPirate-macOS-binaries
+          name: MtgPirate-macOS-${{ env.APP_VERSION }}
           path: |
-            build/compose/binaries/**
+            build/compose/binaries/**/*.dmg
           if-no-files-found: warn
 
   attach-to-release:
@@ -165,6 +165,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/**
+            artifacts/**/*.exe
+            artifacts/**/*.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
