@@ -1,11 +1,17 @@
 package app
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
@@ -77,28 +83,113 @@ fun main() = application {
             Scaffold(
                 topBar = {
                     Column {
-                        TopAppBar(
-                            title = { Text("US MTG Proxy Tool") },
-                            actions = {
-                                IconButton(onClick = { store.dispatch(MainIntent.ToggleTheme) }) {
-                                    Text(if (state.isDarkTheme) "☀️" else "🌙", style = MaterialTheme.typography.h6)
+                        // Retro pixel art styled top bar
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colors.surface,
+                                            MaterialTheme.colors.surface.copy(alpha = 0.9f)
+                                        )
+                                    )
+                                )
+                                .pixelBorder(borderWidth = 3.dp, enabled = true, glowAlpha = 0.3f)
+                                .padding(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Left side - Title with retro styling
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        "█▓▒░",
+                                        style = MaterialTheme.typography.h5,
+                                        color = MaterialTheme.colors.primary
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        "MTG PROXY TOOL",
+                                        style = MaterialTheme.typography.h6,
+                                        color = MaterialTheme.colors.onSurface,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 2.sp
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        "░▒▓█",
+                                        style = MaterialTheme.typography.h5,
+                                        color = MaterialTheme.colors.secondary
+                                    )
                                 }
-                                Spacer(Modifier.width(8.dp))
-                                Button(onClick = { store.dispatch(MainIntent.LoadCatalog(true)) }) {
-                                    Text(if (state.loadingCatalog) "Loading..." else "Load Catalog")
+
+                                // Right side - Action buttons
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    // Theme toggle with pixel styling
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
+                                            .background(MaterialTheme.colors.primary.copy(alpha = 0.2f))
+                                            .clickable { store.dispatch(MainIntent.ToggleTheme) }
+                                            .padding(8.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            if (state.isDarkTheme) "☀" else "☾",
+                                            style = MaterialTheme.typography.h6
+                                        )
+                                    }
+
+                                    PixelButton(
+                                        text = if (state.loadingCatalog) "LOADING..." else "CATALOG",
+                                        onClick = { store.dispatch(MainIntent.LoadCatalog(true)) },
+                                        variant = PixelButtonVariant.PRIMARY,
+                                        enabled = !state.loadingCatalog
+                                    )
+
+                                    PixelButton(
+                                        text = "BROWSE",
+                                        onClick = { navController.navigate("catalog") },
+                                        enabled = state.app.catalog != null,
+                                        variant = PixelButtonVariant.SURFACE
+                                    )
+
+                                    PixelButton(
+                                        text = "EXPORT",
+                                        onClick = { store.dispatch(MainIntent.ExportCsv) },
+                                        enabled = state.app.matches.any { it.selectedVariant != null },
+                                        variant = PixelButtonVariant.SECONDARY
+                                    )
+
+                                    PixelButton(
+                                        text = "MATCHES",
+                                        onClick = { navController.navigate("matches") },
+                                        enabled = state.app.matches.isNotEmpty(),
+                                        variant = PixelButtonVariant.SURFACE
+                                    )
+
+                                    PixelButton(
+                                        text = "RESULTS",
+                                        onClick = { navController.navigate("results") },
+                                        enabled = state.app.matches.isNotEmpty(),
+                                        variant = PixelButtonVariant.SURFACE
+                                    )
+
+                                    PixelButton(
+                                        text = "CONFIG",
+                                        onClick = { navController.navigate("prefs") },
+                                        variant = PixelButtonVariant.SURFACE
+                                    )
                                 }
-                                Spacer(Modifier.width(8.dp))
-                                Button(onClick = { navController.navigate("catalog") }, enabled = state.app.catalog != null) { Text("Catalog") }
-                                Spacer(Modifier.width(8.dp))
-                                Button(onClick = { store.dispatch(MainIntent.ExportCsv) }, enabled = state.app.matches.any { it.selectedVariant != null }) { Text("Export CSV") }
-                                Spacer(Modifier.width(8.dp))
-                                Button(onClick = { navController.navigate("matches") }, enabled = state.app.matches.isNotEmpty()) { Text("Matches") }
-                                Spacer(Modifier.width(8.dp))
-                                Button(onClick = { navController.navigate("results") }, enabled = state.app.matches.isNotEmpty()) { Text("Results") }
-                                Spacer(Modifier.width(8.dp))
-                                Button(onClick = { navController.navigate("prefs") }) { Text("Prefs") }
                             }
-                        )
+                        }
 
                         // Show stepper only for wizard routes
                         if (currentRoute.value?.destination?.route in listOf("import", "preferences", "results")) {
@@ -123,45 +214,84 @@ fun main() = application {
                                     }
                                 }
                             )
-                            Divider()
+                            PixelDivider(animated = true, thickness = 3.dp)
                         }
                     }
                 }
             ) { padding ->
-                NavHost(navController = navController, startDestination = "import", modifier = Modifier.fillMaxSize().padding(padding)) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // Background scanline effect for entire app
+                    ScanlineEffect(alpha = 0.02f)
+
+                    NavHost(navController = navController, startDestination = "import", modifier = Modifier.fillMaxSize().padding(padding)) {
                     composable("import") {
                         // Step 1: Deck Import (Wizard Start)
-                        Column(
-                            modifier = Modifier.fillMaxSize().padding(24.dp),
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text("Step 1: Import Your Decklist", style = MaterialTheme.typography.h4)
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                "Paste your decklist below. Each line should be in the format: quantity cardname",
-                                style = MaterialTheme.typography.body1,
-                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                            )
-                            Spacer(Modifier.height(16.dp))
-                            OutlinedTextField(
-                                value = state.deckText,
-                                onValueChange = { store.dispatch(MainIntent.UpdateDeckText(it)) },
-                                label = { Text("Decklist") },
-                                placeholder = { Text("4 Lightning Bolt\n2 Brainstorm\n1 Black Lotus") },
-                                modifier = Modifier.fillMaxWidth().height(400.dp)
-                            )
-                            Spacer(Modifier.height(24.dp))
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                                Button(
-                                    onClick = {
-                                        store.dispatch(MainIntent.ParseDeck)
-                                        store.dispatch(MainIntent.CompleteWizardStep(1))
-                                        navController.navigate("preferences")
-                                    },
-                                    enabled = state.deckText.isNotBlank(),
-                                    modifier = Modifier.height(48.dp).width(200.dp)
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            // Scanline effect overlay
+                            ScanlineEffect(alpha = 0.03f)
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(24.dp),
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                // Title with pixel styling
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        "▸ DECK IMPORT",
+                                        style = MaterialTheme.typography.h3,
+                                        color = MaterialTheme.colors.primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    BlinkingCursor()
+                                }
+
+                                Spacer(Modifier.height(8.dp))
+
+                                PixelBadge(
+                                    text = "STEP 1/3",
+                                    color = MaterialTheme.colors.secondary
+                                )
+
+                                Spacer(Modifier.height(8.dp))
+
+                                Text(
+                                    "└─ Paste your decklist below. Format: [quantity] [cardname]",
+                                    style = MaterialTheme.typography.body2,
+                                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                                )
+
+                                Spacer(Modifier.height(24.dp))
+
+                                PixelCard(glowing = state.deckText.isBlank()) {
+                                    PixelTextField(
+                                        value = state.deckText,
+                                        onValueChange = { store.dispatch(MainIntent.UpdateDeckText(it)) },
+                                        label = "DECKLIST.TXT",
+                                        placeholder = "4 Lightning Bolt\n2 Brainstorm\n1 Black Lotus",
+                                        modifier = Modifier.fillMaxWidth().height(400.dp)
+                                    )
+                                }
+
+                                Spacer(Modifier.height(24.dp))
+
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End
                                 ) {
-                                    Text("Next: Configure Options →")
+                                    PixelButton(
+                                        text = "Next: Configure →",
+                                        onClick = {
+                                            store.dispatch(MainIntent.ParseDeck)
+                                            store.dispatch(MainIntent.CompleteWizardStep(1))
+                                            navController.navigate("preferences")
+                                        },
+                                        enabled = state.deckText.isNotBlank(),
+                                        modifier = Modifier.width(240.dp),
+                                        variant = PixelButtonVariant.SECONDARY
+                                    )
                                 }
                             }
                         }
@@ -210,21 +340,6 @@ fun main() = application {
                     composable("matches") {
                         MatchesScreen(matches = state.app.matches) { navController.navigateUp() }
                     }
-                    composable("results") {
-                        ResultsScreen(
-                            matches = state.app.matches,
-                            onResolve = { idx ->
-                                store.dispatch(MainIntent.OpenResolve(idx))
-                                navController.navigate("resolve")
-                            },
-                            onShowAllCandidates = { idx ->
-                                store.dispatch(MainIntent.OpenResolve(idx))
-                                navController.navigate("resolve")
-                            },
-                            onClose = { navController.navigateUp() },
-                            onExport = { store.dispatch(MainIntent.ExportWizardResults) }
-                        )
-                    }
                     composable("resolve") {
                         val index = state.showCandidatesFor
                         val match = index?.let { state.app.matches.getOrNull(it) }
@@ -250,7 +365,7 @@ fun main() = application {
                         }
                     }
                     composable("prefs") {
-                        ui.PreferencesScreen(
+                        PreferencesScreen(
                             initialVariantPriority = state.app.preferences.variantPriority,
                             initialSetPriority = state.app.preferences.setPriority,
                             initialFuzzy = state.app.preferences.fuzzyEnabled,
@@ -262,6 +377,7 @@ fun main() = application {
                             onCancel = { navController.navigateUp() }
                         )
                     }
+                }
                 }
             }
         }
