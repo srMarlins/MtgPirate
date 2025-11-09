@@ -17,6 +17,20 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import androidx.compose.ui.window.WindowPlacement
+import androidx.compose.ui.window.WindowState
+import androidx.compose.ui.window.FrameWindowScope
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.window.WindowDraggableArea
+import androidx.compose.ui.res.loadSvgPainter
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,6 +38,233 @@ import platform.DesktopPlatformServices
 import state.MainStore
 import state.MainIntent
 import ui.*
+import java.awt.Cursor
+
+/**
+ * Unified custom title bar with window controls and app navigation
+ */
+@Composable
+fun FrameWindowScope.CustomTitleBar(
+    windowState: WindowState,
+    onClose: () -> Unit,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
+    loadingCatalog: Boolean,
+    hasCatalog: Boolean,
+    hasMatches: Boolean,
+    onCatalogClick: () -> Unit,
+    onExportClick: () -> Unit,
+    onMatchesClick: () -> Unit,
+    onResultsClick: () -> Unit
+) {
+    WindowDraggableArea {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            if (isDarkTheme) Color(0xFF1E293B) else Color(0xFF475569),
+                            if (isDarkTheme) Color(0xFF334155) else Color(0xFF64748B)
+                        )
+                    )
+                )
+                .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.5f)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Left side - Logo and Title
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    PixelPirateLogo(size = 28.dp)
+                    Text(
+                        "█▓▒░",
+                        style = MaterialTheme.typography.body1,
+                        color = MaterialTheme.colors.primary
+                    )
+                    Text(
+                        "MTG PIRATE",
+                        style = MaterialTheme.typography.subtitle1,
+                        color = if (isDarkTheme) Color(0xFFF1F5F9) else Color.White,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.5.sp
+                    )
+                    Text(
+                        "░▒▓█",
+                        style = MaterialTheme.typography.body1,
+                        color = MaterialTheme.colors.secondary
+                    )
+                }
+
+                // Center - Navigation buttons (compact)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CompactPixelButton(
+                        text = if (loadingCatalog) "..." else "CATALOG",
+                        onClick = onCatalogClick,
+                        enabled = !loadingCatalog,
+                        color = MaterialTheme.colors.primary
+                    )
+
+                    CompactPixelButton(
+                        text = "EXPORT",
+                        onClick = onExportClick,
+                        enabled = hasMatches,
+                        color = MaterialTheme.colors.secondary
+                    )
+
+                    CompactPixelButton(
+                        text = "MATCHES",
+                        onClick = onMatchesClick,
+                        enabled = hasMatches,
+                        color = Color(0xFF8B5CF6)
+                    )
+
+                    CompactPixelButton(
+                        text = "RESULTS",
+                        onClick = onResultsClick,
+                        enabled = hasMatches,
+                        color = Color(0xFF06B6D4)
+                    )
+                }
+
+                // Right side - Theme toggle and Window Controls
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Theme toggle
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .background(
+                                if (isDarkTheme) Color(0xFF475569) else Color(0xFF94A3B8),
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .clickable { onToggleTheme() }
+                            .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            if (isDarkTheme) "☀" else "☾",
+                            fontSize = 14.sp,
+                            color = Color.White
+                        )
+                    }
+
+                    // Minimize button
+                    WindowControlButton(
+                        text = "—",
+                        color = Color(0xFFFBBF24),
+                        onClick = { windowState.isMinimized = true }
+                    )
+
+                    // Maximize/Restore button
+                    WindowControlButton(
+                        text = if (windowState.placement == WindowPlacement.Maximized) "❐" else "□",
+                        color = Color(0xFF10B981),
+                        onClick = {
+                            windowState.placement = if (windowState.placement == WindowPlacement.Maximized) {
+                                WindowPlacement.Floating
+                            } else {
+                                WindowPlacement.Maximized
+                            }
+                        }
+                    )
+
+                    // Close button
+                    WindowControlButton(
+                        text = "✕",
+                        color = Color(0xFFEF4444),
+                        onClick = onClose
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Compact pixel-styled navigation button for title bar
+ */
+@Composable
+fun CompactPixelButton(
+    text: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    color: Color
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+
+    Box(
+        modifier = Modifier
+            .height(32.dp)
+            .background(
+                if (enabled && isHovered) color else color.copy(alpha = if (enabled) 0.6f else 0.3f),
+                shape = RoundedCornerShape(4.dp)
+            )
+            .hoverable(interactionSource = interactionSource)
+            .clickable(enabled = enabled) { onClick() }
+            .pointerHoverIcon(
+                if (enabled) PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))
+                else PointerIcon(Cursor.getDefaultCursor())
+            )
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (enabled) Color.White else Color.White.copy(alpha = 0.5f),
+            letterSpacing = 0.5.sp
+        )
+    }
+}
+
+/**
+ * Pixel-styled window control button
+ */
+@Composable
+fun WindowControlButton(
+    text: String,
+    color: Color,
+    onClick: () -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+
+    Box(
+        modifier = Modifier
+            .size(28.dp)
+            .background(
+                if (isHovered) color else color.copy(alpha = 0.7f),
+                shape = RoundedCornerShape(4.dp)
+            )
+            .hoverable(interactionSource = interactionSource)
+            .clickable { onClick() }
+            .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
+        )
+    }
+}
 
 fun main() = application {
     val scope = rememberCoroutineScope()
@@ -32,6 +273,17 @@ fun main() = application {
     val state by store.state.collectAsState()
 
     LaunchedEffect(Unit) { store.dispatch(MainIntent.Init) }
+
+    // Load scimitar logo as window icon
+    val windowIcon = remember {
+        loadSvgPainter(
+            inputStream = object {}.javaClass.getResourceAsStream("/scimitar_logo.svg")
+                ?: throw IllegalStateException("scimitar_logo.svg not found in resources"),
+            density = Density(1f)
+        )
+    }
+
+    val windowState = rememberWindowState(width = 1200.dp, height = 900.dp)
 
 
     // Define wizard steps based on state
@@ -72,11 +324,66 @@ fun main() = application {
 
     Window(
         onCloseRequest = ::exitApplication,
-        title = "US MTG Proxy Tool",
-        state = rememberWindowState(width = 1200.dp, height = 900.dp)
+        title = "MTG Pirate",
+        state = windowState,
+        icon = windowIcon,
+        undecorated = true
     ) {
         AppTheme(darkTheme = state.isDarkTheme) {
             val navController = rememberNavController()
+
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Custom Title Bar with window controls and navigation
+                CustomTitleBar(
+                    windowState = windowState,
+                    onClose = ::exitApplication,
+                    isDarkTheme = state.isDarkTheme,
+                    onToggleTheme = { store.dispatch(MainIntent.ToggleTheme) },
+                    loadingCatalog = state.loadingCatalog,
+                    hasCatalog = state.app.catalog != null,
+                    hasMatches = state.app.matches.any { it.selectedVariant != null },
+                    onCatalogClick = {
+                        if (state.app.catalog != null) {
+                            if (navController.currentDestination?.route != "catalog") {
+                                navController.navigate("catalog") {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = false
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = false
+                                }
+                            }
+                        } else {
+                            store.dispatch(MainIntent.LoadCatalog(true))
+                        }
+                    },
+                    onExportClick = { store.dispatch(MainIntent.ExportCsv) },
+                    onMatchesClick = {
+                        if (navController.currentDestination?.route != "matches") {
+                            navController.navigate("matches") {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    saveState = false
+                                }
+                                launchSingleTop = true
+                                restoreState = false
+                            }
+                        }
+                    },
+                    onResultsClick = {
+                        if (navController.currentDestination?.route != "results") {
+                            navController.navigate("results") {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    saveState = false
+                                }
+                                launchSingleTop = true
+                                restoreState = false
+                            }
+                        }
+                    }
+                )
+
+                // Main content
+                Box(modifier = Modifier.fillMaxSize()) {
 
             // Track current route to determine active step with stability
             val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry)
@@ -92,140 +399,9 @@ fun main() = application {
 
             Scaffold(
                 topBar = {
-                    Column {
-                        // Retro pixel art styled top bar
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    Brush.verticalGradient(
-                                        colors = listOf(
-                                            MaterialTheme.colors.surface,
-                                            MaterialTheme.colors.surface.copy(alpha = 0.9f)
-                                        )
-                                    )
-                                )
-                                .pixelBorder(borderWidth = 3.dp, enabled = true, glowAlpha = 0.3f)
-                                .padding(12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // Left side - Title with retro styling
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        "█▓▒░",
-                                        style = MaterialTheme.typography.h5,
-                                        color = MaterialTheme.colors.primary
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(
-                                        "MTG PROXY TOOL",
-                                        style = MaterialTheme.typography.h6,
-                                        color = MaterialTheme.colors.onSurface,
-                                        fontWeight = FontWeight.Bold,
-                                        letterSpacing = 2.sp
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(
-                                        "░▒▓█",
-                                        style = MaterialTheme.typography.h5,
-                                        color = MaterialTheme.colors.secondary
-                                    )
-                                }
-
-                                // Right side - Action buttons
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    // Theme toggle with pixel styling
-                                    Box(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
-                                            .background(MaterialTheme.colors.primary.copy(alpha = 0.2f), shape = PixelShape(cornerSize = 6.dp))
-                                            .clickable { store.dispatch(MainIntent.ToggleTheme) }
-                                            .padding(8.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            if (state.isDarkTheme) "☀" else "☾",
-                                            style = MaterialTheme.typography.h6
-                                        )
-                                    }
-
-                                    PixelButton(
-                                        text = if (state.loadingCatalog) "LOADING..." else "CATALOG",
-                                        onClick = {
-                                            if (state.app.catalog != null) {
-                                                // Navigate to catalog if already loaded
-                                                if (navController.currentDestination?.route != "catalog") {
-                                                    navController.navigate("catalog") {
-                                                        popUpTo(navController.graph.startDestinationId) {
-                                                            saveState = false
-                                                        }
-                                                        launchSingleTop = true
-                                                        restoreState = false
-                                                    }
-                                                }
-                                            } else {
-                                                // Load catalog if not loaded yet
-                                                store.dispatch(MainIntent.LoadCatalog(true))
-                                            }
-                                        },
-                                        variant = PixelButtonVariant.PRIMARY,
-                                        enabled = !state.loadingCatalog
-                                    )
-
-                                    PixelButton(
-                                        text = "EXPORT",
-                                        onClick = { store.dispatch(MainIntent.ExportCsv) },
-                                        enabled = state.app.matches.any { it.selectedVariant != null },
-                                        variant = PixelButtonVariant.SECONDARY
-                                    )
-
-                                    PixelButton(
-                                        text = "MATCHES",
-                                        onClick = {
-                                            if (navController.currentDestination?.route != "matches") {
-                                                navController.navigate("matches") {
-                                                    popUpTo(navController.graph.startDestinationId) {
-                                                        saveState = false
-                                                    }
-                                                    launchSingleTop = true
-                                                    restoreState = false
-                                                }
-                                            }
-                                        },
-                                        enabled = state.app.matches.isNotEmpty(),
-                                        variant = PixelButtonVariant.SURFACE
-                                    )
-
-                                    PixelButton(
-                                        text = "RESULTS",
-                                        onClick = {
-                                            if (navController.currentDestination?.route != "results") {
-                                                navController.navigate("results") {
-                                                    popUpTo(navController.graph.startDestinationId) {
-                                                        saveState = false
-                                                    }
-                                                    launchSingleTop = true
-                                                    restoreState = false
-                                                }
-                                            }
-                                        },
-                                        enabled = state.app.matches.isNotEmpty(),
-                                        variant = PixelButtonVariant.SURFACE
-                                    )
-                                }
-                            }
-                        }
-
-                        // Show stepper only for wizard routes
-                        if (currentRoute in listOf("import", "preferences", "results")) {
+                    // Show stepper only for wizard routes
+                    if (currentRoute in listOf("import", "preferences", "results")) {
+                        Column {
                             AnimatedStepper(
                                 steps = wizardSteps,
                                 currentStep = currentStep,
@@ -538,6 +714,8 @@ fun main() = application {
                     }
                 )
             }
+                } // Close Box
+            } // Close Column
         }
     }
 }

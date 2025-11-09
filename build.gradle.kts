@@ -57,10 +57,10 @@ compose.desktop {
         mainClass = "app.MainKt"
         nativeDistributions {
             targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe)
-            packageName = "USEACardScraper"
+            packageName = "MtgPirate"
             packageVersion = "1.0.0"
             // Optional metadata
-            description = "USEA Card Scraper desktop application"
+            description = "MtgPirate - MTG Deck Import and Price Calculator"
         }
     }
 }

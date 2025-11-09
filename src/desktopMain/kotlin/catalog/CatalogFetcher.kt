@@ -191,7 +191,7 @@ object CatalogFetcher {
             requestMethod = "GET"
             connectTimeout = 10_000
             readTimeout = 15_000
-            setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) USEACardScraper/1.0")
+            setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) MtgPirate/1.0")
             setRequestProperty("Accept", "*/*")
         }
         val code = conn.responseCode

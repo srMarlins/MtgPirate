@@ -1,4 +1,4 @@
-# MtgPirate 🏴‍☠️
+<h1>MtgPirate<img src="src/desktopMain/resources/scimitar_logo.svg" alt="MtgPirate Logo" width="48" height="48" style="vertical-align: middle; margin: 0 0 0 -4px; padding: 0; display: inline-block;"></h1>
 
 A Kotlin Multiplatform desktop application for importing Magic: The Gathering decklists, matching cards against the USEA MTG Proxy catalog, and exporting optimized CSV orders.
 
@@ -6,7 +6,19 @@ A Kotlin Multiplatform desktop application for importing Magic: The Gathering de
 <!-- ![App Demo](./demo.gif) -->
 <!-- *Demo of MtgPirate in action* -->
 
-## Features
+> 💡 **Quick Demo**: See [DEMO-GUIDE.md](./DEMO-GUIDE.md) for instructions on creating a demo GIF of the application.
+
+## Logo Design
+
+The MtgPirate logo features a fantasy pirate skull wearing a captain's hat with magical elements:
+- **Gradient skull** - Purple to pink gradient representing the mystical nature of Magic: The Gathering
+- **Glowing cyan eyes** - Magical energy and the digital nature of the tool
+- **Crossed swords** - Classic pirate symbolism
+- **Sparkles & stars** - Fantasy/magical theme elements
+- **Modern flat design** - Clean, simple, and professional appearance
+- **Pixelated variant** - Retro pixel-art version displayed in the app's title bar
+
+The logo is available in SVG format for scalability and can be found in `src/desktopMain/resources/`. A pixelated Compose Canvas version is rendered in the UI for a retro aesthetic.
 
 - 📋 **Decklist Import** - Paste decklists from various formats (MTGO, Arena, MTGGoldfish, etc.)
 - 🎯 **Intelligent Card Matching** - Fuzzy matching with set code hints and collector number support
