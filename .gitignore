@@ -1,0 +1,13 @@
+# Build artifacts
+/build/
+/.gradle/
+
+# IntelliJ
+.idea/
+
+# Runtime data cache
+/data/
+
+# Logs
+/data/app.log
+
