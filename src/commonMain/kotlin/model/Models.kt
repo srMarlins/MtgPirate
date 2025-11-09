@@ -24,12 +24,21 @@ data class Catalog(
 
 enum class Section { MAIN, SIDEBOARD, COMMANDER }
 
+// Added optional parsed set code and collector number from deck list line for improved matching
+// setCodeHint: user-provided set code (uppercase) if present in the list line e.g. "4 Brainstorm (MMQ)"
+// collectorNumberHint: optional collector number token if supplied after set code e.g. "(MMQ 123)"
+// rawSetHint: raw parenthetical contents before normalization
+// These are not serialized currently (runtime only) so exclude from @Serializable
+
 data class DeckEntry(
     val originalLine: String,
     val qty: Int,
     val cardName: String,
     val section: Section,
-    val include: Boolean
+    val include: Boolean,
+    val setCodeHint: String? = null,
+    val collectorNumberHint: String? = null,
+    val rawSetHint: String? = null
 )
 
 enum class MatchStatus { UNRESOLVED, AUTO_MATCHED, AMBIGUOUS, NOT_FOUND, MANUAL_SELECTED }

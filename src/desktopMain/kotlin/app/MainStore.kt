@@ -140,6 +140,14 @@ class MainStore(private val scope: CoroutineScope) {
             val entries = withContext(Dispatchers.Default) {
                 DecklistParser.parse(s.deckText, s.includeSideboard, s.includeCommanders)
             }
+            // Log parsing summary including set hints for verification
+            entries.forEach { e ->
+                if (e.setCodeHint != null) {
+                    log("Parsed entry: ${e.qty} ${e.cardName} (set=${e.setCodeHint}${e.collectorNumberHint?.let { ", #$it" } ?: ""})", level = "DEBUG")
+                } else {
+                    log("Parsed entry: ${e.qty} ${e.cardName}", level = "DEBUG")
+                }
+            }
             var newApp = s.app.copy(deckEntries = entries)
             val matches = withContext(Dispatchers.Default) {
                 Matcher.matchAll(

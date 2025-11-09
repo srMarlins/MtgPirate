@@ -19,13 +19,6 @@ src/desktopMain/kotlin/... // desktop UI (will migrate from jvmMain naming)
 ```
 Currently the UI file resides under `src/jvmMain/kotlin/app/Main.kt`; you can rename the folder to `desktopMain` to match the named target for consistency.
 
-## Running
-On Windows (cmd):
-```cmd
-gradlew.bat run
-```
-This will launch the desktop Compose window.
-
 ## Next Steps
 1. Create `src/desktopMain/kotlin` directory and move `Main.kt` there.
 2. Implement `CatalogFetcher` using ksoup in commonMain.
