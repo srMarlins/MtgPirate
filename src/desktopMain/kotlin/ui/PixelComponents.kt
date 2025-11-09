@@ -1,31 +1,33 @@
 package ui
 
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.zIndex
 
 // ========================================
 // PIXEL SHAPE (for matching border clipping)
@@ -550,7 +552,8 @@ fun MagicalSparkles(
                 val y = center.y + radius * kotlin.math.sin(Math.toRadians(angle.toDouble())).toFloat()
 
                 // Draw sparkle
-                val sparkleSize = 3f + (kotlin.math.sin(Math.toRadians((sparklePhase * 2 + index * 60).toDouble())) * 2f).toFloat()
+                val sparkleSize =
+                    3f + (kotlin.math.sin(Math.toRadians((sparklePhase * 2 + index * 60).toDouble())) * 2f).toFloat()
                 drawCircle(
                     color = color.copy(alpha = 0.8f),
                     radius = sparkleSize,
@@ -810,3 +813,280 @@ fun MagicalLoadingSpinner(
     )
 }
 
+// ========================================
+// PIXEL DRAGGABLE LIST
+// ========================================
+/**
+ * A reusable pixel-styled draggable list component with solid visual feedback.
+ * Supports drag-and-drop reordering with enhanced animations and pixel art styling.
+ *
+ * @param items The list of items to display
+ * @param onReorder Callback when items are reordered
+ * @param modifier Modifier for the list container
+ * @param itemContent Composable lambda to render each item with drag state
+ */
+@Composable
+fun <T> PixelDraggableList(
+    items: List<T>,
+    onReorder: (List<T>) -> Unit,
+    modifier: Modifier = Modifier,
+    itemContent: @Composable (item: T, index: Int, isDragging: Boolean) -> Unit
+) {
+    var draggedIndex by remember { mutableStateOf<Int?>(null) }
+    var dragOffset by remember { mutableStateOf(0f) }
+
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items.forEachIndexed { index, item ->
+            val isDragging = draggedIndex == index
+
+            PixelDraggableItem(
+                index = index,
+                isDragging = isDragging,
+                onDragStart = {
+                    draggedIndex = index
+                    dragOffset = 0f
+                },
+                onDrag = { delta ->
+                    dragOffset += delta
+                    // Calculate target index based on drag offset
+                    val itemHeight = 56 // Approximate item height in dp
+                    val targetIndex = (index + (dragOffset / itemHeight).toInt())
+                        .coerceIn(0, items.size - 1)
+
+                    if (targetIndex != index) {
+                        val newList = items.toMutableList()
+                        val draggedItem = newList.removeAt(index)
+                        newList.add(targetIndex, draggedItem)
+                        onReorder(newList)
+                        draggedIndex = targetIndex
+                        dragOffset = 0f
+                    }
+                },
+                onDragEnd = {
+                    draggedIndex = null
+                    dragOffset = 0f
+                }
+            ) {
+                itemContent(item, index, isDragging)
+            }
+        }
+    }
+}
+
+/**
+ * Internal draggable item wrapper with pixel styling and animations
+ */
+@Composable
+private fun PixelDraggableItem(
+    index: Int,
+    isDragging: Boolean,
+    onDragStart: () -> Unit,
+    onDrag: (Float) -> Unit,
+    onDragEnd: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    val colors = MaterialTheme.colors
+
+    // Enhanced animations for solid feel
+    val scale by animateFloatAsState(
+        targetValue = if (isDragging) 1.02f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    )
+
+    val borderWidth by animateDpAsState(
+        targetValue = if (isDragging) 4.dp else 2.dp,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+    )
+
+    // Pulsing glow animation when dragging
+    val infiniteTransition = rememberInfiniteTransition()
+    val dragGlowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    val glowAlpha = if (isDragging) dragGlowAlpha else 0.2f
+
+    // Background gradient when dragging
+    val backgroundColor = if (isDragging) {
+        Brush.horizontalGradient(
+            colors = listOf(
+                colors.primary.copy(alpha = 0.15f),
+                colors.secondary.copy(alpha = 0.15f),
+                colors.primary.copy(alpha = 0.15f)
+            )
+        )
+    } else {
+        Brush.horizontalGradient(
+            colors = listOf(colors.surface, colors.surface)
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .scale(scale)
+            .zIndex(if (isDragging) 10f else 0f)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = { onDragStart() },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        onDrag(dragAmount.y)
+                    },
+                    onDragEnd = { onDragEnd() },
+                    onDragCancel = { onDragEnd() }
+                )
+            }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .pixelBorder(
+                    borderWidth = borderWidth,
+                    enabled = true,
+                    glowAlpha = glowAlpha
+                )
+                .background(backgroundColor, shape = PixelShape(cornerSize = 6.dp))
+                .padding(horizontal = 12.dp, vertical = 12.dp)
+        ) {
+            content()
+        }
+    }
+}
+
+// ========================================
+// PIXEL DRAG HANDLE (Standalone Component)
+// ========================================
+/**
+ * A pixel-styled drag handle with animations.
+ * Shows a hamburger icon that pulses when being dragged.
+ */
+@Composable
+fun PixelDragHandle(
+    isDragging: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val colors = MaterialTheme.colors
+
+    // Animate the drag handle when dragging
+    val infiniteTransition = rememberInfiniteTransition()
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    val scale by animateFloatAsState(
+        targetValue = if (isDragging) pulseScale else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+    )
+
+    val handleColor = if (isDragging) colors.primary else colors.onSurface.copy(alpha = 0.4f)
+
+    Box(
+        modifier = modifier
+            .size(24.dp)
+            .scale(scale)
+            .drawBehind {
+                val barWidth = size.width * 0.7f
+                val barHeight = 3.dp.toPx()
+                val spacing = 5.dp.toPx()
+                val startX = (size.width - barWidth) / 2
+
+                // Draw 3 horizontal bars (hamburger icon style)
+                for (i in 0..2) {
+                    val y = (size.height / 2) - spacing + (i * spacing)
+
+                    // Pixel-art style bars with shadow
+                    drawRect(
+                        color = Color.Black.copy(alpha = 0.2f),
+                        topLeft = Offset(startX + 1.dp.toPx(), y + 1.dp.toPx()),
+                        size = Size(barWidth, barHeight)
+                    )
+                    drawRect(
+                        color = handleColor,
+                        topLeft = Offset(startX, y),
+                        size = Size(barWidth, barHeight)
+                    )
+                }
+            }
+    )
+}
+
+// ========================================
+// PIXEL ICON BUTTON (Standalone Component)
+// ========================================
+enum class PixelIconButtonVariant {
+    PRIMARY, SECONDARY, DANGER
+}
+
+/**
+ * A pixel-styled icon button with hover effects and animations.
+ */
+@Composable
+fun PixelIconButton(
+    icon: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    variant: PixelIconButtonVariant = PixelIconButtonVariant.PRIMARY,
+    enabled: Boolean = true
+) {
+    val colors = MaterialTheme.colors
+
+    val buttonColor = when (variant) {
+        PixelIconButtonVariant.PRIMARY -> colors.primary
+        PixelIconButtonVariant.SECONDARY -> colors.secondary.copy(alpha = 0.6f)
+        PixelIconButtonVariant.DANGER -> Color(0xFFF44336)
+    }
+
+    val textColor = when (variant) {
+        PixelIconButtonVariant.DANGER -> Color.White
+        else -> colors.onSurface
+    }
+
+    // Hover state
+    var isHovered by remember { mutableStateOf(false) }
+
+    val scale by animateFloatAsState(
+        targetValue = if (isHovered) 1.1f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+    )
+
+    Box(
+        modifier = modifier
+            .size(32.dp)
+            .scale(scale)
+            .pixelBorder(
+                borderWidth = 2.dp,
+                enabled = enabled,
+                glowAlpha = if (isHovered) 0.5f else 0.2f
+            )
+            .background(
+                if (isHovered) buttonColor.copy(alpha = 0.2f) else Color.Transparent,
+                shape = PixelShape(cornerSize = 6.dp)
+            )
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = icon,
+            style = MaterialTheme.typography.body1,
+            color = if (enabled) textColor else textColor.copy(alpha = 0.3f),
+            fontWeight = FontWeight.Bold
+        )
+    }
+}

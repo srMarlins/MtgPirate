@@ -1,5 +1,7 @@
 package app
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
@@ -71,13 +74,16 @@ fun main() = application {
         AppTheme(darkTheme = state.isDarkTheme) {
             val navController = rememberNavController()
 
-            // Track current route to determine active step
-            val currentRoute = navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry)
-            val currentStep = when (currentRoute.value?.destination?.route) {
-                "import" -> 1
-                "preferences" -> 2
-                "results" -> 3
-                else -> 1
+            // Track current route to determine active step with stability
+            val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry)
+            val currentRoute by remember { derivedStateOf { currentBackStackEntry?.destination?.route } }
+            val currentStep = remember(currentRoute) {
+                when (currentRoute) {
+                    "import" -> 1
+                    "preferences" -> 2
+                    "results" -> 3
+                    else -> 1
+                }
             }
 
             Scaffold(
@@ -156,7 +162,17 @@ fun main() = application {
 
                                     PixelButton(
                                         text = "BROWSE",
-                                        onClick = { navController.navigate("catalog") },
+                                        onClick = {
+                                            if (navController.currentDestination?.route != "catalog") {
+                                                navController.navigate("catalog") {
+                                                    popUpTo(navController.graph.startDestinationId) {
+                                                        saveState = false
+                                                    }
+                                                    launchSingleTop = true
+                                                    restoreState = false
+                                                }
+                                            }
+                                        },
                                         enabled = state.app.catalog != null,
                                         variant = PixelButtonVariant.SURFACE
                                     )
@@ -170,21 +186,51 @@ fun main() = application {
 
                                     PixelButton(
                                         text = "MATCHES",
-                                        onClick = { navController.navigate("matches") },
+                                        onClick = {
+                                            if (navController.currentDestination?.route != "matches") {
+                                                navController.navigate("matches") {
+                                                    popUpTo(navController.graph.startDestinationId) {
+                                                        saveState = false
+                                                    }
+                                                    launchSingleTop = true
+                                                    restoreState = false
+                                                }
+                                            }
+                                        },
                                         enabled = state.app.matches.isNotEmpty(),
                                         variant = PixelButtonVariant.SURFACE
                                     )
 
                                     PixelButton(
                                         text = "RESULTS",
-                                        onClick = { navController.navigate("results") },
+                                        onClick = {
+                                            if (navController.currentDestination?.route != "results") {
+                                                navController.navigate("results") {
+                                                    popUpTo(navController.graph.startDestinationId) {
+                                                        saveState = false
+                                                    }
+                                                    launchSingleTop = true
+                                                    restoreState = false
+                                                }
+                                            }
+                                        },
                                         enabled = state.app.matches.isNotEmpty(),
                                         variant = PixelButtonVariant.SURFACE
                                     )
 
                                     PixelButton(
                                         text = "CONFIG",
-                                        onClick = { navController.navigate("prefs") },
+                                        onClick = {
+                                            if (navController.currentDestination?.route != "prefs") {
+                                                navController.navigate("prefs") {
+                                                    popUpTo(navController.graph.startDestinationId) {
+                                                        saveState = false
+                                                    }
+                                                    launchSingleTop = true
+                                                    restoreState = false
+                                                }
+                                            }
+                                        },
                                         variant = PixelButtonVariant.SURFACE
                                     )
                                 }
@@ -192,7 +238,7 @@ fun main() = application {
                         }
 
                         // Show stepper only for wizard routes
-                        if (currentRoute.value?.destination?.route in listOf("import", "preferences", "results")) {
+                        if (currentRoute in listOf("import", "preferences", "results")) {
                             AnimatedStepper(
                                 steps = wizardSteps,
                                 currentStep = currentStep,
@@ -223,8 +269,36 @@ fun main() = application {
                     // Background scanline effect for entire app
                     ScanlineEffect(alpha = 0.02f)
 
-                    NavHost(navController = navController, startDestination = "import", modifier = Modifier.fillMaxSize().padding(padding)) {
-                    composable("import") {
+                    NavHost(
+                        navController = navController,
+                        startDestination = "import",
+                        modifier = Modifier.fillMaxSize().padding(padding),
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None },
+                        popEnterTransition = { EnterTransition.None },
+                        popExitTransition = { ExitTransition.None }
+                    ) {
+                    composable(
+                        "import",
+                        enterTransition = {
+                            when (initialState.destination.route) {
+                                "preferences" -> slideInHorizontally(
+                                    initialOffsetX = { -it },
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeIn(animationSpec = tween(400))
+                                else -> EnterTransition.None
+                            }
+                        },
+                        exitTransition = {
+                            when (targetState.destination.route) {
+                                "preferences" -> slideOutHorizontally(
+                                    targetOffsetX = { -it },
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeOut(animationSpec = tween(400))
+                                else -> ExitTransition.None
+                            }
+                        }
+                    ) {
                         // Step 1: Deck Import (Wizard Start)
                         Box(modifier = Modifier.fillMaxSize()) {
                             // Scanline effect overlay
@@ -286,7 +360,9 @@ fun main() = application {
                                         onClick = {
                                             store.dispatch(MainIntent.ParseDeck)
                                             store.dispatch(MainIntent.CompleteWizardStep(1))
-                                            navController.navigate("preferences")
+                                            navController.navigate("preferences") {
+                                                launchSingleTop = true
+                                            }
                                         },
                                         enabled = state.deckText.isNotBlank(),
                                         modifier = Modifier.width(240.dp),
@@ -296,7 +372,35 @@ fun main() = application {
                             }
                         }
                     }
-                    composable("preferences") {
+                    composable(
+                        "preferences",
+                        enterTransition = {
+                            when (initialState.destination.route) {
+                                "import" -> slideInHorizontally(
+                                    initialOffsetX = { it },
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeIn(animationSpec = tween(400))
+                                "results" -> slideInHorizontally(
+                                    initialOffsetX = { -it },
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeIn(animationSpec = tween(400))
+                                else -> EnterTransition.None
+                            }
+                        },
+                        exitTransition = {
+                            when (targetState.destination.route) {
+                                "import" -> slideOutHorizontally(
+                                    targetOffsetX = { it },
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeOut(animationSpec = tween(400))
+                                "results" -> slideOutHorizontally(
+                                    targetOffsetX = { -it },
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeOut(animationSpec = tween(400))
+                                else -> ExitTransition.None
+                            }
+                        }
+                    ) {
                         // Step 2: Preferences (Wizard Middle)
                         PreferencesWizardScreen(
                             includeCommanders = state.includeCommanders,
@@ -309,27 +413,59 @@ fun main() = application {
                             onNext = {
                                 store.dispatch(MainIntent.CompleteWizardStep(2))
                                 store.dispatch(MainIntent.RunMatch)
-                                navController.navigate("results")
+                                navController.navigate("results") {
+                                    launchSingleTop = true
+                                }
                             }
                         )
                     }
-                    composable("results") {
+                    composable(
+                        "results",
+                        enterTransition = {
+                            when (initialState.destination.route) {
+                                "preferences" -> slideInHorizontally(
+                                    initialOffsetX = { it },
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeIn(animationSpec = tween(400))
+                                "resolve" -> EnterTransition.None
+                                else -> EnterTransition.None
+                            }
+                        },
+                        exitTransition = {
+                            when (targetState.destination.route) {
+                                "preferences" -> slideOutHorizontally(
+                                    targetOffsetX = { it },
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeOut(animationSpec = tween(400))
+                                "resolve" -> ExitTransition.None
+                                else -> ExitTransition.None
+                            }
+                        }
+                    ) {
                         // Step 3: Results (Wizard End)
                         ResultsScreen(
                             matches = state.app.matches,
                             onResolve = { idx ->
                                 store.dispatch(MainIntent.OpenResolve(idx))
-                                navController.navigate("resolve")
+                                navController.navigate("resolve") {
+                                    launchSingleTop = true
+                                }
                             },
                             onShowAllCandidates = { idx ->
                                 store.dispatch(MainIntent.OpenResolve(idx))
-                                navController.navigate("resolve")
+                                navController.navigate("resolve") {
+                                    launchSingleTop = true
+                                }
                             },
                             onClose = { navController.navigateUp() },
                             onExport = { store.dispatch(MainIntent.ExportWizardResults) }
                         )
                     }
-                    composable("catalog") {
+                    composable(
+                        "catalog",
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
                         val catalog = state.app.catalog
                         if (catalog != null) {
                             CatalogScreen(catalog = catalog) { navController.navigateUp() }
@@ -337,10 +473,28 @@ fun main() = application {
                             Text("No catalog loaded.", modifier = Modifier.padding(16.dp))
                         }
                     }
-                    composable("matches") {
+                    composable(
+                        "matches",
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
                         MatchesScreen(matches = state.app.matches) { navController.navigateUp() }
                     }
-                    composable("resolve") {
+                    composable(
+                        "resolve",
+                        enterTransition = {
+                            slideInVertically(
+                                initialOffsetY = { it },
+                                animationSpec = tween(250, easing = FastOutSlowInEasing)
+                            )
+                        },
+                        exitTransition = {
+                            slideOutVertically(
+                                targetOffsetY = { it },
+                                animationSpec = tween(250, easing = FastOutSlowInEasing)
+                            )
+                        }
+                    ) {
                         val index = state.showCandidatesFor
                         val match = index?.let { state.app.matches.getOrNull(it) }
                         if (index != null && match != null) {
@@ -364,7 +518,11 @@ fun main() = application {
                             }
                         }
                     }
-                    composable("prefs") {
+                    composable(
+                        "prefs",
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
                         PreferencesScreen(
                             initialVariantPriority = state.app.preferences.variantPriority,
                             initialSetPriority = state.app.preferences.setPriority,
@@ -372,7 +530,9 @@ fun main() = application {
                             onSave = { vp, sp, fuzzy ->
                                 store.dispatch(MainIntent.SavePreferences(vp, sp, fuzzy))
                                 store.dispatch(MainIntent.RunMatch)
-                                navController.navigate("results")
+                                navController.navigate("results") {
+                                    launchSingleTop = true
+                                }
                             },
                             onCancel = { navController.navigateUp() }
                         )

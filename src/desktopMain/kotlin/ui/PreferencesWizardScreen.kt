@@ -1,6 +1,8 @@
 package ui
 
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,9 +10,13 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -30,8 +36,8 @@ fun PreferencesWizardScreen(
     var variantList by remember { mutableStateOf(variantPriority.ifEmpty { listOf("Regular", "Foil", "Holo") }) }
     var newVariantText by remember { mutableStateOf("") }
     var includeSideboard by remember { mutableStateOf(false) }
-    var draggedIndex by remember { mutableStateOf<Int?>(null) }
-    var dragOffset by remember { mutableStateOf(0f) }
+    var draggedItem by remember { mutableStateOf<String?>(null) }
+    var hoveredIndex by remember { mutableStateOf<Int?>(null) }
 
     Column(Modifier.fillMaxSize().padding(24.dp)) {
         // Header
@@ -106,43 +112,74 @@ fun PreferencesWizardScreen(
                     shape = RoundedCornerShape(4.dp),
                     backgroundColor = MaterialTheme.colors.surface
                 ) {
+                    val density = LocalDensity.current
+                    val itemHeightPx = with(density) { 64.dp.toPx() } // Item + spacing in pixels
+
                     Column(
                         modifier = Modifier.fillMaxSize().padding(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         variantList.forEachIndexed { index, item ->
-                            val isDragging = draggedIndex == index
-                            val elevation by animateDpAsState(if (isDragging) 8.dp else 1.dp)
+                            val isDragging = draggedItem == item
+
+                            // Calculate visual offset for smooth animation
+                            val visualOffset = if (isDragging) {
+                                0f // Dragged item follows mouse directly
+                            } else if (draggedItem != null && hoveredIndex != null) {
+                                val draggedCurrentIndex = variantList.indexOf(draggedItem)
+                                val targetIndex = hoveredIndex!!
+
+                                // Determine if this item needs to move to make space
+                                when {
+                                    // If dragging down: items between original and target move up
+                                    draggedCurrentIndex < targetIndex && index > draggedCurrentIndex && index <= targetIndex -> -64f
+                                    // If dragging up: items between target and original move down
+                                    draggedCurrentIndex > targetIndex && index >= targetIndex && index < draggedCurrentIndex -> 64f
+                                    else -> 0f
+                                }
+                            } else {
+                                0f
+                            }
 
                             DraggableVariantItem(
                                 variant = item,
                                 index = index,
                                 isDragging = isDragging,
-                                elevation = elevation,
+                                visualOffset = visualOffset,
                                 onDragStart = {
-                                    draggedIndex = index
-                                    dragOffset = 0f
+                                    draggedItem = item
+                                    hoveredIndex = index
                                 },
-                                onDrag = { delta ->
-                                    dragOffset += delta
-                                    // Calculate target index based on drag offset
-                                    val itemHeight = 56 // Approximate item height in dp
-                                    val targetIndex =
-                                        (index + (dragOffset / itemHeight).toInt()).coerceIn(0, variantList.size - 1)
+                                onDrag = { dragOffsetPx ->
+                                    // Calculate which index the dragged item is hovering over
+                                    // dragOffsetPx is the cumulative drag offset in pixels from start position
+                                    val startIndex = variantList.indexOf(item)
 
-                                    if (targetIndex != index) {
-                                        val newList = variantList.toMutableList()
-                                        val draggedItem = newList.removeAt(index)
-                                        newList.add(targetIndex, draggedItem)
-                                        variantList = newList
-                                        onVariantPriorityChange(newList)
-                                        draggedIndex = targetIndex
-                                        dragOffset = 0f
-                                    }
+                                    // Calculate target index based on how far we've dragged
+                                    val positionDelta = (dragOffsetPx / itemHeightPx).toInt()
+                                    val newHoveredIndex = (startIndex + positionDelta).coerceIn(0, variantList.size - 1)
+
+                                    hoveredIndex = newHoveredIndex
                                 },
                                 onDragEnd = {
-                                    draggedIndex = null
-                                    dragOffset = 0f
+
+                                    // Reorder if needed
+                                    if (draggedItem != null && hoveredIndex != null) {
+                                        val currentIndex = variantList.indexOf(draggedItem)
+                                        val targetIndex = hoveredIndex!!
+
+                                        if (currentIndex != -1 && currentIndex != targetIndex) {
+                                            val newList = variantList.toMutableList()
+                                            val item = newList.removeAt(currentIndex)
+                                            newList.add(targetIndex, item)
+                                            variantList = newList
+                                            onVariantPriorityChange(newList)
+                                        }
+                                    }
+
+                                    // Clear drag state
+                                    draggedItem = null
+                                    hoveredIndex = null
                                 },
                                 onMoveUp = {
                                     if (index > 0) {
@@ -236,7 +273,7 @@ fun DraggableVariantItem(
     variant: String,
     index: Int,
     isDragging: Boolean,
-    elevation: androidx.compose.ui.unit.Dp,
+    visualOffset: Float,
     onDragStart: () -> Unit,
     onDrag: (Float) -> Unit,
     onDragEnd: () -> Unit,
@@ -244,62 +281,177 @@ fun DraggableVariantItem(
     onMoveDown: () -> Unit,
     onRemove: () -> Unit
 ) {
-    Card(
+    val colors = MaterialTheme.colors
+    val density = LocalDensity.current
+    var cumulativeDragOffsetPx by remember { mutableStateOf(0f) }
+    var wasMovedDuringDrag by remember { mutableStateOf(false) }
+
+    // Track if this item was moved during drag
+    LaunchedEffect(visualOffset) {
+        if (visualOffset != 0f) {
+            wasMovedDuringDrag = true
+        } else if (wasMovedDuringDrag && visualOffset == 0f) {
+            // Reset flag after a brief moment
+            kotlinx.coroutines.delay(50)
+            wasMovedDuringDrag = false
+        }
+    }
+
+    // Convert pixel offset to dp for rendering
+    val cumulativeDragOffsetDp = with(density) { cumulativeDragOffsetPx.toDp() }
+
+    // Smooth animation for visual offset
+    // Use snap (instant) when an item that was moved is returning to 0 (after drop)
+    val animatedOffset by animateFloatAsState(
+        targetValue = visualOffset,
+        animationSpec = if (visualOffset == 0f && wasMovedDuringDrag) {
+            // Instantly snap to 0 when settling after drop - no animation
+            snap()
+        } else {
+            // Smooth animation when items are moving to make space during drag
+            tween(
+                durationMillis = 200,
+                easing = FastOutSlowInEasing
+            )
+        }
+    )
+
+
+    // Enhanced animations for more solid feel
+    val scale by animateFloatAsState(
+        targetValue = if (isDragging) 1.03f else 1f,
+        animationSpec = tween(
+            durationMillis = 150,
+            easing = FastOutSlowInEasing
+        )
+    )
+
+    val borderWidth by animateDpAsState(
+        targetValue = if (isDragging) 4.dp else 2.dp,
+        animationSpec = tween(
+            durationMillis = 150,
+            easing = FastOutSlowInEasing
+        )
+    )
+
+    // Pulsing glow animation when dragging
+    val infiniteTransition = rememberInfiniteTransition()
+    val dragGlowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    val glowAlpha = if (isDragging) dragGlowAlpha else 0.2f
+
+    // Background color with gradient when dragging
+    val backgroundColor = if (isDragging) {
+        Brush.horizontalGradient(
+            colors = listOf(
+                colors.primary.copy(alpha = 0.15f),
+                colors.secondary.copy(alpha = 0.15f),
+                colors.primary.copy(alpha = 0.15f)
+            )
+        )
+    } else {
+        Brush.horizontalGradient(
+            colors = listOf(colors.surface, colors.surface)
+        )
+    }
+
+    // Calculate the final offset - either from dragging or from animation
+    val finalOffset = if (isDragging) {
+        cumulativeDragOffsetDp
+    } else {
+        animatedOffset.dp
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(elevation)
-            .zIndex(if (isDragging) 1f else 0f)
-            .pointerInput(Unit) {
+            .offset(y = finalOffset)
+            .scale(scale)
+            .zIndex(if (isDragging) 10f else 0f)
+            .pointerInput(variant) { // Use variant as key to prevent state confusion
                 detectDragGestures(
-                    onDragStart = { onDragStart() },
+                    onDragStart = {
+                        cumulativeDragOffsetPx = 0f
+                        onDragStart()
+                    },
                     onDrag = { change, dragAmount ->
                         change.consume()
-                        onDrag(dragAmount.y)
+                        // dragAmount.y is in pixels
+                        cumulativeDragOffsetPx += dragAmount.y
+                        // Report the cumulative offset in pixels
+                        onDrag(cumulativeDragOffsetPx)
                     },
-                    onDragEnd = { onDragEnd() },
-                    onDragCancel = { onDragEnd() }
+                    onDragEnd = {
+                        cumulativeDragOffsetPx = 0f
+                        onDragEnd()
+                    },
+                    onDragCancel = {
+                        cumulativeDragOffsetPx = 0f
+                        onDragEnd()
+                    }
                 )
-            },
-        elevation = elevation,
-        shape = RoundedCornerShape(4.dp),
-        backgroundColor = if (isDragging)
-            MaterialTheme.colors.primary.copy(alpha = 0.1f)
-        else
-            MaterialTheme.colors.surface
+            }
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .pixelBorder(
+                    borderWidth = borderWidth,
+                    enabled = true,
+                    glowAlpha = glowAlpha
+                )
+                .background(backgroundColor, shape = PixelShape(cornerSize = 6.dp))
+                .padding(horizontal = 12.dp, vertical = 12.dp)
         ) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    "☰",
-                    style = MaterialTheme.typography.h6,
-                    color = if (isDragging)
-                        MaterialTheme.colors.primary
-                    else
-                        MaterialTheme.colors.onSurface.copy(alpha = 0.4f)
-                )
-                Text(
-                    "${index + 1}.",
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                )
-                Text(variant, style = MaterialTheme.typography.body1)
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                IconButton(onClick = onMoveUp, modifier = Modifier.size(32.dp)) {
-                    Text("↑", style = MaterialTheme.typography.body1)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Pixel-styled drag handle
+                    PixelDragHandle(isDragging = isDragging)
+
+                    PixelBadge(
+                        text = "${index + 1}",
+                        color = if (isDragging) colors.primary else colors.secondary.copy(alpha = 0.6f),
+                        modifier = Modifier
+                    )
+
+                    Text(
+                        text = variant,
+                        style = MaterialTheme.typography.body1,
+                        fontWeight = if (isDragging) FontWeight.Bold else FontWeight.Normal,
+                        color = if (isDragging) colors.primary else colors.onSurface
+                    )
                 }
-                IconButton(onClick = onMoveDown, modifier = Modifier.size(32.dp)) {
-                    Text("↓", style = MaterialTheme.typography.body1)
-                }
-                IconButton(onClick = onRemove, modifier = Modifier.size(32.dp)) {
-                    Text("×", style = MaterialTheme.typography.body1, color = Color(0xFFF44336))
+
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    PixelIconButton(
+                        icon = "↑",
+                        onClick = onMoveUp,
+                        variant = PixelIconButtonVariant.SECONDARY
+                    )
+                    PixelIconButton(
+                        icon = "↓",
+                        onClick = onMoveDown,
+                        variant = PixelIconButtonVariant.SECONDARY
+                    )
+                    PixelIconButton(
+                        icon = "×",
+                        onClick = onRemove,
+                        variant = PixelIconButtonVariant.DANGER
+                    )
                 }
             }
         }

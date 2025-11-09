@@ -81,22 +81,22 @@ fun PixelStepNode(
 ) {
     val colors = MaterialTheme.colors
 
-    // Bounce animation for active step
+    // Bounce animation for active step - reduced scale to minimize layout impact
     val scale by animateFloatAsState(
-        targetValue = if (isActive) 1.15f else 1f,
+        targetValue = if (isActive) 1.08f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
+            stiffness = Spring.StiffnessLow
         )
     )
 
-    // Pixel art "power up" pulse animation
+    // Pixel art "power up" pulse animation - subtle for stability
     val infiniteTransition = rememberInfiniteTransition()
     val pulse by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.12f,
+        targetValue = 1.05f,
         animationSpec = infiniteRepeatable(
-            animation = tween(600, easing = FastOutSlowInEasing),
+            animation = tween(800, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         )
     )
@@ -125,10 +125,11 @@ fun PixelStepNode(
 
     val isClickable = step.state == StepState.COMPLETED || step.state == StepState.ACTIVE
 
+    // Use a stable container with fixed width to prevent layout shifts
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .scale(scale)
+            .width(160.dp) // Fixed width for stable layout
             .then(
                 if (isClickable) Modifier.clickable(onClick = onClick)
                 else Modifier
@@ -139,7 +140,7 @@ fun PixelStepNode(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .size(56.dp)
-                .scale(if (isActive) pulse else 1f)
+                .scale(if (isActive) scale * pulse else 1f) // Combine animations, apply only to visual
         ) {
             // Outer glow effect for active step
             if (isActive) {
@@ -236,13 +237,13 @@ fun RowScope.PixelStepConnector(
         animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
     )
 
-    // Animated pixel pattern for active connector
+    // Animated pixel pattern for active connector - using a stable continuous animation
     val infiniteTransition = rememberInfiniteTransition()
     val pixelOffset by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = 16f,
+        targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = LinearEasing),
+            animation = tween(1200, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         )
     )
@@ -259,37 +260,60 @@ fun RowScope.PixelStepConnector(
         modifier = modifier
             .weight(1f)
             .height(4.dp)
-            .padding(horizontal = 8.dp)
+            .padding(horizontal = 12.dp)
             .drawBehind {
-                // Background dotted line
+                val width = size.width
+                val height = size.height
+
+                // Background dotted line - stable reference
                 val dotSize = 4f
-                val spacing = 8f
+                val dotSpacing = 8f
                 var x = 0f
 
-                while (x < size.width) {
+                while (x < width) {
                     drawRect(
                         color = Color.Gray.copy(alpha = 0.3f),
                         topLeft = Offset(x, 0f),
-                        size = androidx.compose.ui.geometry.Size(dotSize, size.height)
+                        size = androidx.compose.ui.geometry.Size(dotSize, height)
                     )
-                    x += spacing
+                    x += dotSpacing
                 }
 
-                // Animated progress line
+                // Animated progress line - more stable calculation
                 if (isCompleted || isActive) {
-                    val progressWidth = size.width * animatedWidth
-                    var progressX = if (isActive) pixelOffset % 16f else 0f
+                    val progressWidth = width * animatedWidth
+
+                    // Use a stable pattern size that doesn't change with layout
+                    val patternSize = 12f
+                    val gapSize = 4f
+                    val fullPatternSize = patternSize + gapSize
+
+                    // Calculate offset within a single pattern cycle for smooth animation
+                    val animOffset = if (isActive && !isCompleted) {
+                        pixelOffset * fullPatternSize
+                    } else {
+                        0f
+                    }
+
+                    // Draw the pattern starting from a stable position
+                    var progressX = -animOffset
 
                     while (progressX < progressWidth) {
-                        drawRect(
-                            color = lineColor,
-                            topLeft = Offset(progressX, 0f),
-                            size = androidx.compose.ui.geometry.Size(
-                                dotSize * 2,
-                                size.height
-                            )
-                        )
-                        progressX += if (isActive) 12f else 8f
+                        // Only draw if the bar is within the progress area
+                        if (progressX + patternSize > 0) {
+                            val barStart = maxOf(0f, progressX)
+                            val barEnd = minOf(progressWidth, progressX + patternSize)
+                            val barWidth = barEnd - barStart
+
+                            if (barWidth > 0) {
+                                drawRect(
+                                    color = lineColor,
+                                    topLeft = Offset(barStart, 0f),
+                                    size = androidx.compose.ui.geometry.Size(barWidth, height)
+                                )
+                            }
+                        }
+                        progressX += fullPatternSize
                     }
                 }
             }
