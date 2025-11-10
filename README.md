@@ -197,18 +197,6 @@ The project uses several tools to maintain code quality:
   - Configuration: `config/detekt.yml`
   - Reports: `build/reports/detekt/`
 
-#### Build Optimizations
-- Kotlin compiler optimizations enabled (JVM target 17)
-- Dependency resolution strategy with version forcing
-- Pre-compiled regex patterns for performance
-- Eager catalog indexing for faster matching
-
-#### Code Standards
-- Follow Kotlin coding conventions
-- All regex patterns should be pre-compiled at object level
-- Use helper functions to reduce code duplication
-- Prefer immutable data structures
-- Add error handling with proper logging
 
 ### Project Structure
 
