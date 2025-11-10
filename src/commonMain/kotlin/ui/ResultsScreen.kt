@@ -5,14 +5,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.lazy.rememberLazyListState
 import model.DeckEntryMatch
 import model.MatchStatus
 import util.formatPrice
@@ -42,8 +46,9 @@ fun ResultsScreen(
     val missed = matches.count { it.selectedVariant == null && it.deckEntry.include }
     val ambiguous = matches.count { it.status == MatchStatus.AMBIGUOUS }
 
-    var filterMode by remember { mutableStateOf(0) } // 0 = All, 1 = Matched, 2 = Unmatched, 3 = Ambiguous
-    var sortOption by remember { mutableStateOf(SortOption.DEFAULT) }
+    var filterMode by rememberSaveable { mutableStateOf(0) } // 0 = All, 1 = Matched, 2 = Unmatched, 3 = Ambiguous
+    val sortSaver = remember { Saver<SortOption, String>(save = { it.name }, restore = { SortOption.valueOf(it) }) }
+    var sortOption by rememberSaveable(stateSaver = sortSaver) { mutableStateOf(SortOption.DEFAULT) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Scanline effect
@@ -370,7 +375,8 @@ fun ResultsScreen(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 glowing = false
             ) {
-                LazyColumn(Modifier.fillMaxSize()) {
+                val listState = rememberSaveable(saver = LazyListState.Saver) { LazyListState() }
+                LazyColumn(Modifier.fillMaxSize(), state = listState) {
                     itemsIndexed(sorted) { _, m ->
                         val globalIndex = matches.indexOf(m)
                         val variant = m.selectedVariant

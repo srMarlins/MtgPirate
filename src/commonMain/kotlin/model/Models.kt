@@ -59,9 +59,9 @@ data class DeckEntryMatch(
 
 @Serializable
 data class Preferences(
-    val includeSideboard: Boolean = false,
-    val includeCommanders: Boolean = false,
-    val includeTokens: Boolean = false,
+    val includeSideboard: Boolean = true,
+    val includeCommanders: Boolean = true,
+    val includeTokens: Boolean = true,
     val variantPriority: List<String> = listOf("Foil", "Holo", "Regular"),
     val setPriority: List<String> = emptyList(),
     val fuzzyEnabled: Boolean = true,

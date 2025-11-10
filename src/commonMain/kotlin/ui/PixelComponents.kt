@@ -662,7 +662,7 @@ fun MysticalText(
     modifier: Modifier = Modifier,
     style: TextStyle = MaterialTheme.typography.h6,
     color: Color = MaterialTheme.colors.primary,
-    glowColor: Color = color.copy(alpha = 0.5f)
+    glowColor: Color = color.copy(alpha = 0.3f)
 ) {
     Box(modifier = modifier) {
         // Glow layer

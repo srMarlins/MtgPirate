@@ -310,10 +310,20 @@ fun main() = application {
             Step(
                 number = 3,
                 title = "Review Results",
-                description = "Select cards & export",
+                description = "Review matches",
                 state = when {
                     state.wizardCompletedSteps.contains(3) -> StepState.COMPLETED
                     state.wizardCompletedSteps.contains(2) -> StepState.ACTIVE
+                    else -> StepState.LOCKED
+                }
+            ),
+            Step(
+                number = 4,
+                title = "Export",
+                description = "Apply coupons & shipping",
+                state = when {
+                    state.wizardCompletedSteps.contains(4) -> StepState.COMPLETED
+                    state.wizardCompletedSteps.contains(3) -> StepState.ACTIVE
                     else -> StepState.LOCKED
                 }
             )
@@ -391,6 +401,7 @@ fun main() = application {
                     "import" -> 1
                     "preferences" -> 2
                     "results" -> 3
+                    "export" -> 4
                     else -> 1
                 }
             }
@@ -398,7 +409,7 @@ fun main() = application {
             Scaffold(
                 topBar = {
                     // Show stepper only for wizard routes
-                    if (currentRoute in listOf("import", "preferences", "results")) {
+                    if (currentRoute in listOf("import", "preferences", "results", "export")) {
                         Column {
                             AnimatedStepper(
                                 steps = wizardSteps,
@@ -415,6 +426,11 @@ fun main() = application {
                                         }
                                         3 -> if (state.wizardCompletedSteps.contains(2)) {
                                             navController.navigate("results") {
+                                                popUpTo("import") { inclusive = false }
+                                            }
+                                        }
+                                        4 -> if (state.wizardCompletedSteps.contains(3)) {
+                                            navController.navigate("export") {
                                                 popUpTo("import") { inclusive = false }
                                             }
                                         }
@@ -632,7 +648,40 @@ fun main() = application {
                                 }
                             },
                             onClose = { navController.navigateUp() },
-                            onExport = { store.dispatch(MainIntent.ExportWizardResults) }
+                            onExport = {
+                                store.dispatch(MainIntent.CompleteWizardStep(3))
+                                navController.navigate("export") { launchSingleTop = true }
+                            }
+                        )
+                    }
+                    composable(
+                        "export",
+                        enterTransition = {
+                            when (initialState.destination.route) {
+                                "results" -> slideInHorizontally(
+                                    initialOffsetX = { it },
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeIn(animationSpec = tween(400))
+                                else -> EnterTransition.None
+                            }
+                        },
+                        exitTransition = {
+                            when (targetState.destination.route) {
+                                "results" -> slideOutHorizontally(
+                                    targetOffsetX = { -it },
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeOut(animationSpec = tween(400))
+                                else -> ExitTransition.None
+                            }
+                        }
+                    ) {
+                        ExportScreen(
+                            matches = state.app.matches,
+                            onBack = { navController.navigateUp() },
+                            onExport = {
+                                store.dispatch(MainIntent.ExportWizardResults)
+                                store.dispatch(MainIntent.CompleteWizardStep(4))
+                            }
                         )
                     }
                     composable(
