@@ -2,11 +2,12 @@ package state
 
 import deck.DecklistParser
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.Dispatchers
 import match.Matcher
 import match.Matcher.MatchConfig
 import model.CardVariant
@@ -14,6 +15,7 @@ import model.MatchStatus
 import model.Catalog
 import model.Preferences
 import util.Logging
+import java.time.format.DateTimeFormatter
 
 /**
  * Platform-agnostic state store for the main application.
@@ -26,10 +28,56 @@ class MainStore(
     private val _state = MutableStateFlow(MainState())
     val state: StateFlow<MainState> = _state
 
+    // --- Helper functions for code reuse ---
+    private fun updateAppLogs(level: String, message: String) {
+        _state.update { s ->
+            s.copy(app = s.app.copy(logs = Logging.log(s.app.logs, level, message)))
+        }
+    }
+
+    private fun updatePreferencesAndPersist(update: (Preferences) -> Preferences, alsoUpdateState: (MainState) -> MainState = { it }) {
+        _state.update { current ->
+            val prefs = update(current.app.preferences)
+            val newApp = current.app.copy(
+                preferences = prefs,
+                logs = Logging.log(current.app.logs, "INFO", "Preferences updated")
+            )
+            alsoUpdateState(current.copy(app = newApp))
+        }
+        scope.launch {
+            platformServices.savePreferences(_state.value.app.preferences)
+        }
+    }
+
+    private suspend fun parseDeckEntries(deckText: String, includeSideboard: Boolean, includeCommanders: Boolean): List<model.DeckEntry> {
+        val entries = withContext(Dispatchers.Default) {
+            DecklistParser.parse(deckText, includeSideboard, includeCommanders)
+        }
+        entries.forEach { e ->
+            if (e.setCodeHint != null) {
+                updateAppLogs("DEBUG", "Parsed entry: ${e.qty} ${e.cardName} (set=${e.setCodeHint}${e.collectorNumberHint?.let { ", #$it" } ?: ""})")
+            } else {
+                updateAppLogs("DEBUG", "Parsed entry: ${e.qty} ${e.cardName}")
+            }
+        }
+        return entries
+    }
+
+    private fun reloadSavedImportsWithLog(imports: List<model.SavedImport>) {
+        _state.update { s ->
+            s.copy(
+                app = s.app.copy(
+                    savedImports = imports,
+                    logs = Logging.log(s.app.logs, "INFO", "Loaded ${imports.size} saved imports")
+                )
+            )
+        }
+    }
+
     fun dispatch(intent: MainIntent) {
         when (intent) {
             is MainIntent.Init -> init()
-            is MainIntent.UpdateDeckText -> _state.value = _state.value.copy(deckText = intent.text)
+            is MainIntent.UpdateDeckText -> _state.update { it.copy(deckText = intent.text) }
             is MainIntent.ToggleIncludeSideboard -> toggleIncludeSideboard(intent.value)
             is MainIntent.ToggleIncludeCommanders -> toggleIncludeCommanders(intent.value)
             is MainIntent.ToggleIncludeTokens -> toggleIncludeTokens(intent.value)
@@ -37,25 +85,27 @@ class MainStore(
             MainIntent.ParseDeck -> parseDeck()
             MainIntent.RunMatch -> runMatch()
             MainIntent.ParseAndMatch -> parseAndMatch()
-            is MainIntent.OpenResolve -> _state.value = _state.value.copy(showCandidatesFor = intent.index)
-            MainIntent.CloseResolve -> _state.value = _state.value.copy(showCandidatesFor = null)
+            is MainIntent.OpenResolve -> _state.update { it.copy(showCandidatesFor = intent.index) }
+            MainIntent.CloseResolve -> _state.update { it.copy(showCandidatesFor = null) }
             is MainIntent.ResolveCandidate -> resolveCandidate(intent.index, intent.variant)
             MainIntent.ExportCsv -> exportCsv()
             MainIntent.ExportWizardResults -> exportWizardResults()
-            is MainIntent.SetShowPreferences -> _state.value = _state.value.copy(showPreferences = intent.show)
-            is MainIntent.SetShowCatalogWindow -> _state.value = _state.value.copy(showCatalogWindow = intent.show)
-            is MainIntent.SetShowMatchesWindow -> _state.value = _state.value.copy(showMatchesWindow = intent.show)
-            is MainIntent.SetShowResultsWindow -> _state.value = _state.value.copy(showResultsWindow = intent.show)
+            is MainIntent.SetShowPreferences -> _state.update { it.copy(showPreferences = intent.show) }
+            is MainIntent.SetShowCatalogWindow -> _state.update { it.copy(showCatalogWindow = intent.show) }
+            is MainIntent.SetShowMatchesWindow -> _state.update { it.copy(showMatchesWindow = intent.show) }
+            is MainIntent.SetShowResultsWindow -> _state.update { it.copy(showResultsWindow = intent.show) }
             is MainIntent.SavePreferences -> savePreferences(intent.variantPriority, intent.setPriority, intent.fuzzyEnabled)
             is MainIntent.Log -> log(intent.message, intent.level)
             is MainIntent.UpdateVariantPriority -> updateVariantPriority(intent.value)
             is MainIntent.CompleteWizardStep -> {
-                val completed = _state.value.wizardCompletedSteps.toMutableSet()
-                completed.add(intent.step)
-                _state.value = _state.value.copy(wizardCompletedSteps = completed)
+                _state.update {
+                    val completed = it.wizardCompletedSteps.toMutableSet()
+                    completed.add(intent.step)
+                    it.copy(wizardCompletedSteps = completed)
+                }
             }
-            MainIntent.ToggleTheme -> _state.value = _state.value.copy(isDarkTheme = !_state.value.isDarkTheme)
-            is MainIntent.SetShowSavedImportsWindow -> _state.value = _state.value.copy(showSavedImportsWindow = intent.show)
+            MainIntent.ToggleTheme -> _state.update { it.copy(isDarkTheme = !it.isDarkTheme) }
+            is MainIntent.SetShowSavedImportsWindow -> _state.update { it.copy(showSavedImportsWindow = intent.show) }
             MainIntent.LoadSavedImports -> loadSavedImports()
             is MainIntent.SaveCurrentImport -> saveCurrentImport(intent.name)
             is MainIntent.LoadSavedImport -> loadSavedImport(intent.importId)
@@ -68,65 +118,60 @@ class MainStore(
             // Load preferences
             val loaded = platformServices.loadPreferences()
             if (loaded != null) {
-                val current = _state.value
-                _state.value = current.copy(
-                    app = current.app.copy(
-                        preferences = loaded,
-                        logs = Logging.log(current.app.logs, "INFO", "Preferences loaded")
-                    ),
-                    includeSideboard = loaded.includeSideboard,
-                    includeCommanders = loaded.includeCommanders,
-                    includeTokens = loaded.includeTokens
-                )
+                _state.update { current ->
+                    current.copy(
+                        app = current.app.copy(
+                            preferences = loaded,
+                            logs = Logging.log(current.app.logs, "INFO", "Preferences loaded")
+                        ),
+                        includeSideboard = loaded.includeSideboard,
+                        includeCommanders = loaded.includeCommanders,
+                        includeTokens = loaded.includeTokens
+                    )
+                }
             }
 
             // Load saved imports
             val imports = platformServices.loadSavedImports()
-            val s = _state.value
-            _state.value = s.copy(
-                app = s.app.copy(
-                    savedImports = imports,
-                    logs = Logging.log(s.app.logs, "INFO", "Loaded ${imports.size} saved imports")
-                )
-            )
+            reloadSavedImportsWithLog(imports)
 
             // Auto-load catalog (remote-first) on startup
-            log("Catalog auto-load starting...", level = "INFO")
-            val catalog = platformServices.loadCatalog(forceRefresh = true) { msg -> log(msg) }
+            updateAppLogs("INFO", "Catalog auto-load starting...")
+            val catalog = platformServices.loadCatalog(forceRefresh = true) { msg -> updateAppLogs("INFO", msg) }
             if (catalog != null) {
-                val s = _state.value
-                _state.value = s.copy(
-                    app = s.app.copy(
-                        catalog = catalog,
-                        logs = Logging.log(s.app.logs, "INFO", "Catalog auto-loaded (remote): ${catalog.variants.size} variants")
+                _state.update { s ->
+                    s.copy(
+                        app = s.app.copy(
+                            catalog = catalog,
+                            logs = Logging.log(s.app.logs, "INFO", "Catalog auto-loaded (remote): ${catalog.variants.size} variants")
+                        )
                     )
-                )
+                }
             } else {
-                val s = _state.value
-                _state.value = s.copy(
-                    app = s.app.copy(
-                        logs = Logging.log(s.app.logs, "ERROR", "Catalog auto-load failed (remote + fallback)")
+                _state.update { s ->
+                    s.copy(
+                        app = s.app.copy(
+                            logs = Logging.log(s.app.logs, "ERROR", "Catalog auto-load failed (remote + fallback)")
+                        )
                     )
-                )
+                }
             }
         }
     }
 
     private fun loadCatalog(force: Boolean) {
         scope.launch {
-            _state.value = _state.value.copy(loadingCatalog = true, catalogError = null)
+            _state.update { it.copy(loadingCatalog = true, catalogError = null) }
             try {
-                log("Manual catalog load starting...", level = "INFO")
-                val catalog = platformServices.loadCatalog(forceRefresh = force) { msg -> log(msg) }
+                updateAppLogs("INFO", "Manual catalog load starting...")
+                val catalog = platformServices.loadCatalog(forceRefresh = force) { msg -> updateAppLogs("INFO", msg) }
                 if (catalog == null) {
-                    _state.value = _state.value.copy(catalogError = "Failed to load catalog")
+                    _state.update { it.copy(catalogError = "Failed to load catalog") }
                 } else {
-                    val s = _state.value
-                    var newApp = s.app.copy(catalog = catalog)
-                    // Re-run matching if deck already parsed
-                    if (newApp.deckEntries.isNotEmpty()) {
-                        val matches = withContext(Dispatchers.Default) {
-                            Matcher.matchAll(
+                    _state.update { s ->
+                        var newApp = s.app.copy(catalog = catalog)
+                        if (newApp.deckEntries.isNotEmpty()) {
+                            val matches = Matcher.matchAll(
                                 newApp.deckEntries,
                                 catalog,
                                 MatchConfig(
@@ -135,16 +180,16 @@ class MainStore(
                                     newApp.preferences.fuzzyEnabled
                                 )
                             )
+                            newApp = newApp.copy(matches = matches)
                         }
-                        newApp = newApp.copy(matches = matches)
+                        s.copy(app = newApp)
                     }
-                    _state.value = s.copy(app = newApp)
                 }
             } catch (e: Exception) {
-                _state.value = _state.value.copy(catalogError = e.message)
-                log("Catalog load exception: ${e.message}", level = "ERROR")
+                _state.update { it.copy(catalogError = e.message) }
+                updateAppLogs("ERROR", "Catalog load exception: ${e.message}")
             } finally {
-                _state.value = _state.value.copy(loadingCatalog = false)
+                _state.update { it.copy(loadingCatalog = false) }
             }
         }
     }
@@ -153,20 +198,10 @@ class MainStore(
         val s = _state.value
         val catalog = s.app.catalog ?: return
         scope.launch {
-            val entries = withContext(Dispatchers.Default) {
-                DecklistParser.parse(s.deckText, s.includeSideboard, s.includeCommanders)
-            }
-            // Log parsing summary including set hints for verification
-            entries.forEach { e ->
-                if (e.setCodeHint != null) {
-                    log("Parsed entry: ${e.qty} ${e.cardName} (set=${e.setCodeHint}${e.collectorNumberHint?.let { ", #$it" } ?: ""})", level = "DEBUG")
-                } else {
-                    log("Parsed entry: ${e.qty} ${e.cardName}", level = "DEBUG")
-                }
-            }
-            var newApp = s.app.copy(deckEntries = entries)
-            val matches = withContext(Dispatchers.Default) {
-                Matcher.matchAll(
+            val entries = parseDeckEntries(s.deckText, s.includeSideboard, s.includeCommanders)
+            _state.update { prev ->
+                var newApp = prev.app.copy(deckEntries = entries)
+                val matches = Matcher.matchAll(
                     entries,
                     catalog,
                     MatchConfig(
@@ -175,28 +210,21 @@ class MainStore(
                         newApp.preferences.fuzzyEnabled
                     )
                 )
+                newApp = newApp.copy(matches = matches)
+                prev.copy(app = newApp, showResultsWindow = entries.isNotEmpty())
             }
-            newApp = newApp.copy(matches = matches)
-            _state.value = _state.value.copy(app = newApp, showResultsWindow = entries.isNotEmpty())
         }
     }
 
     private fun parseDeck() {
         val s = _state.value
         scope.launch {
-            val entries = withContext(Dispatchers.Default) {
-                DecklistParser.parse(s.deckText, s.includeSideboard, s.includeCommanders)
+            val entries = parseDeckEntries(s.deckText, s.includeSideboard, s.includeCommanders)
+            _state.update { prev ->
+                val app = prev.app
+                val newApp = app.copy(deckEntries = entries, matches = emptyList())
+                prev.copy(app = newApp)
             }
-            entries.forEach { e ->
-                if (e.setCodeHint != null) {
-                    log("Parsed entry: ${e.qty} ${e.cardName} (set=${e.setCodeHint}${e.collectorNumberHint?.let { ", #$it" } ?: ""})", level = "DEBUG")
-                } else {
-                    log("Parsed entry: ${e.qty} ${e.cardName}", level = "DEBUG")
-                }
-            }
-            val app = _state.value.app
-            val newApp = app.copy(deckEntries = entries, matches = emptyList())
-            _state.value = _state.value.copy(app = newApp)
         }
     }
 
@@ -217,19 +245,22 @@ class MainStore(
                     )
                 )
             }
-            val app = _state.value.app
-            _state.value = _state.value.copy(app = app.copy(matches = matches), showResultsWindow = true)
+            _state.update { prev ->
+                val app = prev.app
+                prev.copy(app = app.copy(matches = matches), showResultsWindow = true)
+            }
         }
     }
 
     private fun resolveCandidate(index: Int, variant: CardVariant) {
-        val s = _state.value
-        if (index !in s.app.matches.indices) return
-        val match = s.app.matches[index]
-        val updated = match.copy(status = MatchStatus.MANUAL_SELECTED, selectedVariant = variant)
-        val newMatches = s.app.matches.toMutableList()
-        newMatches[index] = updated
-        _state.value = s.copy(app = s.app.copy(matches = newMatches), showCandidatesFor = null)
+        _state.update { s ->
+            if (index !in s.app.matches.indices) return@update s
+            val match = s.app.matches[index]
+            val updated = match.copy(status = MatchStatus.MANUAL_SELECTED, selectedVariant = variant)
+            val newMatches = s.app.matches.toMutableList()
+            newMatches[index] = updated
+            s.copy(app = s.app.copy(matches = newMatches), showCandidatesFor = null)
+        }
     }
 
     private fun exportCsv() {
@@ -258,90 +289,43 @@ class MainStore(
     }
 
     private fun savePreferences(variantPriority: List<String>, setPriority: List<String>, fuzzyEnabled: Boolean) {
-        // Update state immediately so subsequent actions (like RunMatch) see new prefs
-        val current = _state.value
-        val prefs = current.app.preferences.copy(
-            variantPriority = variantPriority,
-            setPriority = setPriority,
-            fuzzyEnabled = fuzzyEnabled
+        updatePreferencesAndPersist(
+            update = { it.copy(variantPriority = variantPriority, setPriority = setPriority, fuzzyEnabled = fuzzyEnabled) },
+            alsoUpdateState = { it.copy(showPreferences = false) }
         )
-        val newApp = current.app.copy(
-            preferences = prefs,
-            logs = Logging.log(current.app.logs, "INFO", "Preferences updated")
-        )
-        _state.value = current.copy(app = newApp, showPreferences = false)
-        // Persist asynchronously
-        scope.launch {
-            platformServices.savePreferences(prefs)
-        }
     }
 
     private fun updateVariantPriority(newPriority: List<String>) {
-        val current = _state.value
-        val prefs = current.app.preferences.copy(variantPriority = newPriority)
-        val newApp = current.app.copy(
-            preferences = prefs,
-            logs = Logging.log(current.app.logs, "INFO", "Variant priority updated")
+        updatePreferencesAndPersist(
+            update = { it.copy(variantPriority = newPriority) }
         )
-        _state.value = current.copy(app = newApp)
-        // Persist asynchronously
-        scope.launch {
-            platformServices.savePreferences(prefs)
-        }
     }
 
     private fun toggleIncludeSideboard(value: Boolean) {
-        val current = _state.value
-        val prefs = current.app.preferences.copy(includeSideboard = value)
-        val newApp = current.app.copy(
-            preferences = prefs,
-            logs = Logging.log(current.app.logs, "INFO", "Include sideboard updated: $value")
+        updatePreferencesAndPersist(
+            update = { it.copy(includeSideboard = value) },
+            alsoUpdateState = { it.copy(includeSideboard = value) }
         )
-        _state.value = current.copy(app = newApp, includeSideboard = value)
-        // Persist asynchronously
-        scope.launch {
-            platformServices.savePreferences(prefs)
-        }
     }
 
     private fun toggleIncludeCommanders(value: Boolean) {
-        val current = _state.value
-        val prefs = current.app.preferences.copy(includeCommanders = value)
-        val newApp = current.app.copy(
-            preferences = prefs,
-            logs = Logging.log(current.app.logs, "INFO", "Include commanders updated: $value")
+        updatePreferencesAndPersist(
+            update = { it.copy(includeCommanders = value) },
+            alsoUpdateState = { it.copy(includeCommanders = value) }
         )
-        _state.value = current.copy(app = newApp, includeCommanders = value)
-        // Persist asynchronously
-        scope.launch {
-            platformServices.savePreferences(prefs)
-        }
     }
 
     private fun toggleIncludeTokens(value: Boolean) {
-        val current = _state.value
-        val prefs = current.app.preferences.copy(includeTokens = value)
-        val newApp = current.app.copy(
-            preferences = prefs,
-            logs = Logging.log(current.app.logs, "INFO", "Include tokens updated: $value")
+        updatePreferencesAndPersist(
+            update = { it.copy(includeTokens = value) },
+            alsoUpdateState = { it.copy(includeTokens = value) }
         )
-        _state.value = current.copy(app = newApp, includeTokens = value)
-        // Persist asynchronously
-        scope.launch {
-            platformServices.savePreferences(prefs)
-        }
     }
 
     private fun loadSavedImports() {
         scope.launch {
             val imports = platformServices.loadSavedImports()
-            val s = _state.value
-            _state.value = s.copy(
-                app = s.app.copy(
-                    savedImports = imports,
-                    logs = Logging.log(s.app.logs, "INFO", "Loaded ${imports.size} saved imports")
-                )
-            )
+            reloadSavedImportsWithLog(imports)
         }
     }
 
@@ -362,9 +346,7 @@ class MainStore(
             }
 
             // Parse the deck to get card count and commander name
-            val entries = if (s.app.deckEntries.isNotEmpty()) {
-                s.app.deckEntries
-            } else {
+            val entries = s.app.deckEntries.ifEmpty {
                 withContext(Dispatchers.Default) {
                     DecklistParser.parse(s.deckText, s.includeSideboard, s.includeCommanders)
                 }
@@ -380,7 +362,7 @@ class MainStore(
             } else {
                 // Fallback to timestamp-based name
                 val timestamp = java.time.LocalDateTime.now()
-                    .format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"))
+                    .format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"))
                 "Import - $timestamp"
             }
 
@@ -407,17 +389,25 @@ class MainStore(
         val s = _state.value
         val import = s.app.savedImports.find { it.id == importId }
         if (import != null) {
-            _state.value = s.copy(
-                deckText = import.deckText,
-                includeSideboard = import.includeSideboard,
-                includeCommanders = import.includeCommanders,
-                includeTokens = import.includeTokens,
-                app = s.app.copy(
-                    logs = Logging.log(s.app.logs, "INFO", "Loaded import: ${import.name}")
-                ),
-                showSavedImportsWindow = false,
-                showResultsWindow = true // Open wizard/results window as if a new import was made
-            )
+            _state.update { prev ->
+                val updatedPreferences = prev.app.preferences.copy(
+                    includeSideboard = import.includeSideboard,
+                    includeCommanders = import.includeCommanders,
+                    includeTokens = import.includeTokens
+                )
+                prev.copy(
+                    deckText = import.deckText,
+                    includeSideboard = import.includeSideboard,
+                    includeCommanders = import.includeCommanders,
+                    includeTokens = import.includeTokens,
+                    app = prev.app.copy(
+                        preferences = updatedPreferences,
+                        logs = Logging.log(prev.app.logs, "INFO", "Loaded import: ${import.name}")
+                    ),
+                    showSavedImportsWindow = false,
+                    showResultsWindow = true
+                )
+            }
         }
     }
 
@@ -432,8 +422,7 @@ class MainStore(
     }
 
     fun log(message: String, level: String = "INFO") {
-        val s = _state.value
-        _state.value = s.copy(app = s.app.copy(logs = Logging.log(s.app.logs, level, message)))
+        updateAppLogs(level, message)
     }
 }
 

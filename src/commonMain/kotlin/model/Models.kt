@@ -9,7 +9,9 @@ data class CardVariant(
     val setCode: String,
     val sku: String,
     val variantType: String, // Regular, Foil, Holo
-    val priceInCents: Int
+    val priceInCents: Int,
+    val collectorNumber: String? = null,
+    val imageUrl: String? = null
 )
 
 @Serializable

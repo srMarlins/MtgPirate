@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.RadioButton
@@ -45,6 +46,9 @@ fun ExportScreen(
     val grandTotal = promo.subtotalAfterDiscountCents + selectedShippingCost
 
     Column(Modifier.fillMaxSize().padding(24.dp)) {
+        // Scroll states for indicators
+        val matchedListState = rememberLazyListState()
+        val unmatchedListState = rememberLazyListState()
         // Header
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -93,20 +97,23 @@ fun ExportScreen(
                         val v = it.selectedVariant!!
                         Triple(v.nameOriginal, v.setCode, v.sku)
                     }
-                    LazyColumn(Modifier.fillMaxWidth().weight(1f, fill = true)) {
-                        items(grouped.values.toList()) { group ->
-                            val first = group.first().selectedVariant!!
-                            val qtyTotal = group.sumOf { it.deckEntry.qty }
-                            Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Text(first.nameOriginal, Modifier.weight(0.40f), style = MaterialTheme.typography.body2)
-                                Text(first.setCode, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
-                                Text(first.sku, Modifier.weight(0.20f), style = MaterialTheme.typography.body2)
-                                Text(first.variantType, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
-                                Text(qtyTotal.toString(), Modifier.weight(0.07f), style = MaterialTheme.typography.body2)
-                                Text(formatPrice(first.priceInCents), Modifier.weight(0.09f), style = MaterialTheme.typography.body2)
+                    Box(Modifier.fillMaxWidth().weight(1f, fill = true)) {
+                        LazyColumn(Modifier.fillMaxSize(), state = matchedListState) {
+                            items(grouped.values.toList()) { group ->
+                                val first = group.first().selectedVariant!!
+                                val qtyTotal = group.sumOf { it.deckEntry.qty }
+                                Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Text(first.nameOriginal, Modifier.weight(0.40f), style = MaterialTheme.typography.body2)
+                                    Text(first.setCode, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
+                                    Text(first.sku, Modifier.weight(0.20f), style = MaterialTheme.typography.body2)
+                                    Text(first.variantType, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
+                                    Text(qtyTotal.toString(), Modifier.weight(0.07f), style = MaterialTheme.typography.body2)
+                                    Text(formatPrice(first.priceInCents), Modifier.weight(0.09f), style = MaterialTheme.typography.body2)
+                                }
+                                PixelDivider()
                             }
-                            PixelDivider()
                         }
+                        LazyListScrollIndicators(state = matchedListState, modifier = Modifier.matchParentSize())
                     }
                 }
 
@@ -122,14 +129,17 @@ fun ExportScreen(
                             color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f)
                         )
                     } else {
-                        LazyColumn(Modifier.fillMaxWidth().heightIn(max = 220.dp)) {
-                            items(unresolved) { m ->
-                                Row(Modifier.fillMaxWidth().padding(12.dp)) {
-                                    Text("${m.deckEntry.qty}", Modifier.width(40.dp))
-                                    Text(m.deckEntry.cardName, Modifier.weight(1f))
+                        Box(Modifier.fillMaxWidth().heightIn(max = 220.dp)) {
+                            LazyColumn(Modifier.fillMaxSize(), state = unmatchedListState) {
+                                items(unresolved) { m ->
+                                    Row(Modifier.fillMaxWidth().padding(12.dp)) {
+                                        Text("${m.deckEntry.qty}", Modifier.width(40.dp))
+                                        Text(m.deckEntry.cardName, Modifier.weight(1f))
+                                    }
+                                    PixelDivider()
                                 }
-                                PixelDivider()
                             }
+                            LazyListScrollIndicators(state = unmatchedListState, modifier = Modifier.matchParentSize())
                         }
                     }
                 }
@@ -231,7 +241,7 @@ fun ExportScreen(
 }
 
 @Composable
-private fun HeaderRow() {
+fun HeaderRow() {
     Row(
         Modifier.fillMaxWidth().background(MaterialTheme.colors.surface.copy(alpha = 0.6f)).padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically

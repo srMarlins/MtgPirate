@@ -1,10 +1,15 @@
 package ui
 
 import androidx.compose.animation.core.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -1087,6 +1092,168 @@ fun PixelIconButton(
             style = MaterialTheme.typography.body1,
             color = if (enabled) textColor else textColor.copy(alpha = 0.3f),
             fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+
+// ========================================
+// SCROLL INDICATORS (for scrollable content)
+// ========================================
+
+enum class PixelArrowDirection { UP, DOWN }
+
+@Composable
+private fun PixelArrowBadge(
+    direction: PixelArrowDirection,
+    badgeSize: Dp,
+    modifier: Modifier = Modifier
+) {
+    val colors = MaterialTheme.colors
+
+    // Subtle bobbing to sell the floating effect (pixel-friendly, tiny amplitude)
+    val infinite = rememberInfiniteTransition()
+    val bob by infinite.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    val bobAmplitude = 1.0f // dp
+    val bobDp = (bob * bobAmplitude).dp
+    val yOffset = if (direction == PixelArrowDirection.UP) -bobDp else bobDp
+
+    Box(
+        modifier = modifier
+            .size(badgeSize)
+            .offset(y = yOffset)
+            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.5f)
+            .background(MaterialTheme.colors.surface.copy(alpha = 0.8f), shape = PixelShape(cornerSize = 4.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        // Draw a centered pixel arrow using an integer grid for crisp edges
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .drawBehind {
+                    val minSide = kotlin.math.min(size.width, size.height)
+                    val grid = 9 // 9x9 grid
+                    val cell = minSide / grid
+
+                    // Five levels for a nice triangular pixel arrow
+                    val levels = intArrayOf(1, 3, 5, 7, 9)
+                    val drawLevels = if (direction == PixelArrowDirection.UP) levels else levels.reversedArray()
+
+                    // Center vertically in the 9-cell grid: (9 - 5) / 2 = 2 cells padding
+                    val vOffsetCells = 2
+
+                    val arrowColor = colors.onSurface
+                    val shadowColor = Color.Black.copy(alpha = 0.35f)
+                    val shadowOffset = 1.dp.toPx()
+
+                    fun drawRow(yCells: Int, widthCells: Int, color: Color, dx: Float, dy: Float) {
+                        val xStartCells = (grid - widthCells) / 2
+                        val left = xStartCells * cell + dx
+                        val top = yCells * cell + dy
+                        drawRect(
+                            color = color,
+                            topLeft = Offset(left, top),
+                            size = Size(widthCells * cell, cell)
+                        )
+                    }
+
+                    // Draw shadow first (hard-edged, 1dp down-right)
+                    for (i in drawLevels.indices) {
+                        val yCells = vOffsetCells + i
+                        val w = drawLevels[i]
+                        drawRow(yCells, w, shadowColor, shadowOffset, shadowOffset)
+                    }
+
+                    // Draw main arrow
+                    for (i in drawLevels.indices) {
+                        val yCells = vOffsetCells + i
+                        val w = drawLevels[i]
+                        drawRow(yCells, w, arrowColor, 0f, 0f)
+                    }
+                }
+        )
+    }
+}
+
+@Composable
+fun LazyListScrollIndicators(
+    state: LazyListState,
+    modifier: Modifier = Modifier,
+    height: Dp = 12.dp,
+    paddingHorizontal: Dp = 0.dp
+) {
+    val colors = MaterialTheme.colors
+
+    val canScrollUp by remember(state) {
+        derivedStateOf {
+            state.firstVisibleItemIndex > 0 || state.firstVisibleItemScrollOffset > 0
+        }
+    }
+    val canScrollDown by remember(state) {
+        derivedStateOf {
+            val info = state.layoutInfo
+            if (info.totalItemsCount == 0) return@derivedStateOf false
+            val lastVisible = info.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf false
+            val lastFullyVisible = lastVisible.offset + lastVisible.size <= info.viewportEndOffset - info.afterContentPadding
+            lastVisible.index < info.totalItemsCount - 1 || !lastFullyVisible
+        }
+    }
+
+    val atTop by remember(state) { derivedStateOf { !canScrollUp && canScrollDown } }
+    val atBottom by remember(state) { derivedStateOf { canScrollUp && !canScrollDown } }
+
+    // Reuse `height` as the arrow badge size; enforce a sensible min/max
+    val arrowSize = remember(height) { height.coerceIn(16.dp, 28.dp) }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        // Show ▼ when at the very top (indicating you can scroll down)
+        AnimatedVisibility(
+            visible = atTop,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 8.dp + paddingHorizontal, bottom = 8.dp)
+        ) {
+            PixelArrowBadge(direction = PixelArrowDirection.DOWN, badgeSize = arrowSize)
+        }
+
+        // Show ▲ when at the very bottom (indicating you can scroll up)
+        AnimatedVisibility(
+            visible = atBottom,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(end = 8.dp + paddingHorizontal, top = 8.dp)
+        ) {
+            PixelArrowBadge(direction = PixelArrowDirection.UP, badgeSize = arrowSize)
+        }
+    }
+}
+
+@Composable
+fun ScrollableCardLazyList(
+    modifier: Modifier = Modifier,
+    state: LazyListState = rememberLazyListState(),
+    indicatorsHeight: Dp = 12.dp,
+    paddingHorizontalIndicators: Dp = 0.dp,
+    content: @Composable () -> Unit
+) {
+    Box(modifier = modifier) {
+        content()
+        LazyListScrollIndicators(
+            state = state,
+            height = indicatorsHeight,
+            paddingHorizontal = paddingHorizontalIndicators,
+            modifier = Modifier.matchParentSize()
         )
     }
 }

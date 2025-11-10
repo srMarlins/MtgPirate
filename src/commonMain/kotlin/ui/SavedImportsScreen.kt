@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -123,17 +124,22 @@ fun SavedImportsDialog(
                             .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
                             .background(MaterialTheme.colors.surface.copy(alpha = 0.5f), shape = PixelShape(cornerSize = 6.dp))
                     ) {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize().padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(savedImports) { import ->
-                                SavedImportCard(
-                                    import = import,
-                                    onSelect = { onSelectImport(import.id) },
-                                    onDelete = { onDeleteImport(import.id) }
-                                )
+                        val listState = rememberLazyListState()
+                        Box(Modifier.fillMaxSize()) {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize().padding(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                state = listState
+                            ) {
+                                items(savedImports) { import ->
+                                    SavedImportCard(
+                                        import = import,
+                                        onSelect = { onSelectImport(import.id) },
+                                        onDelete = { onDeleteImport(import.id) }
+                                    )
+                                }
                             }
+                            LazyListScrollIndicators(state = listState, modifier = Modifier.matchParentSize())
                         }
                     }
                 }

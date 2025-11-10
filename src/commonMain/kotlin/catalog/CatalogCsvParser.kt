@@ -21,7 +21,10 @@ object CatalogCsvParser {
         "card type" to "type",
         "type" to "type",
         "base price" to "price",
-        "price" to "price"
+        "price" to "price",
+        "collector number" to "collectornumber",
+        "collector" to "collectornumber",
+        "number" to "collectornumber"
     )
 
     private val typePriceMapDefault = mapOf(
@@ -63,6 +66,7 @@ object CatalogCsvParser {
         val idxSet = headerCells.indexOf("set")
         val idxType = headerCells.indexOf("type")
         val idxPrice = headerCells.indexOf("price")
+        val idxCollectorNumber = headerCells.indexOf("collectornumber")
         val required = listOf(idxSku, idxName, idxSet, idxType)
         if (required.any { it < 0 }) return Catalog(emptyList())
         val variants = mutableListOf<CardVariant>()
@@ -79,6 +83,9 @@ object CatalogCsvParser {
             val set = aligned[idxSet].trim()
             val typeRaw = aligned[idxType].trim()
             val type = canonicalType(typeRaw)
+            val collectorNumber = if (idxCollectorNumber >= 0 && idxCollectorNumber < aligned.size) {
+                aligned[idxCollectorNumber].trim().takeIf { it.isNotBlank() }
+            } else null
             if (sku.isBlank() || name.isBlank()) return@forEach
             val dollarsFromCell = if (idxPrice >= 0 && idxPrice < aligned.size) parsePriceCell(aligned[idxPrice]) else 0.0
             val priceDollars = if (dollarsFromCell > 0.0) dollarsFromCell else {
@@ -92,7 +99,8 @@ object CatalogCsvParser {
                 setCode = set,
                 sku = sku,
                 variantType = type,
-                priceInCents = priceCents
+                priceInCents = priceCents,
+                collectorNumber = collectorNumber
             )
         }
         return Catalog(variants)

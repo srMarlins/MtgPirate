@@ -15,12 +15,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import kotlinx.coroutines.delay
 
 @Composable
 fun PreferencesWizardScreen(
-    includeSideboard: Boolean,
-    includeCommanders: Boolean,
-    includeTokens: Boolean,
+    includeSideboard: Boolean = true,
+    includeCommanders: Boolean = true,
+    includeTokens: Boolean = true,
     variantPriority: List<String>,
     onIncludeSideboardChange: (Boolean) -> Unit,
     onIncludeCommandersChange: (Boolean) -> Unit,
@@ -261,9 +262,9 @@ fun DraggableVariantItem(
     LaunchedEffect(visualOffset) {
         if (visualOffset != 0f) {
             wasMovedDuringDrag = true
-        } else if (wasMovedDuringDrag && visualOffset == 0f) {
+        } else if (wasMovedDuringDrag) {
             // Reset flag after a brief moment
-            kotlinx.coroutines.delay(50)
+            delay(50)
             wasMovedDuringDrag = false
         }
     }

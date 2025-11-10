@@ -375,68 +375,71 @@ fun ResultsScreen(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 glowing = false
             ) {
-                val listState = rememberSaveable(saver = LazyListState.Saver) { LazyListState() }
-                LazyColumn(Modifier.fillMaxSize(), state = listState) {
-                    itemsIndexed(sorted) { _, m ->
-                        val globalIndex = matches.indexOf(m)
-                        val variant = m.selectedVariant
-                        val rowTotal = variant?.priceInCents?.let { it * m.deckEntry.qty }
+                val listState = rememberLazyListState()
+                Box(Modifier.fillMaxSize()) {
+                    LazyColumn(Modifier.fillMaxSize(), state = listState) {
+                        itemsIndexed(sorted) { _, m ->
+                            val globalIndex = matches.indexOf(m)
+                            val variant = m.selectedVariant
+                            val rowTotal = variant?.priceInCents?.let { it * m.deckEntry.qty }
 
-                        Row(
-                            Modifier.fillMaxWidth().padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("${m.deckEntry.qty}", Modifier.width(50.dp), style = MaterialTheme.typography.body1)
-                            Text(m.deckEntry.cardName, Modifier.weight(0.35f), style = MaterialTheme.typography.body1)
+                            Row(
+                                Modifier.fillMaxWidth().padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("${m.deckEntry.qty}", Modifier.width(50.dp), style = MaterialTheme.typography.body1)
+                                Text(m.deckEntry.cardName, Modifier.weight(0.35f), style = MaterialTheme.typography.body1)
 
-                            // Status badge with pixel styling
-                            val (statusText, statusColor) = when (m.status) {
-                                MatchStatus.AUTO_MATCHED -> "Auto" to Color(0xFF4CAF50)
-                                MatchStatus.MANUAL_SELECTED -> "Manual" to Color(0xFF2196F3)
-                                MatchStatus.AMBIGUOUS -> "Ambiguous" to Color(0xFFFF9800)
-                                MatchStatus.NOT_FOUND -> "Not Found" to Color(0xFFF44336)
-                                MatchStatus.UNRESOLVED -> "Pending" to Color(0xFF9E9E9E)
-                            }
-                            Box(Modifier.weight(0.15f).padding(end = 8.dp)) {
-                                PixelBadge(
-                                    text = statusText,
-                                    color = statusColor
+                                // Status badge with pixel styling
+                                val (statusText, statusColor) = when (m.status) {
+                                    MatchStatus.AUTO_MATCHED -> "Auto" to Color(0xFF4CAF50)
+                                    MatchStatus.MANUAL_SELECTED -> "Manual" to Color(0xFF2196F3)
+                                    MatchStatus.AMBIGUOUS -> "Ambiguous" to Color(0xFFFF9800)
+                                    MatchStatus.NOT_FOUND -> "Not Found" to Color(0xFFF44336)
+                                    MatchStatus.UNRESOLVED -> "Pending" to Color(0xFF9E9E9E)
+                                }
+                                Box(Modifier.weight(0.15f).padding(end = 8.dp)) {
+                                    PixelBadge(
+                                        text = statusText,
+                                        color = statusColor
+                                    )
+                                }
+
+                                Text(
+                                    variant?.variantType ?: "-",
+                                    Modifier.weight(0.15f),
+                                    style = MaterialTheme.typography.body2
                                 )
-                            }
+                                Text(variant?.let { formatPrice(it.priceInCents) } ?: "-",
+                                    Modifier.width(70.dp),
+                                    style = MaterialTheme.typography.body2)
+                                Text(rowTotal?.let { formatPrice(it) } ?: "-",
+                                    Modifier.width(80.dp),
+                                    style = MaterialTheme.typography.body2)
 
-                            Text(
-                                variant?.variantType ?: "-",
-                                Modifier.weight(0.15f),
-                                style = MaterialTheme.typography.body2
-                            )
-                            Text(variant?.let { formatPrice(it.priceInCents) } ?: "-",
-                                Modifier.width(70.dp),
-                                style = MaterialTheme.typography.body2)
-                            Text(rowTotal?.let { formatPrice(it) } ?: "-",
-                                Modifier.width(80.dp),
-                                style = MaterialTheme.typography.body2)
-
-                            Row(Modifier.width(180.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                if (m.status == MatchStatus.AMBIGUOUS || m.status == MatchStatus.NOT_FOUND) {
-                                    PixelButton(
-                                        text = "Resolve",
-                                        onClick = { onResolve(globalIndex) },
-                                        variant = PixelButtonVariant.SECONDARY,
-                                        modifier = Modifier.height(36.dp)
-                                    )
-                                }
-                                if (m.candidates.isNotEmpty()) {
-                                    PixelButton(
-                                        text = "View",
-                                        onClick = { onShowAllCandidates(globalIndex) },
-                                        variant = PixelButtonVariant.SURFACE,
-                                        modifier = Modifier.height(36.dp)
-                                    )
+                                Row(Modifier.width(180.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    if (m.status == MatchStatus.AMBIGUOUS || m.status == MatchStatus.NOT_FOUND) {
+                                        PixelButton(
+                                            text = "Resolve",
+                                            onClick = { onResolve(globalIndex) },
+                                            variant = PixelButtonVariant.SECONDARY,
+                                            modifier = Modifier.height(36.dp)
+                                        )
+                                    }
+                                    if (m.candidates.isNotEmpty()) {
+                                        PixelButton(
+                                            text = "View",
+                                            onClick = { onShowAllCandidates(globalIndex) },
+                                            variant = PixelButtonVariant.SURFACE,
+                                            modifier = Modifier.height(36.dp)
+                                        )
+                                    }
                                 }
                             }
+                            PixelDivider()
                         }
-                        PixelDivider()
                     }
+                    LazyListScrollIndicators(state = listState, modifier = Modifier.matchParentSize())
                 }
             }
 

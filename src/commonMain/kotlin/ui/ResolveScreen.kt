@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -118,59 +119,63 @@ fun ResolveScreen(
                     glowing = false
                 ) {
                     val sorted = remember(match.candidates) { match.candidates.sortedBy { it.score } }
-                    LazyColumn(Modifier.fillMaxSize()) {
-                        items(sorted) { cand: MatchCandidate ->
-                            val variant = cand.variant
-                            Row(
-                                Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                PixelButton(
-                                    text = "Select",
-                                    onClick = { onSelect(variant) },
-                                    variant = PixelButtonVariant.SECONDARY,
-                                    modifier = Modifier.width(100.dp).height(40.dp)
-                                )
-                                Spacer(Modifier.width(12.dp))
-                                Column(Modifier.weight(0.3f)) {
-                                    Text(
-                                        variant.nameOriginal,
-                                        style = MaterialTheme.typography.body1,
-                                        fontWeight = FontWeight.Medium
+                    val listState = rememberLazyListState()
+                    Box(Modifier.fillMaxSize()) {
+                        LazyColumn(Modifier.fillMaxSize(), state = listState) {
+                            items(sorted) { cand: MatchCandidate ->
+                                val variant = cand.variant
+                                Row(
+                                    Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    PixelButton(
+                                        text = "Select",
+                                        onClick = { onSelect(variant) },
+                                        variant = PixelButtonVariant.SECONDARY,
+                                        modifier = Modifier.width(100.dp).height(40.dp)
                                     )
+                                    Spacer(Modifier.width(12.dp))
+                                    Column(Modifier.weight(0.3f)) {
+                                        Text(
+                                            variant.nameOriginal,
+                                            style = MaterialTheme.typography.body1,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                    Text(
+                                        variant.setCode,
+                                        Modifier.width(70.dp),
+                                        style = MaterialTheme.typography.body2
+                                    )
+                                    Text(
+                                        variant.variantType,
+                                        Modifier.width(100.dp),
+                                        style = MaterialTheme.typography.body2
+                                    )
+                                    Text(
+                                        formatPrice(variant.priceInCents),
+                                        Modifier.width(80.dp),
+                                        style = MaterialTheme.typography.body2,
+                                        color = MaterialTheme.colors.secondary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Column(Modifier.weight(0.3f)) {
+                                        Text(
+                                            "Reason: ${cand.reason}",
+                                            style = MaterialTheme.typography.caption,
+                                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                                        )
+                                        Text(
+                                            "Score: ${cand.score} | SKU: ${variant.sku}",
+                                            style = MaterialTheme.typography.caption,
+                                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                                        )
+                                    }
                                 }
-                                Text(
-                                    variant.setCode,
-                                    Modifier.width(70.dp),
-                                    style = MaterialTheme.typography.body2
-                                )
-                                Text(
-                                    variant.variantType,
-                                    Modifier.width(100.dp),
-                                    style = MaterialTheme.typography.body2
-                                )
-                                Text(
-                                    formatPrice(variant.priceInCents),
-                                    Modifier.width(80.dp),
-                                    style = MaterialTheme.typography.body2,
-                                    color = MaterialTheme.colors.secondary,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Column(Modifier.weight(0.3f)) {
-                                    Text(
-                                        "Reason: ${cand.reason}",
-                                        style = MaterialTheme.typography.caption,
-                                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                                    )
-                                    Text(
-                                        "Score: ${cand.score} | SKU: ${variant.sku}",
-                                        style = MaterialTheme.typography.caption,
-                                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                                    )
-                                }
+                                PixelDivider()
                             }
-                            PixelDivider()
                         }
+                        LazyListScrollIndicators(state = listState, modifier = Modifier.matchParentSize())
                     }
                 }
 
