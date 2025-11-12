@@ -106,7 +106,16 @@ fun CatalogScreen(catalog: Catalog, onClose: () -> Unit) {
                     LazyColumn(Modifier.fillMaxSize(), state = listState) {
                         items(filtered) { v ->
                             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-                                Text(v.nameOriginal, Modifier.weight(0.40f), style = MaterialTheme.typography.body2)
+                                Row(Modifier.weight(0.40f), verticalAlignment = Alignment.CenterVertically) {
+                                    Text(v.nameOriginal, style = MaterialTheme.typography.body2)
+                                    if (!v.collectorNumber.isNullOrBlank()) {
+                                        Spacer(Modifier.width(8.dp))
+                                        PixelBadge(
+                                            text = v.collectorNumber,
+                                            color = MaterialTheme.colors.onSurface
+                                        )
+                                    }
+                                }
                                 Text(v.setCode, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
                                 Text(v.variantType, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
                                 Text(v.sku, Modifier.weight(0.18f), style = MaterialTheme.typography.body2)

@@ -56,6 +56,8 @@ object CatalogCsvParser {
      *                      the CSV does not include a Price/Base Price column.
      */
     fun parse(csv: String, typePriceMap: Map<String, Double> = emptyMap()): Catalog {
+            // DEBUG: Print values before skip
+            // (moved inside forEach below)
         val preprocessed = preprocess(csv)
         val rawLines = preprocessed.trim().split('\n').filter { it.isNotBlank() }
         if (rawLines.isEmpty()) return Catalog(emptyList())
@@ -72,21 +74,49 @@ object CatalogCsvParser {
         val variants = mutableListOf<CardVariant>()
         val mapLower = typePriceMap.mapKeys { it.key.trim().lowercase() }
         val defaultsLower = typePriceMapDefault.mapKeys { it.key.trim().lowercase() }
-        rawLines.drop(1).forEach { raw ->
+        val collectorNumberFromNameRegex = Regex(" #([0-9A-Za-z]+)$")
+    rawLines.drop(1).forEach { raw ->
             if (raw.isBlank()) return@forEach
             val parsedCells = parseCsvLine(raw)
             val cells = sanitizeCells(parsedCells)
             val aligned = alignRow(cells, headerCells, idxSku, idxName, idxSet, idxType, idxPrice)
             if (aligned.size < headerCells.size) return@forEach
             val sku = aligned[idxSku].trim()
-            val name = aligned[idxName].trim()
-            val set = aligned[idxSet].trim()
+            var name = aligned[idxName].trim()
+            var set = aligned[idxSet].trim()
             val typeRaw = aligned[idxType].trim()
             val type = canonicalType(typeRaw)
+            // Extract set code from name if present at end (e.g., 'An Offer You Can't Refuse SLP')
+            var setCodeFromName: String? = null
+            val setCodeMatch = Regex(" ([A-Z0-9]{2,5})$").find(name)
+            if (setCodeMatch != null) {
+                val possibleSet = setCodeMatch.groupValues[1]
+                if (set.isBlank() || set.equals(possibleSet, ignoreCase = true)) {
+                    set = possibleSet
+                    name = name.removeSuffix(" $possibleSet").trim()
+                }
+                setCodeFromName = possibleSet
+            }
+            // DEBUG: Print values before skip
+            println("DEBUG: sku='$sku', name='$name', set='$set', setCodeFromName='$setCodeFromName'")
+            // Extract collector number from name if present
+            var collectorNumberFromName: String? = null
+            val match = collectorNumberFromNameRegex.find(name)
+            if (match != null) {
+                collectorNumberFromName = match.groupValues[1]
+                name = name.removeSuffix(" #${collectorNumberFromName}").trim()
+            }
             val collectorNumber = if (idxCollectorNumber >= 0 && idxCollectorNumber < aligned.size) {
                 aligned[idxCollectorNumber].trim().takeIf { it.isNotBlank() }
-            } else null
-            if (sku.isBlank() || name.isBlank()) return@forEach
+            } else collectorNumberFromName
+            // Fallback: if set is still blank but setCodeFromName is available, use it
+            if (set.isBlank() && !setCodeFromName.isNullOrBlank()) {
+                set = setCodeFromName
+            }
+            // DEBUG: Print values before skip
+            println("DEBUG: sku='$sku', name='$name', set='$set', setCodeFromName='$setCodeFromName'")
+            // Only skip if SKU or name are blank after all extraction
+            if (sku.isBlank() || name.isBlank() || set.isBlank()) return@forEach
             val dollarsFromCell = if (idxPrice >= 0 && idxPrice < aligned.size) parsePriceCell(aligned[idxPrice]) else 0.0
             val priceDollars = if (dollarsFromCell > 0.0) dollarsFromCell else {
                 val key = type.lowercase()

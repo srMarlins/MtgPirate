@@ -388,7 +388,17 @@ fun ResultsScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text("${m.deckEntry.qty}", Modifier.width(50.dp), style = MaterialTheme.typography.body1)
-                                Text(m.deckEntry.cardName, Modifier.weight(0.35f), style = MaterialTheme.typography.body1)
+                                Row(Modifier.weight(0.35f), verticalAlignment = Alignment.CenterVertically) {
+                                    Text(m.deckEntry.cardName, style = MaterialTheme.typography.body1)
+                                    val collectorNumber = m.selectedVariant?.collectorNumber
+                                    if (!collectorNumber.isNullOrBlank()) {
+                                        Spacer(Modifier.width(8.dp))
+                                        PixelBadge(
+                                            text = collectorNumber,
+                                            color = MaterialTheme.colors.onSurface
+                                        )
+                                    }
+                                }
 
                                 // Status badge with pixel styling
                                 val (statusText, statusColor) = when (m.status) {
