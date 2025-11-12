@@ -262,7 +262,7 @@ fun DraggableVariantItem(
     LaunchedEffect(visualOffset) {
         if (visualOffset != 0f) {
             wasMovedDuringDrag = true
-        } else if (wasMovedDuringDrag) {
+        } else if (wasMovedDuringDrag && visualOffset == 0f) {
             // Reset flag after a brief moment
             delay(50)
             wasMovedDuringDrag = false

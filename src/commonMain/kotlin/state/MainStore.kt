@@ -15,7 +15,10 @@ import model.MatchStatus
 import model.Catalog
 import model.Preferences
 import util.Logging
-import java.time.format.DateTimeFormatter
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.random.Random
 
 /**
  * Platform-agnostic state store for the main application.
@@ -117,18 +120,16 @@ class MainStore(
         scope.launch {
             // Load preferences
             val loaded = platformServices.loadPreferences()
-            if (loaded != null) {
-                _state.update { current ->
-                    current.copy(
-                        app = current.app.copy(
-                            preferences = loaded,
-                            logs = Logging.log(current.app.logs, "INFO", "Preferences loaded")
-                        ),
-                        includeSideboard = loaded.includeSideboard,
-                        includeCommanders = loaded.includeCommanders,
-                        includeTokens = loaded.includeTokens
-                    )
-                }
+            _state.update { current ->
+                current.copy(
+                    app = current.app.copy(
+                        preferences = loaded,
+                        logs = Logging.log(current.app.logs, "INFO", "Preferences loaded")
+                    ),
+                    includeSideboard = loaded.includeSideboard,
+                    includeCommanders = loaded.includeCommanders,
+                    includeTokens = loaded.includeTokens
+                )
             }
 
             // Load saved imports
@@ -361,16 +362,17 @@ class MainStore(
                 commanderEntry.cardName
             } else {
                 // Fallback to timestamp-based name
-                val timestamp = java.time.LocalDateTime.now()
-                    .format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"))
+                val now = Clock.System.now()
+                val localDateTime = now.toLocalDateTime(TimeZone.currentSystemDefault())
+                val timestamp = "${localDateTime.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${localDateTime.dayOfMonth}, ${localDateTime.year} ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"
                 "Import - $timestamp"
             }
 
             val import = model.SavedImport(
-                id = java.util.UUID.randomUUID().toString(),
+                id = kotlin.uuid.Uuid.random().toString(),
                 name = autoName,
                 deckText = s.deckText,
-                timestamp = java.time.Instant.now().toString(),
+                timestamp = Clock.System.now().toString(),
                 cardCount = cardCount,
                 includeSideboard = s.includeSideboard,
                 includeCommanders = s.includeCommanders,
@@ -431,7 +433,7 @@ class MainStore(
  * Each platform (Desktop, iOS, Android) implements this interface.
  */
 interface PlatformServices {
-    suspend fun loadPreferences(): Preferences?
+    suspend fun loadPreferences(): Preferences
     suspend fun savePreferences(preferences: Preferences)
     suspend fun loadCatalog(forceRefresh: Boolean, log: (String) -> Unit): Catalog?
     suspend fun exportCsv(matches: List<model.DeckEntryMatch>, onComplete: (String) -> Unit)

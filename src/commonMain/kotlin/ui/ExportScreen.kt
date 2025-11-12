@@ -26,7 +26,7 @@ fun ExportScreen(
 ) {
     val resolved = matches.filter { it.selectedVariant != null }
     val unresolved = matches.filter { it.selectedVariant == null && it.deckEntry.include }
-    val ambiguousCount = matches.count { it.status.name == "AMBIGUOUS" }
+    val ambiguousCount = matches.count { it.status == MatchStatus.AMBIGUOUS }
 
     val promo = Promotions.calculate(matches)
 
