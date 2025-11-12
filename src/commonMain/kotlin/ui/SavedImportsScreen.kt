@@ -1,3 +1,4 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
 package ui
 
 import androidx.compose.animation.animateColorAsState
@@ -175,7 +176,7 @@ fun SavedImportCard(
         try {
             val instant = Instant.parse(import.timestamp)
             val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-            "${localDateTime.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${localDateTime.dayOfMonth}, ${localDateTime.year} ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"
+            "${localDateTime.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${localDateTime.day}, ${localDateTime.year} ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"
         } catch (e: Exception) {
             "Unknown date"
         }

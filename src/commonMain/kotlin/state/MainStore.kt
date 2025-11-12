@@ -1,3 +1,4 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class, kotlin.uuid.ExperimentalUuidApi::class)
 package state
 
 import deck.DecklistParser
@@ -15,10 +16,10 @@ import model.MatchStatus
 import model.Catalog
 import model.Preferences
 import util.Logging
-import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlin.random.Random
+import kotlin.time.Clock
 
 /**
  * Platform-agnostic state store for the main application.
@@ -361,10 +362,10 @@ class MainStore(
                 // Use commander name
                 commanderEntry.cardName
             } else {
-                // Fallback to timestamp-based name
+                // Fallback to timestamp-based name using current time
                 val now = Clock.System.now()
                 val localDateTime = now.toLocalDateTime(TimeZone.currentSystemDefault())
-                val timestamp = "${localDateTime.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${localDateTime.dayOfMonth}, ${localDateTime.year} ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"
+                val timestamp = "${localDateTime.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${localDateTime.day}, ${localDateTime.year} ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"
                 "Import - $timestamp"
             }
 
