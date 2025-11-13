@@ -81,7 +81,7 @@ SB: 3 Thoughtseize
 ```
 src/
 ├── commonMain/kotlin/        # Platform-agnostic business logic
-│   ├── catalog/              # Catalog parsing
+│   ├── catalog/              # Catalog data source abstraction
 │   ├── deck/                 # Decklist parser
 │   ├── match/                # Card matching algorithms
 │   ├── model/                # Data models
@@ -90,11 +90,23 @@ src/
 │   └── util/                 # Utilities
 └── desktopMain/kotlin/       # Desktop-specific implementations
     ├── app/                  # Application entry point
-    ├── catalog/              # Catalog fetching
+    ├── catalog/              # Catalog data sources (Remote, Database)
     ├── export/               # CSV export
     ├── persistence/          # File-based storage
     └── platform/             # Platform services
 ```
+
+### Catalog Data Source Architecture
+
+The catalog system uses a pluggable architecture that allows swapping between different data sources:
+
+- **Current**: `RemoteCatalogDataSource` - Fetches from USEA HTTP/CSV endpoints
+- **Future**: `DatabaseCatalogDataSource` - Template for database integration
+- **Testing**: Mock data sources for unit testing
+
+For details on implementing a database backend, see:
+- [Catalog Data Source Architecture](docs/CATALOG_DATA_SOURCE.md)
+- [Quick Start: Database Integration](docs/QUICK_START_DATABASE.md)
 
 ## Data Storage
 
