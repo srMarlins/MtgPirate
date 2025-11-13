@@ -24,6 +24,23 @@ A Kotlin Multiplatform desktop application for importing Magic: The Gathering de
 - **Kotlin Coroutines** - Async operations and state management
 - **Kotlin Serialization** - JSON persistence
 - **KSoup** - HTML parsing for catalog fetching
+- **SQLDelight** - Type-safe SQL database (MVI architecture)
+
+## Architecture
+
+This project implements two state management approaches:
+
+1. **Legacy: MainStore** - In-memory state with manual persistence
+2. **New: MVI (Model-View-Intent)** - Database-backed reactive architecture ✨
+
+The **MVI architecture** (recommended for new features) provides:
+- 🗄️ **Database as source of truth** - State persists across restarts
+- 🔄 **Reactive UI** - Automatic updates via Kotlin Flows
+- 🎯 **Unidirectional data flow** - Easy to debug and test
+- 🧪 **Testable** - Mock services for unit testing
+- 🔌 **Platform-agnostic** - Works on Desktop, iOS, Android
+
+See [MVI Architecture Documentation](docs/MVI_ARCHITECTURE.md) for details.
 
 ## How to Use
 
@@ -107,6 +124,30 @@ The catalog system uses a pluggable architecture that allows swapping between di
 For details on implementing a database backend, see:
 - [Catalog Data Source Architecture](docs/CATALOG_DATA_SOURCE.md)
 - [Quick Start: Database Integration](docs/QUICK_START_DATABASE.md)
+
+### State Management - MVI Architecture
+
+The project includes a **new MVI (Model-View-Intent) unidirectional architecture** that uses the database as the single source of truth:
+
+- **ViewState**: Immutable UI state derived from database flows and local UI state
+- **ViewIntent**: Sealed class representing all possible user actions
+- **ViewEffect**: One-time side effects (toasts, navigation, dialogs)
+- **Database**: SQLDelight database stores catalog, preferences, imports, and logs
+- **Reactive Flows**: Database changes automatically propagate to UI
+
+**Data Flow**: Remote API → Database → ViewModel (Flows) → UI
+
+The MVI architecture provides:
+- ✅ State persists across app restarts (database-backed)
+- ✅ Reactive UI updates via Kotlin Flows
+- ✅ Unidirectional data flow (easy to debug)
+- ✅ Platform-agnostic design (works across Desktop, iOS, Android)
+- ✅ Testable architecture with mock services
+
+For details, see:
+- [MVI Architecture Documentation](docs/MVI_ARCHITECTURE.md)
+
+**Note**: Both `MainStore` (legacy) and `MviViewModel` (new) coexist in the codebase. The MVI implementation is the recommended approach for new features.
 
 ## Data Storage
 
