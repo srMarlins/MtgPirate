@@ -1,0 +1,24 @@
+CREATE TABLE SavedImportEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    deckText TEXT NOT NULL,
+    timestamp TEXT NOT NULL,
+    cardCount INTEGER NOT NULL,
+    includeSideboard INTEGER NOT NULL,
+    includeCommanders INTEGER NOT NULL,
+    includeTokens INTEGER NOT NULL
+);
+
+selectAll:
+SELECT * FROM SavedImportEntity;
+
+insertImport:
+INSERT INTO SavedImportEntity (
+    id, name, deckText, timestamp, cardCount, includeSideboard, includeCommanders, includeTokens
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+getById:
+SELECT * FROM SavedImportEntity WHERE id = ?;
+
+deleteById:
+DELETE FROM SavedImportEntity WHERE id = ?;

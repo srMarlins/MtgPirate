@@ -1,0 +1,24 @@
+CREATE TABLE CardVariantEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    nameOriginal TEXT NOT NULL,
+    nameNormalized TEXT NOT NULL,
+    setCode TEXT NOT NULL,
+    sku TEXT NOT NULL,
+    variantType TEXT NOT NULL,
+    priceInCents INTEGER NOT NULL,
+    collectorNumber TEXT,
+    imageUrl TEXT
+);
+
+CREATE INDEX idx_nameNormalized ON CardVariantEntity(nameNormalized);
+
+selectAll:
+SELECT * FROM CardVariantEntity;
+
+insertVariant:
+INSERT INTO CardVariantEntity (
+    nameOriginal, nameNormalized, setCode, sku, variantType, priceInCents, collectorNumber, imageUrl
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+getByName:
+SELECT * FROM CardVariantEntity WHERE nameNormalized = ?;
