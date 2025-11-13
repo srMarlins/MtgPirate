@@ -172,11 +172,10 @@ class MviViewModel(
                     catalogStore.replaceCatalog(catalog)
                     log("Catalog stored in database: ${catalog.variants.size} variants", "INFO")
                     
-                    // Re-run matching if we have deck entries
-                    val currentState = _localState.value
-                    if (currentState.deckEntries.isNotEmpty()) {
-                        runMatchInternal(currentState.deckEntries, catalog)
-                    }
+                    // Note: Database flow will update ViewState with the new catalog.
+                    // If there are deck entries, the user can re-run matching,
+                    // or we wait for the ViewState to be updated via the database flow
+                    // and then trigger matching with the catalog from ViewState (database).
                 } else {
                     _localState.update { it.copy(catalogError = "Failed to load catalog from remote") }
                     log("Failed to load catalog from remote", "ERROR")
@@ -561,4 +560,9 @@ interface MviPlatformServices {
     suspend fun updatePreferences(update: (Preferences) -> Preferences)
     suspend fun addLog(log: LogEntry)
     suspend fun exportCsv(matches: List<DeckEntryMatch>, onComplete: (String) -> Unit)
+    
+    /**
+     * Copy text to clipboard. Used for mobile platforms where file opening is not supported.
+     */
+    suspend fun copyToClipboard(text: String)
 }

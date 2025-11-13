@@ -376,5 +376,9 @@ class TestMviPlatformServices(private val database: Database) : MviPlatformServi
         onComplete("/tmp/test-export.csv")
     }
 
+    override suspend fun copyToClipboard(text: String) {
+        // Mock implementation for tests
+    }
+
     fun getLogs(): List<LogEntry> = logs
 }

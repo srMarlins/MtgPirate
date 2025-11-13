@@ -56,11 +56,25 @@ class DesktopMviPlatformServices(
             val path = CsvExporter.export(matches)
             onComplete(path.toString())
 
-            // Open the file with the default application
+            // Open the file with the default application on desktop
+            // On mobile, the caller should use copyToClipboard() instead
             try {
                 if (Desktop.isDesktopSupported()) {
                     Desktop.getDesktop().open(path.toFile())
                 }
+            } catch (e: Exception) {
+                // Log handled by caller
+            }
+        }
+    }
+
+    override suspend fun copyToClipboard(text: String) {
+        withContext(Dispatchers.IO) {
+            // On desktop, we can use AWT Toolkit
+            try {
+                val clipboard = java.awt.Toolkit.getDefaultToolkit().systemClipboard
+                val stringSelection = java.awt.datatransfer.StringSelection(text)
+                clipboard.setContents(stringSelection, null)
             } catch (e: Exception) {
                 // Log handled by caller
             }
