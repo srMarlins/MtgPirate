@@ -59,16 +59,31 @@ kotlin {
             }
         }
         val appleMain by creating {
+            dependsOn(commonMain)
             dependencies {
-                implementation(compose.desktop.macos_arm64)
                 implementation(libs.sqldelight.driver.native)
             }
         }
-        val macosX64Main by getting { dependsOn(appleMain) }
-        val macosArm64Main by getting { dependsOn(appleMain) }
-        val iosX64Main by getting { dependsOn(appleMain) }
-        val iosArm64Main by getting { dependsOn(appleMain) }
-        val iosSimulatorArm64Main by getting { dependsOn(appleMain) }
+        val iosMain by creating {
+            dependsOn(appleMain)
+            dependencies {
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material)
+                implementation(compose.ui)
+            }
+        }
+        val macosMain by creating {
+            dependsOn(appleMain)
+            dependencies {
+                implementation(compose.desktop.macos_arm64)
+            }
+        }
+        val macosX64Main by getting { dependsOn(macosMain) }
+        val macosArm64Main by getting { dependsOn(macosMain) }
+        val iosX64Main by getting { dependsOn(iosMain) }
+        val iosArm64Main by getting { dependsOn(iosMain) }
+        val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
     }
 }
 
