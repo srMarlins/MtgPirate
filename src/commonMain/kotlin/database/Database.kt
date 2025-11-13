@@ -28,11 +28,28 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
         db.savedImportQueries.selectAll().asFlow().mapToList(Dispatchers.IO)
             .map { entities -> entities.map { it.toDomain() } }
 
-    fun observePreferences(): Flow<List<Preferences>> =
+    fun observePreferences(): Flow<Preferences?> =
         db.preferencesQueries.selectAll().asFlow().mapToList(Dispatchers.IO)
-            .map { entities -> entities.map { it.toDomain() } }
+            .map { entities -> entities.firstOrNull()?.toDomain() }
 
     fun observeLogs(): Flow<List<LogEntry>> =
         db.logEntryQueries.selectAll().asFlow().mapToList(Dispatchers.IO)
             .map { entities -> entities.map { it.toDomain() } }
+
+    suspend fun insertImport(import: SavedImport) {
+        db.savedImportQueries.insertImport(
+            id = import.id,
+            name = import.name,
+            deckText = import.deckText,
+            timestamp = import.timestamp,
+            cardCount = import.cardCount.toLong(),
+            includeSideboard = if (import.includeSideboard) 1L else 0L,
+            includeCommanders = if (import.includeCommanders) 1L else 0L,
+            includeTokens = if (import.includeTokens) 1L else 0L
+        )
+    }
+
+    suspend fun deleteImportById(id: String) {
+        db.savedImportQueries.deleteById(id)
+    }
 }
