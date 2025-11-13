@@ -22,3 +22,9 @@ INSERT INTO CardVariantEntity (
 
 getByName:
 SELECT * FROM CardVariantEntity WHERE nameNormalized = ?;
+
+deleteAll:
+DELETE FROM CardVariantEntity;
+
+countAll:
+SELECT COUNT(*) FROM CardVariantEntity;

@@ -25,6 +25,9 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
         db.cardVariantQueries.selectAll().asFlow().mapToList(Dispatchers.IO)
             .map { entities -> entities.map { it.toDomain() } }
 
+    fun observeCatalog(): Flow<Catalog> =
+        observeCardVariants().map { variants -> Catalog(variants) }
+
     fun observeSavedImports(): Flow<List<SavedImport>> =
         db.savedImportQueries.selectAll().asFlow().mapToList(Dispatchers.IO)
             .map { entities -> entities.map { it.toDomain() } }
@@ -52,5 +55,50 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
 
     suspend fun deleteImportById(id: String) {
         db.savedImportQueries.deleteById(id)
+    }
+
+    suspend fun insertVariant(variant: CardVariant) {
+        db.cardVariantQueries.insertVariant(
+            nameOriginal = variant.nameOriginal,
+            nameNormalized = variant.nameNormalized,
+            setCode = variant.setCode,
+            sku = variant.sku,
+            variantType = variant.variantType,
+            priceInCents = variant.priceInCents.toLong(),
+            collectorNumber = variant.collectorNumber,
+            imageUrl = variant.imageUrl
+        )
+    }
+
+    suspend fun clearAllVariants() {
+        db.cardVariantQueries.deleteAll()
+    }
+
+    suspend fun getVariantCount(): Long {
+        return db.cardVariantQueries.countAll().executeAsOne()
+    }
+
+    suspend fun insertPreferences(preferences: Preferences) {
+        db.preferencesQueries.insertPreferences(
+            includeSideboard = if (preferences.includeSideboard) 1L else 0L,
+            includeCommanders = if (preferences.includeCommanders) 1L else 0L,
+            includeTokens = if (preferences.includeTokens) 1L else 0L,
+            variantPriority = preferences.variantPriority.joinToString(","),
+            setPriority = preferences.setPriority.joinToString(","),
+            fuzzyEnabled = if (preferences.fuzzyEnabled) 1L else 0L,
+            cacheMaxAgeHours = preferences.cacheMaxAgeHours.toLong()
+        )
+    }
+
+    suspend fun insertLog(log: LogEntry) {
+        db.logEntryQueries.insertLog(
+            level = log.level,
+            message = log.message,
+            timestamp = log.timestamp
+        )
+    }
+
+    suspend fun deleteOldLogs(keepCount: Long = 1000L) {
+        db.logEntryQueries.deleteOldLogs(keepCount)
     }
 }
