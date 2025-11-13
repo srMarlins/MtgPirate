@@ -67,7 +67,7 @@ fun PreferencesEntity.toDomain(): model.Preferences {
         includeSideboard = this.includeSideboard != 0L,
         includeCommanders = this.includeCommanders != 0L,
         includeTokens = this.includeTokens != 0L,
-        variantPriority = this.variantPriority.split(",").map { it.trim() },
+        variantPriority = this.variantPriority.split(",").map { it.trim() }.filter { it.isNotEmpty() },
         setPriority = this.setPriority.split(",").map { it.trim() }.filter { it.isNotEmpty() },
         fuzzyEnabled = this.fuzzyEnabled != 0L,
         cacheMaxAgeHours = this.cacheMaxAgeHours.toInt()
