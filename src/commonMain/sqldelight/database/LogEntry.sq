@@ -1,0 +1,14 @@
+CREATE TABLE LogEntryEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    level TEXT NOT NULL,
+    message TEXT NOT NULL,
+    timestamp TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM LogEntryEntity;
+
+insertLog:
+INSERT INTO LogEntryEntity (
+    level, message, timestamp
+) VALUES (?, ?, ?);

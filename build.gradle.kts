@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.jetbrains.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.sqldelight)
 }
 
 group = "org.srmarlins"
@@ -35,6 +36,7 @@ kotlin {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(libs.navigation.compose)
+                implementation(libs.sqldelight.coroutines.extensions)
             }
         }
         val commonTest by getting {
@@ -48,6 +50,7 @@ kotlin {
                 implementation(compose.material)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.coroutines.swing)
+                implementation(libs.sqldelight.driver.sqlite)
             }
         }
         val desktopTest by getting {
@@ -88,6 +91,14 @@ compose.desktop {
                     password.set(System.getenv("MACOS_NOTARIZATION_PASSWORD") ?: "")
                 }
             }
+        }
+    }
+}
+
+sqldelight {
+    databases {
+        create("MtgPirateDatabase") {
+            packageName.set("com.srmarlins.mtgpirate")
         }
     }
 }

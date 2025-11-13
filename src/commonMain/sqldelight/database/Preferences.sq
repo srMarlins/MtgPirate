@@ -1,0 +1,18 @@
+CREATE TABLE PreferencesEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    includeSideboard INTEGER NOT NULL,
+    includeCommanders INTEGER NOT NULL,
+    includeTokens INTEGER NOT NULL,
+    variantPriority TEXT NOT NULL,
+    setPriority TEXT NOT NULL,
+    fuzzyEnabled INTEGER NOT NULL,
+    cacheMaxAgeHours INTEGER NOT NULL
+);
+
+selectAll:
+SELECT * FROM PreferencesEntity;
+
+insertPreferences:
+INSERT INTO PreferencesEntity (
+    includeSideboard, includeCommanders, includeTokens, variantPriority, setPriority, fuzzyEnabled, cacheMaxAgeHours
+) VALUES (?, ?, ?, ?, ?, ?, ?);
