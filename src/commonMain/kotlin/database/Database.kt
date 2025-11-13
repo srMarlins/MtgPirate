@@ -18,7 +18,7 @@ expect class DatabaseDriverFactory {
 
 class Database(databaseDriverFactory: DatabaseDriverFactory) {
     private val driver = databaseDriverFactory.createDriver()
-    val db = MtgPirateDatabase(driver)
+    private val db = MtgPirateDatabase(driver)
 
     fun observeCardVariants(): Flow<List<CardVariant>> =
         db.cardVariantQueries.selectAll().asFlow().mapToList(Dispatchers.IO)
