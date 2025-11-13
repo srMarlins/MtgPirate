@@ -9,6 +9,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import model.CardVariant
+import model.Catalog
 import model.LogEntry
 import model.Preferences
 import model.SavedImport

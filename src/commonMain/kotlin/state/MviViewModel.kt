@@ -1,3 +1,4 @@
+@file:OptIn(kotlin.uuid.ExperimentalUuidApi::class, kotlin.time.ExperimentalTime::class)
 package state
 
 import database.CatalogStore
@@ -12,6 +13,7 @@ import kotlinx.coroutines.withContext
 import match.Matcher
 import model.*
 import util.Logging
+import kotlin.time.Clock
 
 /**
  * MVI (Model-View-Intent) ViewModel implementation.
@@ -44,17 +46,23 @@ class MviViewModel(
         // Subscribe to database flows and combine into ViewState
         scope.launch {
             combine(
-                database.observeCatalog().map { catalog -> catalog },
-                database.observePreferences().map { prefs -> prefs ?: Preferences() },
+                database.observeCatalog(),
+                database.observePreferences().map { it ?: Preferences() },
                 database.observeSavedImports(),
                 database.observeLogs(),
                 _localState
-            ) { catalog, preferences, savedImports, logs, localState ->
+            ) { flows: Array<Any> ->
+                val catalog = flows[0] as Catalog
+                val preferences = flows[1] as Preferences
+                val savedImports = flows[2] as List<*>
+                val logs = flows[3] as List<*>
+                val localState = flows[4] as LocalUiState
+                
                 ViewState(
-                    catalog = catalog,
+                    catalog = if (catalog.variants.isEmpty()) null else catalog,
                     preferences = preferences,
-                    savedImports = savedImports,
-                    logs = logs,
+                    savedImports = savedImports.filterIsInstance<SavedImport>(),
+                    logs = logs.filterIsInstance<LogEntry>(),
                     deckText = localState.deckText,
                     deckEntries = localState.deckEntries,
                     matches = localState.matches,
@@ -72,9 +80,9 @@ class MviViewModel(
                     wizardCompletedSteps = localState.wizardCompletedSteps,
                     isDarkTheme = localState.isDarkTheme
                 )
-            }.collect { newState ->
+            }.onEach { newState ->
                 _viewState.value = newState
-            }
+            }.launchIn(scope)
         }
     }
 
@@ -403,7 +411,7 @@ class MviViewModel(
                 id = kotlin.uuid.Uuid.random().toString(),
                 name = name,
                 deckText = state.deckText,
-                timestamp = kotlinx.datetime.Clock.System.now().toString(),
+                timestamp = Clock.System.now().toString(),
                 cardCount = entries.size,
                 includeSideboard = preferences.includeSideboard,
                 includeCommanders = preferences.includeCommanders,
@@ -449,7 +457,7 @@ class MviViewModel(
 
     private fun log(message: String, level: String = "INFO") {
         scope.launch {
-            platformServices.addLog(LogEntry(level, message, kotlinx.datetime.Clock.System.now().toString()))
+            platformServices.addLog(LogEntry(level, message, Clock.System.now().toString()))
         }
     }
 }
