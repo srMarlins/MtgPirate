@@ -284,7 +284,7 @@ fun IosBottomNavBar(
  * iOS navigation button for bottom bar.
  */
 @Composable
-fun IosNavButton(
+fun RowScope.IosNavButton(
     text: String,
     isActive: Boolean,
     onClick: () -> Unit,
@@ -296,7 +296,6 @@ fun IosNavButton(
         enabled = enabled,
         variant = if (isActive) PixelButtonVariant.PRIMARY else PixelButtonVariant.SURFACE,
         modifier = Modifier
-            .fillMaxWidth()
             .weight(1f)
             .padding(horizontal = 4.dp)
     )

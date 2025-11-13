@@ -30,12 +30,12 @@ object ScryfallImageEnricher {
         if (variant.imageUrl != null) return variant
 
         // Rate limiting
-        val now = System.currentTimeMillis()
+        val now = platform.currentTimeMillis()
         val timeSinceLastRequest = now - lastRequestTime
         if (timeSinceLastRequest < RATE_LIMIT_DELAY_MS) {
             delay(RATE_LIMIT_DELAY_MS - timeSinceLastRequest)
         }
-        lastRequestTime = System.currentTimeMillis()
+        lastRequestTime = platform.currentTimeMillis()
 
         try {
             val imageUrl = if (variant.collectorNumber != null) {

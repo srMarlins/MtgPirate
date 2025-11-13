@@ -130,7 +130,7 @@ class IosMviPlatformServices(
             if (variant != null) {
                 val qty = match.deckEntry.qty
                 val priceCents = variant.priceInCents
-                val priceStr = "%.2f".format(priceCents / 100.0)
+                val priceStr = platform.formatDecimal(priceCents / 100.0, 2)
                 
                 sb.appendLine("${variant.nameOriginal},${variant.setCode},${variant.sku},${variant.variantType},$qty,$priceStr")
                 
@@ -148,7 +148,7 @@ class IosMviPlatformServices(
         sb.appendLine("Regular Cards,$regularCount")
         sb.appendLine("Holo Cards,$holoCount")
         sb.appendLine("Foil Cards,$foilCount")
-        sb.appendLine("Total Price,%.2f".format(totalPriceCents / 100.0))
+        sb.appendLine("Total Price,${platform.formatDecimal(totalPriceCents / 100.0, 2)}")
         
         return sb.toString()
     }
