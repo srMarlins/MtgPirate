@@ -64,7 +64,7 @@ fun ResultsScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.width(8.dp))
-                PixelBadge(text = "STEP 3/3", color = MaterialTheme.colors.secondary)
+                PixelBadge(text = "STEP 3/4", color = MaterialTheme.colors.secondary)
                 Spacer(Modifier.width(8.dp))
                 BlinkingCursor()
             }
