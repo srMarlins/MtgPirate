@@ -33,11 +33,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.flow.onEach
 import platform.DesktopPlatformServices
 import state.MainStore
 import state.MainIntent
+import state.MainState
 import ui.*
+import util.Logging
 import java.awt.Cursor
+import kotlin.div
+import kotlin.text.matches
 
 /**
  * Unified custom title bar with window controls and app navigation
@@ -51,6 +56,7 @@ fun FrameWindowScope.CustomTitleBar(
     loadingCatalog: Boolean,
     hasCatalog: Boolean,
     hasMatches: Boolean,
+    resultsEnabled: Boolean,
     onCatalogClick: () -> Unit,
     onExportClick: () -> Unit,
     onMatchesClick: () -> Unit,
@@ -131,7 +137,7 @@ fun FrameWindowScope.CustomTitleBar(
                     CompactPixelButton(
                         text = "RESULTS",
                         onClick = onResultsClick,
-                        enabled = hasMatches,
+                        enabled = resultsEnabled,
                         color = Color(0xFF06B6D4)
                     )
                 }
@@ -285,40 +291,51 @@ fun main() = application {
 
 
     // Define wizard steps based on state
-    val wizardSteps = remember(state.wizardCompletedSteps, state.app.deckEntries.isNotEmpty(), state.app.matches.isNotEmpty()) {
-        listOf(
-            Step(
-                number = 1,
-                title = "Import Deck",
-                description = "Paste your decklist",
-                state = when {
-                    state.wizardCompletedSteps.contains(1) -> StepState.COMPLETED
-                    state.wizardCompletedSteps.isEmpty() -> StepState.ACTIVE
-                    else -> StepState.LOCKED
-                }
-            ),
-            Step(
-                number = 2,
-                title = "Configure",
-                description = "Set preferences",
-                state = when {
-                    state.wizardCompletedSteps.contains(2) -> StepState.COMPLETED
-                    state.wizardCompletedSteps.contains(1) -> StepState.ACTIVE
-                    else -> StepState.LOCKED
-                }
-            ),
-            Step(
-                number = 3,
-                title = "Review Results",
-                description = "Select cards & export",
-                state = when {
-                    state.wizardCompletedSteps.contains(3) -> StepState.COMPLETED
-                    state.wizardCompletedSteps.contains(2) -> StepState.ACTIVE
-                    else -> StepState.LOCKED
-                }
+    val wizardSteps =
+        remember(state.wizardCompletedSteps, state.app.deckEntries.isNotEmpty(), state.app.matches.isNotEmpty()) {
+            listOf(
+                Step(
+                    number = 1,
+                    title = "Import Deck",
+                    description = "Paste your decklist",
+                    state = when {
+                        state.wizardCompletedSteps.contains(1) -> StepState.COMPLETED
+                        state.wizardCompletedSteps.isEmpty() -> StepState.ACTIVE
+                        else -> StepState.LOCKED
+                    }
+                ),
+                Step(
+                    number = 2,
+                    title = "Configure",
+                    description = "Set preferences",
+                    state = when {
+                        state.wizardCompletedSteps.contains(2) -> StepState.COMPLETED
+                        state.wizardCompletedSteps.contains(1) -> StepState.ACTIVE
+                        else -> StepState.LOCKED
+                    }
+                ),
+                Step(
+                    number = 3,
+                    title = "Review",
+                    description = "Review matches",
+                    state = when {
+                        state.wizardCompletedSteps.contains(3) -> StepState.COMPLETED
+                        state.wizardCompletedSteps.contains(2) -> StepState.ACTIVE
+                        else -> StepState.LOCKED
+                    }
+                ),
+                Step(
+                    number = 4,
+                    title = "Export",
+                    description = "Apply coupons & shipping",
+                    state = when {
+                        state.wizardCompletedSteps.contains(4) -> StepState.COMPLETED
+                        state.wizardCompletedSteps.contains(3) -> StepState.ACTIVE
+                        else -> StepState.LOCKED
+                    }
+                )
             )
-        )
-    }
+        }
 
     Window(
         onCloseRequest = ::exitApplication,
@@ -340,15 +357,12 @@ fun main() = application {
                     loadingCatalog = state.loadingCatalog,
                     hasCatalog = state.app.catalog != null,
                     hasMatches = state.app.matches.any { it.selectedVariant != null },
+                    resultsEnabled = state.wizardCompletedSteps.contains(2),
                     onCatalogClick = {
                         if (state.app.catalog != null) {
                             if (navController.currentDestination?.route != "catalog") {
                                 navController.navigate("catalog") {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = false
-                                    }
                                     launchSingleTop = true
-                                    restoreState = false
                                 }
                             }
                         } else {
@@ -359,22 +373,22 @@ fun main() = application {
                     onMatchesClick = {
                         if (navController.currentDestination?.route != "matches") {
                             navController.navigate("matches") {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = false
-                                }
                                 launchSingleTop = true
-                                restoreState = false
                             }
                         }
                     },
                     onResultsClick = {
-                        if (navController.currentDestination?.route != "results") {
-                            navController.navigate("results") {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = false
+                        when (navController.currentDestination?.route) {
+                            "resolve" -> {
+                                // Auto-close Resolve and return to the existing Results on the back stack
+                                store.dispatch(MainIntent.CloseResolve)
+                                navController.popBackStack()
+                            }
+                            "results" -> { /* Already on Results, no-op */ }
+                            else -> {
+                                navController.navigate("results") {
+                                    launchSingleTop = true
                                 }
-                                launchSingleTop = true
-                                restoreState = false
                             }
                         }
                     }
@@ -383,337 +397,424 @@ fun main() = application {
                 // Main content
                 Box(modifier = Modifier.fillMaxSize()) {
 
-            // Track current route to determine active step with stability
-            val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry)
-            val currentRoute by remember { derivedStateOf { currentBackStackEntry?.destination?.route } }
-            val currentStep = remember(currentRoute) {
-                when (currentRoute) {
-                    "import" -> 1
-                    "preferences" -> 2
-                    "results" -> 3
-                    else -> 1
-                }
-            }
+                    // Track current route to determine active step with stability
+                    val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry)
+                    val currentRoute by remember { derivedStateOf { currentBackStackEntry?.destination?.route } }
+                    val currentStep = remember(currentRoute) {
+                        when (currentRoute) {
+                            "import" -> 1
+                            "preferences" -> 2
+                            "results" -> 3
+                            "export" -> 4
+                            else -> 1
+                        }
+                    }
 
-            Scaffold(
-                topBar = {
-                    // Show stepper only for wizard routes
-                    if (currentRoute in listOf("import", "preferences", "results")) {
-                        Column {
-                            AnimatedStepper(
-                                steps = wizardSteps,
-                                currentStep = currentStep,
-                                onStepClick = { step ->
-                                    when (step) {
-                                        1 -> navController.navigate("import") {
-                                            popUpTo("import") { inclusive = false }
-                                        }
-                                        2 -> if (state.wizardCompletedSteps.contains(1)) {
-                                            navController.navigate("preferences") {
-                                                popUpTo("import") { inclusive = false }
+                    Scaffold(
+                        topBar = {
+                            // Show stepper only for wizard routes
+                            if (currentRoute in listOf("import", "preferences", "results", "export")) {
+                                Column {
+                                    AnimatedStepper(
+                                        steps = wizardSteps,
+                                        currentStep = currentStep,
+                                        onStepClick = { step ->
+                                            when (step) {
+                                                1 -> navController.navigate("import") {
+                                                    popUpTo("import") { inclusive = false }
+                                                }
+
+                                                2 -> if (state.wizardCompletedSteps.contains(1)) {
+                                                    navController.navigate("preferences") {
+                                                        popUpTo("import") { inclusive = false }
+                                                    }
+                                                }
+
+                                                3 -> if (state.wizardCompletedSteps.contains(2)) {
+                                                    navController.navigate("results") {
+                                                        popUpTo("import") { inclusive = false }
+                                                    }
+                                                }
+
+                                                4 -> if (state.wizardCompletedSteps.contains(3)) {
+                                                    navController.navigate("export") {
+                                                        popUpTo("import") { inclusive = false }
+                                                    }
+                                                }
                                             }
                                         }
-                                        3 -> if (state.wizardCompletedSteps.contains(2)) {
-                                            navController.navigate("results") {
-                                                popUpTo("import") { inclusive = false }
+                                    )
+                                    PixelDivider(animated = true, thickness = 3.dp)
+                                }
+                            }
+                        }
+                    ) { padding ->
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            // Background scanline effect for entire app
+                            ScanlineEffect(alpha = 0.02f)
+
+                            NavHost(
+                                navController = navController,
+                                startDestination = "import",
+                                modifier = Modifier.fillMaxSize().padding(padding),
+                                enterTransition = { EnterTransition.None },
+                                exitTransition = { ExitTransition.None },
+                                popEnterTransition = { EnterTransition.None },
+                                popExitTransition = { ExitTransition.None }
+                            ) {
+                                composable(
+                                    "import",
+                                    enterTransition = {
+                                        when (initialState.destination.route) {
+                                            "preferences" -> slideInHorizontally(
+                                                initialOffsetX = { -it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeIn(animationSpec = tween(400))
+
+                                            else -> EnterTransition.None
+                                        }
+                                    },
+                                    exitTransition = {
+                                        when (targetState.destination.route) {
+                                            "preferences" -> slideOutHorizontally(
+                                                targetOffsetX = { -it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeOut(animationSpec = tween(400))
+
+                                            else -> ExitTransition.None
+                                        }
+                                    }
+                                ) {
+                                    // Step 1: Deck Import (Wizard Start)
+                                    Box(modifier = Modifier.fillMaxSize()) {
+                                        // Scanline effect overlay
+                                        ScanlineEffect(alpha = 0.03f)
+
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(24.dp),
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            // Title with pixel styling - compact layout
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    "▸ DECK IMPORT",
+                                                    style = MaterialTheme.typography.h4,
+                                                    color = MaterialTheme.colors.primary,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Spacer(Modifier.width(8.dp))
+                                                PixelBadge(
+                                                    text = "STEP 1/4",
+                                                    color = MaterialTheme.colors.secondary
+                                                )
+                                                Spacer(Modifier.width(8.dp))
+                                                BlinkingCursor()
+                                            }
+
+                                            Spacer(Modifier.height(4.dp))
+
+                                            Text(
+                                                "└─ Paste your decklist below. Format: [quantity] [cardname]",
+                                                style = MaterialTheme.typography.caption,
+                                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                                            )
+
+                                            Spacer(Modifier.height(16.dp))
+
+                                            PixelCard(glowing = state.deckText.isBlank()) {
+                                                PixelTextField(
+                                                    value = state.deckText,
+                                                    onValueChange = { store.dispatch(MainIntent.UpdateDeckText(it)) },
+                                                    label = "DECKLIST.TXT",
+                                                    placeholder = "4 Lightning Bolt\n2 Brainstorm\n1 Black Lotus",
+                                                    modifier = Modifier.fillMaxWidth().height(400.dp)
+                                                )
+                                            }
+
+                                            Spacer(Modifier.height(24.dp))
+
+                                            Row(
+                                                Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                            ) {
+                                                PixelButton(
+                                                    text = "📚 View Saved Imports",
+                                                    onClick = {
+                                                        store.dispatch(MainIntent.SetShowSavedImportsWindow(true))
+                                                    },
+                                                    modifier = Modifier.weight(1f),
+                                                    variant = PixelButtonVariant.SURFACE
+                                                )
+
+                                                PixelButton(
+                                                    text = "Next: Configure →",
+                                                    onClick = {
+                                                        // Auto-save the import (dedup happens in saveCurrentImport)
+                                                        val autoName =
+                                                            "" // Name will be auto-generated from commander or timestamp
+                                                        store.dispatch(MainIntent.SaveCurrentImport(autoName))
+
+                                                        store.dispatch(MainIntent.ParseDeck)
+                                                        store.dispatch(MainIntent.CompleteWizardStep(1))
+                                                        navController.navigate("preferences") {
+                                                            launchSingleTop = true
+                                                        }
+                                                    },
+                                                    enabled = state.deckText.isNotBlank(),
+                                                    modifier = Modifier.weight(1f),
+                                                    variant = PixelButtonVariant.SECONDARY
+                                                )
                                             }
                                         }
                                     }
                                 }
-                            )
-                            PixelDivider(animated = true, thickness = 3.dp)
-                        }
-                    }
-                }
-            ) { padding ->
-                Box(modifier = Modifier.fillMaxSize()) {
-                    // Background scanline effect for entire app
-                    ScanlineEffect(alpha = 0.02f)
+                                composable(
+                                    "preferences",
+                                    enterTransition = {
+                                        when (initialState.destination.route) {
+                                            "import" -> slideInHorizontally(
+                                                initialOffsetX = { it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeIn(animationSpec = tween(400))
 
-                    NavHost(
-                        navController = navController,
-                        startDestination = "import",
-                        modifier = Modifier.fillMaxSize().padding(padding),
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None },
-                        popEnterTransition = { EnterTransition.None },
-                        popExitTransition = { ExitTransition.None }
-                    ) {
-                    composable(
-                        "import",
-                        enterTransition = {
-                            when (initialState.destination.route) {
-                                "preferences" -> slideInHorizontally(
-                                    initialOffsetX = { -it },
-                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
-                                ) + fadeIn(animationSpec = tween(400))
-                                else -> EnterTransition.None
-                            }
-                        },
-                        exitTransition = {
-                            when (targetState.destination.route) {
-                                "preferences" -> slideOutHorizontally(
-                                    targetOffsetX = { -it },
-                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
-                                ) + fadeOut(animationSpec = tween(400))
-                                else -> ExitTransition.None
-                            }
-                        }
-                    ) {
-                        // Step 1: Deck Import (Wizard Start)
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            // Scanline effect overlay
-                            ScanlineEffect(alpha = 0.03f)
+                                            "results" -> slideInHorizontally(
+                                                initialOffsetX = { -it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeIn(animationSpec = tween(400))
 
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(24.dp),
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                // Title with pixel styling - compact layout
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        "▸ DECK IMPORT",
-                                        style = MaterialTheme.typography.h4,
-                                        color = MaterialTheme.colors.primary,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                    PixelBadge(
-                                        text = "STEP 1/3",
-                                        color = MaterialTheme.colors.secondary
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                    BlinkingCursor()
-                                }
+                                            else -> EnterTransition.None
+                                        }
+                                    },
+                                    exitTransition = {
+                                        when (targetState.destination.route) {
+                                            "import" -> slideOutHorizontally(
+                                                targetOffsetX = { it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeOut(animationSpec = tween(400))
 
-                                Spacer(Modifier.height(4.dp))
+                                            "results" -> slideOutHorizontally(
+                                                targetOffsetX = { -it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeOut(animationSpec = tween(400))
 
-                                Text(
-                                    "└─ Paste your decklist below. Format: [quantity] [cardname]",
-                                    style = MaterialTheme.typography.caption,
-                                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                                )
-
-                                Spacer(Modifier.height(16.dp))
-
-                                PixelCard(glowing = state.deckText.isBlank()) {
-                                    PixelTextField(
-                                        value = state.deckText,
-                                        onValueChange = { store.dispatch(MainIntent.UpdateDeckText(it)) },
-                                        label = "DECKLIST.TXT",
-                                        placeholder = "4 Lightning Bolt\n2 Brainstorm\n1 Black Lotus",
-                                        modifier = Modifier.fillMaxWidth().height(400.dp)
-                                    )
-                                }
-
-                                Spacer(Modifier.height(24.dp))
-
-                                Row(
-                                    Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                            else -> ExitTransition.None
+                                        }
+                                    }
                                 ) {
-                                    PixelButton(
-                                        text = "📚 View Saved Imports",
-                                        onClick = {
-                                            store.dispatch(MainIntent.SetShowSavedImportsWindow(true))
+                                    // Step 2: Preferences (Wizard Middle)
+                                    PreferencesWizardScreen(
+                                        includeSideboard = state.includeSideboard,
+                                        includeCommanders = state.includeCommanders,
+                                        includeTokens = state.includeTokens,
+                                        variantPriority = state.app.preferences.variantPriority,
+                                        onIncludeSideboardChange = { store.dispatch(MainIntent.ToggleIncludeSideboard(it)) },
+                                        onIncludeCommandersChange = {
+                                            store.dispatch(
+                                                MainIntent.ToggleIncludeCommanders(
+                                                    it
+                                                )
+                                            )
                                         },
-                                        modifier = Modifier.weight(1f),
-                                        variant = PixelButtonVariant.SURFACE
+                                        onIncludeTokensChange = { store.dispatch(MainIntent.ToggleIncludeTokens(it)) },
+                                        onVariantPriorityChange = { store.dispatch(MainIntent.UpdateVariantPriority(it)) },
+                                        onBack = { navController.navigateUp() },
+                                        onNext = {
+                                            store.dispatch(MainIntent.CompleteWizardStep(2))
+                                            store.dispatch(MainIntent.RunMatch)
+                                            navController.navigate("results") {
+                                                launchSingleTop = true
+                                            }
+                                        }
                                     )
+                                }
+                                composable(
+                                    "results",
+                                    enterTransition = {
+                                        when (initialState.destination.route) {
+                                            "preferences" -> slideInHorizontally(
+                                                initialOffsetX = { it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeIn(animationSpec = tween(400))
 
-                                    PixelButton(
-                                        text = "Next: Configure →",
-                                        onClick = {
-                                            // Auto-save the import (dedup happens in saveCurrentImport)
-                                            val autoName = "" // Name will be auto-generated from commander or timestamp
-                                            store.dispatch(MainIntent.SaveCurrentImport(autoName))
+                                            "export" -> slideInHorizontally(
+                                                initialOffsetX = { -it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeIn(animationSpec = tween(400))
 
-                                            store.dispatch(MainIntent.ParseDeck)
-                                            store.dispatch(MainIntent.CompleteWizardStep(1))
-                                            navController.navigate("preferences") {
+                                            // Coming back from resolve: slide from top and fade in (vertical variant)
+                                            "resolve" -> slideInVertically(
+                                                initialOffsetY = { -it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeIn(animationSpec = tween(400))
+                                            else -> EnterTransition.None
+                                        }
+                                    },
+                                    exitTransition = {
+                                        when (targetState.destination.route) {
+                                            "preferences" -> slideOutHorizontally(
+                                                targetOffsetX = { it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeOut(animationSpec = tween(400))
+
+                                            "export" -> slideOutHorizontally(
+                                                targetOffsetX = { -it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeOut(animationSpec = tween(400))
+
+                                            // Going to resolve: slide up and fade out (vertical variant)
+                                            "resolve" -> slideOutVertically(
+                                                targetOffsetY = { -it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeOut(animationSpec = tween(400))
+                                            else -> ExitTransition.None
+                                        }
+                                    }
+                                ) {
+                                    // Step 3: Results (Wizard End)
+                                    ResultsScreen(
+                                        matches = state.app.matches,
+                                        onResolve = { idx ->
+                                            store.dispatch(MainIntent.OpenResolve(idx))
+                                            navController.navigate("resolve") {
                                                 launchSingleTop = true
                                             }
                                         },
-                                        enabled = state.deckText.isNotBlank(),
-                                        modifier = Modifier.weight(1f),
-                                        variant = PixelButtonVariant.SECONDARY
+                                        onShowAllCandidates = { idx ->
+                                            store.dispatch(MainIntent.OpenResolve(idx))
+                                            navController.navigate("resolve") {
+                                                launchSingleTop = true
+                                            }
+                                        },
+                                        onClose = { navController.navigateUp() },
+                                        onExport = {
+                                            store.dispatch(MainIntent.CompleteWizardStep(3))
+                                            navController.navigate("export") { launchSingleTop = true }
+                                        }
                                     )
                                 }
-                            }
-                        }
-                    }
-                    composable(
-                        "preferences",
-                        enterTransition = {
-                            when (initialState.destination.route) {
-                                "import" -> slideInHorizontally(
-                                    initialOffsetX = { it },
-                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
-                                ) + fadeIn(animationSpec = tween(400))
-                                "results" -> slideInHorizontally(
-                                    initialOffsetX = { -it },
-                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
-                                ) + fadeIn(animationSpec = tween(400))
-                                else -> EnterTransition.None
-                            }
-                        },
-                        exitTransition = {
-                            when (targetState.destination.route) {
-                                "import" -> slideOutHorizontally(
-                                    targetOffsetX = { it },
-                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
-                                ) + fadeOut(animationSpec = tween(400))
-                                "results" -> slideOutHorizontally(
-                                    targetOffsetX = { -it },
-                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
-                                ) + fadeOut(animationSpec = tween(400))
-                                else -> ExitTransition.None
-                            }
-                        }
-                    ) {
-                        // Step 2: Preferences (Wizard Middle)
-                        PreferencesWizardScreen(
-                            includeSideboard = state.includeSideboard,
-                            includeCommanders = state.includeCommanders,
-                            includeTokens = state.includeTokens,
-                            variantPriority = state.app.preferences.variantPriority,
-                            onIncludeSideboardChange = { store.dispatch(MainIntent.ToggleIncludeSideboard(it)) },
-                            onIncludeCommandersChange = { store.dispatch(MainIntent.ToggleIncludeCommanders(it)) },
-                            onIncludeTokensChange = { store.dispatch(MainIntent.ToggleIncludeTokens(it)) },
-                            onVariantPriorityChange = { store.dispatch(MainIntent.UpdateVariantPriority(it)) },
-                            onBack = { navController.navigateUp() },
-                            onNext = {
-                                store.dispatch(MainIntent.CompleteWizardStep(2))
-                                store.dispatch(MainIntent.RunMatch)
-                                navController.navigate("results") {
-                                    launchSingleTop = true
-                                }
-                            }
-                        )
-                    }
-                    composable(
-                        "results",
-                        enterTransition = {
-                            when (initialState.destination.route) {
-                                "preferences" -> slideInHorizontally(
-                                    initialOffsetX = { it },
-                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
-                                ) + fadeIn(animationSpec = tween(400))
-                                "resolve" -> EnterTransition.None
-                                else -> EnterTransition.None
-                            }
-                        },
-                        exitTransition = {
-                            when (targetState.destination.route) {
-                                "preferences" -> slideOutHorizontally(
-                                    targetOffsetX = { it },
-                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
-                                ) + fadeOut(animationSpec = tween(400))
-                                "resolve" -> ExitTransition.None
-                                else -> ExitTransition.None
-                            }
-                        }
-                    ) {
-                        // Step 3: Results (Wizard End)
-                        ResultsScreen(
-                            matches = state.app.matches,
-                            onResolve = { idx ->
-                                store.dispatch(MainIntent.OpenResolve(idx))
-                                navController.navigate("resolve") {
-                                    launchSingleTop = true
-                                }
-                            },
-                            onShowAllCandidates = { idx ->
-                                store.dispatch(MainIntent.OpenResolve(idx))
-                                navController.navigate("resolve") {
-                                    launchSingleTop = true
-                                }
-                            },
-                            onClose = { navController.navigateUp() },
-                            onExport = { store.dispatch(MainIntent.ExportWizardResults) }
-                        )
-                    }
-                    composable(
-                        "catalog",
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None }
-                    ) {
-                        val catalog = state.app.catalog
-                        if (catalog != null) {
-                            CatalogScreen(catalog = catalog) { navController.navigateUp() }
-                        } else {
-                            Text("No catalog loaded.", modifier = Modifier.padding(16.dp))
-                        }
-                    }
-                    composable(
-                        "matches",
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None }
-                    ) {
-                        MatchesScreen(matches = state.app.matches) { navController.navigateUp() }
-                    }
-                    composable(
-                        "resolve",
-                        enterTransition = {
-                            slideInVertically(
-                                initialOffsetY = { it },
-                                animationSpec = tween(250, easing = FastOutSlowInEasing)
-                            )
-                        },
-                        exitTransition = {
-                            slideOutVertically(
-                                targetOffsetY = { it },
-                                animationSpec = tween(250, easing = FastOutSlowInEasing)
-                            )
-                        }
-                    ) {
-                        val index = state.showCandidatesFor
-                        val match = index?.let { state.app.matches.getOrNull(it) }
-                        if (index != null && match != null) {
-                            ResolveScreen(
-                                match = match,
-                                onSelect = { variant ->
-                                    store.dispatch(MainIntent.ResolveCandidate(index, variant))
-                                    store.dispatch(MainIntent.CloseResolve)
-                                    navController.navigateUp()
-                                },
-                                onBack = {
-                                    store.dispatch(MainIntent.CloseResolve)
-                                    navController.navigateUp()
-                                }
-                            )
-                        } else {
-                            Column(Modifier.fillMaxSize().padding(16.dp)) {
-                                Text("Nothing to resolve")
-                                Spacer(Modifier.height(8.dp))
-                                Button(onClick = { navController.navigateUp() }) { Text("Back") }
-                            }
-                        }
-                    }
-                }
-                }
-            }
+                                composable(
+                                    "export",
+                                    enterTransition = {
+                                        when (initialState.destination.route) {
+                                            "results" -> slideInHorizontally(
+                                                initialOffsetX = { it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeIn(animationSpec = tween(400))
 
-            // Show SavedImportsDialog when state indicates it should be shown
-            if (state.showSavedImportsWindow) {
-                SavedImportsDialog(
-                    savedImports = state.app.savedImports,
-                    onDismiss = {
-                        store.dispatch(MainIntent.SetShowSavedImportsWindow(false))
-                    },
-                    onSelectImport = { importId ->
-                        store.dispatch(MainIntent.LoadSavedImport(importId))
-                        // After loading, the wizard will open automatically
-                    },
-                    onDeleteImport = { importId ->
-                        store.dispatch(MainIntent.DeleteSavedImport(importId))
-                    }
-                )
+                                            else -> EnterTransition.None
+                                        }
+                                    },
+                                    exitTransition = {
+                                        when (targetState.destination.route) {
+                                            "results" -> slideOutHorizontally(
+                                                targetOffsetX = { it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeOut(animationSpec = tween(400))
+
+                                            else -> ExitTransition.None
+                                        }
+                                    }
+                                ) {
+                                    ExportScreen(
+                                        matches = state.app.matches,
+                                        onBack = { navController.navigateUp() },
+                                        onExport = {
+                                            store.dispatch(MainIntent.ExportWizardResults)
+                                            store.dispatch(MainIntent.CompleteWizardStep(4))
+                                        }
+                                    )
+                                }
+                                composable(
+                                    "catalog",
+                                    enterTransition = { EnterTransition.None },
+                                    exitTransition = { ExitTransition.None }
+                                ) {
+                                    val catalog = state.app.catalog
+                                    if (catalog != null) {
+                                        CatalogScreen(catalog = catalog) { navController.navigateUp() }
+                                    } else {
+                                        Text("No catalog loaded.", modifier = Modifier.padding(16.dp))
+                                    }
+                                }
+                                composable(
+                                    "matches",
+                                    enterTransition = { EnterTransition.None },
+                                    exitTransition = { ExitTransition.None }
+                                ) {
+                                    MatchesScreen(matches = state.app.matches) { navController.navigateUp() }
+                                }
+                                composable(
+                                    "resolve",
+                                    enterTransition = {
+                                        when (initialState.destination.route) {
+                                            // Coming from results -> resolve: slide up from bottom and fade in (vertical twin of stepper)
+                                            "results" -> slideInVertically(
+                                                initialOffsetY = { it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeIn(animationSpec = tween(400))
+                                            else -> EnterTransition.None
+                                        }
+                                    },
+                                    exitTransition = {
+                                        when (targetState.destination.route) {
+                                            // Going back to results: slide down to bottom and fade out (vertical twin of stepper)
+                                            "results" -> slideOutVertically(
+                                                targetOffsetY = { it },
+                                                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                            ) + fadeOut(animationSpec = tween(400))
+                                            else -> ExitTransition.None
+                                        }
+                                    }
+                                ) {
+                                    val index = state.showCandidatesFor
+                                    val match = index?.let { state.app.matches.getOrNull(it) }
+                                    if (index != null && match != null) {
+                                        ResolveScreen(
+                                            match = match,
+                                            onSelect = { variant ->
+                                                store.dispatch(MainIntent.ResolveCandidate(index, variant))
+                                                store.dispatch(MainIntent.CloseResolve)
+                                                navController.navigateUp()
+                                            },
+                                            onBack = {
+                                                store.dispatch(MainIntent.CloseResolve)
+                                                navController.navigateUp()
+                                            }
+                                        )
+                                    } else {
+                                        Column(Modifier.fillMaxSize().padding(16.dp)) {
+                                            Text("Nothing to resolve")
+                                            Spacer(Modifier.height(8.dp))
+                                            Button(onClick = { navController.navigateUp() }) { Text("Back") }
+                                        }
+                                    }
+                                }
+
+
+                            }
+
+                            // Show SavedImportsDialog when state indicates it should be shown
+                            if (state.showSavedImportsWindow) {
+                                SavedImportsDialog(
+                                    savedImports = state.app.savedImports,
+                                    onDismiss = {
+                                        store.dispatch(MainIntent.SetShowSavedImportsWindow(false))
+                                    },
+                                    onSelectImport = { importId ->
+                                        store.dispatch(MainIntent.LoadSavedImport(importId))
+                                        // After loading, the wizard will open automatically
+                                    },
+                                    onDeleteImport = { importId ->
+                                        store.dispatch(MainIntent.DeleteSavedImport(importId))
+                                    }
+                                )
+                            }
+                        } // Close Box
+                    } // Close Column
+                }
             }
-                } // Close Box
-            } // Close Column
         }
     }
 }

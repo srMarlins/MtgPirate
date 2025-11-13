@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -129,54 +130,58 @@ fun MatchesScreen(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 glowing = false
             ) {
-                LazyColumn(Modifier.fillMaxSize()) {
-                    itemsIndexed(filtered) { index, m ->
-                        val v = m.selectedVariant
-                        val price = v?.priceInCents
-                        val rowTotal = price?.let { it * m.deckEntry.qty }
-                        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-                            Text("${m.deckEntry.qty}", modifier = Modifier.width(40.dp), style = MaterialTheme.typography.body2)
-                            Text(m.deckEntry.cardName, modifier = Modifier.weight(0.35f), style = MaterialTheme.typography.body2)
-                            Text(v?.setCode ?: "-", modifier = Modifier.weight(0.10f), style = MaterialTheme.typography.body2)
-                            Text(v?.variantType ?: "-", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
-                            Text(v?.sku ?: "-", modifier = Modifier.weight(0.18f), style = MaterialTheme.typography.body2)
+                val listState = rememberLazyListState()
+                Box(Modifier.fillMaxSize()) {
+                    LazyColumn(Modifier.fillMaxSize(), state = listState) {
+                        itemsIndexed(filtered) { index, m ->
+                            val v = m.selectedVariant
+                            val price = v?.priceInCents
+                            val rowTotal = price?.let { it * m.deckEntry.qty }
+                            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                                Text("${m.deckEntry.qty}", modifier = Modifier.width(40.dp), style = MaterialTheme.typography.body2)
+                                Text(m.deckEntry.cardName, modifier = Modifier.weight(0.35f), style = MaterialTheme.typography.body2)
+                                Text(v?.setCode ?: "-", modifier = Modifier.weight(0.10f), style = MaterialTheme.typography.body2)
+                                Text(v?.variantType ?: "-", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
+                                Text(v?.sku ?: "-", modifier = Modifier.weight(0.18f), style = MaterialTheme.typography.body2)
 
-                            // Status badge
-                            Box(modifier = Modifier.weight(0.12f)) {
-                                val statusText = when (m.status) {
-                                    MatchStatus.AUTO_MATCHED -> "AUTO"
-                                    MatchStatus.MANUAL_SELECTED -> "MANUAL"
-                                    MatchStatus.AMBIGUOUS -> "AMBIG(${m.candidates.size})"
-                                    MatchStatus.NOT_FOUND -> "NOT FOUND"
-                                    MatchStatus.UNRESOLVED -> "UNRESOLVED"
+                                // Status badge
+                                Box(modifier = Modifier.weight(0.12f)) {
+                                    val statusText = when (m.status) {
+                                        MatchStatus.AUTO_MATCHED -> "AUTO"
+                                        MatchStatus.MANUAL_SELECTED -> "MANUAL"
+                                        MatchStatus.AMBIGUOUS -> "AMBIG(${m.candidates.size})"
+                                        MatchStatus.NOT_FOUND -> "NOT FOUND"
+                                        MatchStatus.UNRESOLVED -> "UNRESOLVED"
+                                    }
+                                    val statusColor = when (m.status) {
+                                        MatchStatus.AUTO_MATCHED -> Color(0xFF4CAF50)
+                                        MatchStatus.MANUAL_SELECTED -> Color(0xFF2196F3)
+                                        MatchStatus.AMBIGUOUS -> Color(0xFFFF9800)
+                                        MatchStatus.NOT_FOUND -> Color(0xFFF44336)
+                                        MatchStatus.UNRESOLVED -> Color(0xFF9E9E9E)
+                                    }
+                                    PixelBadge(text = statusText, color = statusColor)
                                 }
-                                val statusColor = when (m.status) {
-                                    MatchStatus.AUTO_MATCHED -> Color(0xFF4CAF50)
-                                    MatchStatus.MANUAL_SELECTED -> Color(0xFF2196F3)
-                                    MatchStatus.AMBIGUOUS -> Color(0xFFFF9800)
-                                    MatchStatus.NOT_FOUND -> Color(0xFFF44336)
-                                    MatchStatus.UNRESOLVED -> Color(0xFF9E9E9E)
-                                }
-                                PixelBadge(text = statusText, color = statusColor)
+
+                                Text(
+                                    price?.let { formatPrice(it) } ?: "-",
+                                    modifier = Modifier.width(70.dp),
+                                    style = MaterialTheme.typography.body2,
+                                    color = if (price != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
+                                    fontWeight = if (price != null) FontWeight.Bold else FontWeight.Normal
+                                )
+                                Text(
+                                    rowTotal?.let { formatPrice(it) } ?: "-",
+                                    modifier = Modifier.width(70.dp),
+                                    style = MaterialTheme.typography.body2,
+                                    color = if (rowTotal != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
+                                    fontWeight = if (rowTotal != null) FontWeight.Bold else FontWeight.Normal
+                                )
                             }
-
-                            Text(
-                                price?.let { formatPrice(it) } ?: "-",
-                                modifier = Modifier.width(70.dp),
-                                style = MaterialTheme.typography.body2,
-                                color = if (price != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
-                                fontWeight = if (price != null) FontWeight.Bold else FontWeight.Normal
-                            )
-                            Text(
-                                rowTotal?.let { formatPrice(it) } ?: "-",
-                                modifier = Modifier.width(70.dp),
-                                style = MaterialTheme.typography.body2,
-                                color = if (rowTotal != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
-                                fontWeight = if (rowTotal != null) FontWeight.Bold else FontWeight.Normal
-                            )
+                            PixelDivider()
                         }
-                        PixelDivider()
                     }
+                    LazyListScrollIndicators(state = listState, modifier = Modifier.matchParentSize())
                 }
             }
 

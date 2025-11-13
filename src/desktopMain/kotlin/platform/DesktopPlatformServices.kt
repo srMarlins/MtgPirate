@@ -19,9 +19,9 @@ import java.awt.Desktop
  */
 class DesktopPlatformServices : PlatformServices {
 
-    override suspend fun loadPreferences(): Preferences? {
+    override suspend fun loadPreferences(): Preferences {
         return withContext(Dispatchers.IO) {
-            PreferencesStore.load()
+            PreferencesStore.load() ?: Preferences()
         }
     }
 

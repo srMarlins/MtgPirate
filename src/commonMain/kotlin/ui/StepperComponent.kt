@@ -45,7 +45,7 @@ fun AnimatedStepper(
         modifier = modifier
             .fillMaxWidth()
             .background(MaterialTheme.colors.surface.copy(alpha = 0.3f))
-            .padding(vertical = 16.dp, horizontal = 24.dp),
+            .padding(vertical = 8.dp, horizontal = 20.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -129,7 +129,7 @@ fun PixelStepNode(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .width(160.dp) // Fixed width for stable layout
+            .width(130.dp) // Fixed width for stable layout (reduced for compact height)
             .then(
                 if (isClickable) Modifier.clickable(onClick = onClick)
                 else Modifier
@@ -139,14 +139,14 @@ fun PixelStepNode(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(56.dp)
+                .size(48.dp)
                 .scale(if (isActive) scale * pulse else 1f) // Combine animations, apply only to visual
         ) {
             // Outer glow effect for active step
             if (isActive) {
                 Box(
                     modifier = Modifier
-                        .size(64.dp)
+                        .size(56.dp)
                         .pixelBorder(
                             borderWidth = 2.dp,
                             enabled = true,
@@ -160,7 +160,7 @@ fun PixelStepNode(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .size(48.dp)
+                        .size(42.dp)
                     .pixelBorder(
                         borderWidth = 3.dp,
                         enabled = step.state != StepState.LOCKED,
@@ -189,7 +189,7 @@ fun PixelStepNode(
             }
         }
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
 
         // Step title with pixel badge style
         Box(
@@ -259,8 +259,8 @@ fun RowScope.PixelStepConnector(
     Box(
         modifier = modifier
             .weight(1f)
-            .height(4.dp)
-            .padding(horizontal = 12.dp)
+            .height(3.dp)
+            .padding(horizontal = 8.dp)
             .drawBehind {
                 val width = size.width
                 val height = size.height

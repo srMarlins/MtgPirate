@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -100,23 +101,36 @@ fun CatalogScreen(catalog: Catalog, onClose: () -> Unit) {
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 glowing = false
             ) {
-                LazyColumn(Modifier.fillMaxSize()) {
-                    items(filtered) { v ->
-                        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-                            Text(v.nameOriginal, Modifier.weight(0.40f), style = MaterialTheme.typography.body2)
-                            Text(v.setCode, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
-                            Text(v.variantType, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
-                            Text(v.sku, Modifier.weight(0.18f), style = MaterialTheme.typography.body2)
-                            Text(
-                                formatPrice(v.priceInCents),
-                                Modifier.weight(0.10f),
-                                style = MaterialTheme.typography.body2,
-                                color = MaterialTheme.colors.secondary,
-                                fontWeight = FontWeight.Bold
-                            )
+                val listState = rememberLazyListState()
+                Box(Modifier.fillMaxSize()) {
+                    LazyColumn(Modifier.fillMaxSize(), state = listState) {
+                        items(filtered) { v ->
+                            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                                Row(Modifier.weight(0.40f), verticalAlignment = Alignment.CenterVertically) {
+                                    Text(v.nameOriginal, style = MaterialTheme.typography.body2)
+                                    if (!v.collectorNumber.isNullOrBlank()) {
+                                        Spacer(Modifier.width(8.dp))
+                                        PixelBadge(
+                                            text = v.collectorNumber,
+                                            color = MaterialTheme.colors.onSurface
+                                        )
+                                    }
+                                }
+                                Text(v.setCode, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
+                                Text(v.variantType, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
+                                Text(v.sku, Modifier.weight(0.18f), style = MaterialTheme.typography.body2)
+                                Text(
+                                    formatPrice(v.priceInCents),
+                                    Modifier.weight(0.10f),
+                                    style = MaterialTheme.typography.body2,
+                                    color = MaterialTheme.colors.secondary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            PixelDivider()
                         }
-                        PixelDivider()
                     }
+                    LazyListScrollIndicators(state = listState, modifier = Modifier.matchParentSize())
                 }
             }
 

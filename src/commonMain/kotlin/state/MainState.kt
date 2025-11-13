@@ -9,9 +9,9 @@ import model.AppState
 data class MainState(
     val app: AppState = AppState(),
     val deckText: String = "",
-    val includeSideboard: Boolean = false,
-    val includeCommanders: Boolean = false,
-    val includeTokens: Boolean = false,
+    val includeSideboard: Boolean = true,
+    val includeCommanders: Boolean = true,
+    val includeTokens: Boolean = true,
     val loadingCatalog: Boolean = false,
     val catalogError: String? = null,
     val showCandidatesFor: Int? = null,

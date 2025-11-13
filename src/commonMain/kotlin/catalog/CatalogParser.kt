@@ -14,7 +14,10 @@ object CatalogParser {
         "cardtype" to "type",
         "type" to "type",
         "price" to "price",
-        "baseprice" to "price"
+        "baseprice" to "price",
+        "collectornumber" to "collectornumber",
+        "collector" to "collectornumber",
+        "number" to "collectornumber"
     )
 
     private val typePriceMap = mapOf(
@@ -62,6 +65,7 @@ object CatalogParser {
                 val typeRaw = extractValue("Card Type:") ?: return@mapNotNull null
                 val type = canonicalType(typeRaw)
                 val priceRaw = extractValue("Base Price:") ?: ""
+                val collectorNumber = extractValue("Collector Number:")?.takeIf { it.isNotBlank() }
                 var priceCents = parsePrice(priceRaw)
                 if (priceCents == 0) priceCents = typePriceMap[type] ?: 0
                 val normalized = NameNormalizer.normalize(name)
@@ -71,7 +75,8 @@ object CatalogParser {
                     setCode = set,
                     sku = sku,
                     variantType = type,
-                    priceInCents = priceCents
+                    priceInCents = priceCents,
+                    collectorNumber = collectorNumber
                 )
             }
             return Catalog(variants)
@@ -84,6 +89,7 @@ object CatalogParser {
         val headerRow = rows.firstOrNull() ?: return Catalog(emptyList())
         val headerCells = headerRow.children()
         val headers = headerCells.map { normalizeHeader(it.text()) }
+        val collectorNumberIdx = headers.indexOf("collectornumber")
         val nameIdx = headers.indexOf("name")
         val setIdx = headers.indexOf("set")
         val skuIdx = headers.indexOf("sku")
@@ -102,6 +108,9 @@ object CatalogParser {
             val typeRaw = cells[typeIdx].text().trim()
             val type = canonicalType(typeRaw)
             val priceRaw = cells[priceIdx].text()
+            val collectorNumber = if (collectorNumberIdx >= 0 && collectorNumberIdx < cells.size) {
+                cells[collectorNumberIdx].text().trim().takeIf { it.isNotBlank() }
+            } else null
             if (name.isEmpty() || sku.isEmpty()) return@forEach
             var priceCents = parsePrice(priceRaw)
             if (priceCents == 0) priceCents = typePriceMap[type] ?: 0
@@ -112,7 +121,8 @@ object CatalogParser {
                 setCode = set,
                 sku = sku,
                 variantType = type,
-                priceInCents = priceCents
+                priceInCents = priceCents,
+                collectorNumber = collectorNumber
             )
         }
         val dedup = variants.groupBy { Triple(it.nameNormalized, it.setCode, it.variantType) }
