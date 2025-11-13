@@ -1,3 +1,4 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
 package ui
 
 import androidx.compose.animation.animateColorAsState
@@ -17,9 +18,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import model.SavedImport
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @Composable
 fun SavedImportsDialog(
@@ -171,15 +172,11 @@ fun SavedImportCard(
 ) {
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
-    val dateFormatter = remember {
-        DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
-            .withZone(ZoneId.systemDefault())
-    }
-
     val formattedDate = remember(import.timestamp) {
         try {
             val instant = Instant.parse(import.timestamp)
-            dateFormatter.format(instant)
+            val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+            "${localDateTime.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${localDateTime.day}, ${localDateTime.year} ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"
         } catch (e: Exception) {
             "Unknown date"
         }

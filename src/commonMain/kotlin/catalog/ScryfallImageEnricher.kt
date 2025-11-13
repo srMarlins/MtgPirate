@@ -114,11 +114,13 @@ object ScryfallImageEnricher {
         }
 
         log?.invoke("Enriching ${missing.size} variants that are missing image URLs...")
-        val enrichedMap = missing.map { it.nameOriginal to enrichVariant(it, imageSize, log) }.toMap()
+        // Use index-based mapping to avoid key collisions when multiple variants share the same name
+        val enrichedVariants = missing.map { enrichVariant(it, imageSize, log) }
+        val enrichedMap = missing.zip(enrichedVariants).toMap()
 
         return variants.map { variant ->
             if (variant.imageUrl == null) {
-                enrichedMap[variant.nameOriginal] ?: variant
+                enrichedMap[variant] ?: variant
             } else {
                 variant
             }

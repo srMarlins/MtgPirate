@@ -506,7 +506,7 @@ fun main() = application {
                                                 )
                                                 Spacer(Modifier.width(8.dp))
                                                 PixelBadge(
-                                                    text = "STEP 1/3",
+                                                    text = "STEP 1/4",
                                                     color = MaterialTheme.colors.secondary
                                                 )
                                                 Spacer(Modifier.width(8.dp))

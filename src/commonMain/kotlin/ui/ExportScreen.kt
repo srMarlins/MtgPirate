@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import model.DeckEntryMatch
+import model.MatchStatus
 import util.Promotions
 import util.formatPrice
 
@@ -26,7 +27,7 @@ fun ExportScreen(
 ) {
     val resolved = matches.filter { it.selectedVariant != null }
     val unresolved = matches.filter { it.selectedVariant == null && it.deckEntry.include }
-    val ambiguousCount = matches.count { it.status.name == "AMBIGUOUS" }
+    val ambiguousCount = matches.count { it.status == MatchStatus.AMBIGUOUS }
 
     val promo = Promotions.calculate(matches)
 
