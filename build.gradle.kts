@@ -23,8 +23,12 @@ repositories {
 }
 
 kotlin {
-    jvm("desktop") {
-    }
+    jvm("desktop") {}
+    macosX64()
+    macosArm64()
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
     // Configure toolchain and compiler options for all JVM targets (Kotlin 2.x DSL)
     jvmToolchain(17)
     sourceSets {
@@ -37,6 +41,7 @@ kotlin {
                 implementation(compose.foundation)
                 implementation(libs.navigation.compose)
                 implementation(libs.sqldelight.coroutines.extensions)
+                implementation(libs.sqldelight.runtime)
             }
         }
         val commonTest by getting {
@@ -46,18 +51,24 @@ kotlin {
         }
         val desktopMain by getting {
             dependencies {
-                implementation(compose.desktop.currentOs)
                 implementation(compose.material)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.sqldelight.driver.sqlite)
+                implementation(compose.desktop.currentOs)
             }
         }
-        val desktopTest by getting {
+        val appleMain by creating {
             dependencies {
-                implementation(kotlin("test"))
+                implementation(compose.desktop.macos_arm64)
+                implementation(libs.sqldelight.driver.native)
             }
         }
+        val macosX64Main by getting { dependsOn(appleMain) }
+        val macosArm64Main by getting { dependsOn(appleMain) }
+        val iosX64Main by getting { dependsOn(appleMain) }
+        val iosArm64Main by getting { dependsOn(appleMain) }
+        val iosSimulatorArm64Main by getting { dependsOn(appleMain) }
     }
 }
 
