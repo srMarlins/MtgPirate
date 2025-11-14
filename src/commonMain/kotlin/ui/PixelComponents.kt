@@ -177,6 +177,20 @@ fun PixelButton(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
+        // Add press overlay that respects button bounds (clipped by PixelShape above)
+        if (isPressed) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        if (variant == PixelButtonVariant.PRIMARY) 
+                            Color.White.copy(alpha = 0.2f)
+                        else 
+                            colors.primary.copy(alpha = 0.15f)
+                    )
+            )
+        }
+        
         Text(
             text = text.uppercase(),
             color = textColor,
