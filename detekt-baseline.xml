@@ -1,0 +1,236 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ComplexCondition:CatalogCsvParser.kt$CatalogCsvParser$cells.size &gt; headers.size &amp;&amp; idxSku &gt;= 0 &amp;&amp; idxName &gt;= 0 &amp;&amp; idxSet &gt;= 0 &amp;&amp; idxType &gt;= 0</ID>
+    <ID>ConstructorParameterNaming:ScryfallApi.kt$ScryfallApi.CardFace$val image_uris: ImageUris? = null</ID>
+    <ID>ConstructorParameterNaming:ScryfallApi.kt$ScryfallApi.ImageUris$val art_crop: String? = null</ID>
+    <ID>ConstructorParameterNaming:ScryfallApi.kt$ScryfallApi.ImageUris$val border_crop: String? = null</ID>
+    <ID>ConstructorParameterNaming:ScryfallApi.kt$ScryfallApi.ScryfallCard$val card_faces: List&lt;CardFace&gt;? = null</ID>
+    <ID>ConstructorParameterNaming:ScryfallApi.kt$ScryfallApi.ScryfallCard$val collector_number: String</ID>
+    <ID>ConstructorParameterNaming:ScryfallApi.kt$ScryfallApi.ScryfallCard$val image_uris: ImageUris? = null</ID>
+    <ID>CyclomaticComplexMethod:CatalogCsvParser.kt$CatalogCsvParser$fun parse(csv: String, typePriceMap: Map&lt;String, Double&gt; = emptyMap()): Catalog</ID>
+    <ID>CyclomaticComplexMethod:CatalogCsvParser.kt$CatalogCsvParser$private fun alignRow(cells: List&lt;String&gt;, headers: List&lt;String&gt;, idxSku: Int, idxName: Int, idxSet: Int, idxType: Int, idxPrice: Int): List&lt;String&gt;</ID>
+    <ID>CyclomaticComplexMethod:CatalogParser.kt$CatalogParser$fun parse(html: String): Catalog</ID>
+    <ID>CyclomaticComplexMethod:DecklistParser.kt$DecklistParser$fun parse(text: String, includeSideboard: Boolean, includeCommanders: Boolean): List&lt;DeckEntry&gt;</ID>
+    <ID>CyclomaticComplexMethod:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
+    <ID>CyclomaticComplexMethod:Main.kt$fun main()</ID>
+    <ID>CyclomaticComplexMethod:MainStore.kt$MainStore$fun dispatch(intent: MainIntent)</ID>
+    <ID>CyclomaticComplexMethod:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit )</ID>
+    <ID>CyclomaticComplexMethod:MviViewModel.kt$MviViewModel$fun processIntent(intent: ViewIntent)</ID>
+    <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt$@Composable fun DraggableVariantItem( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
+    <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt$@Composable fun PreferencesWizardScreen( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
+    <ID>CyclomaticComplexMethod:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private fun loadWithCacheAge(maxAge: Duration, forceRefresh: Boolean = false, log: (String) -&gt; Unit = {}): Catalog?</ID>
+    <ID>CyclomaticComplexMethod:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {} )</ID>
+    <ID>CyclomaticComplexMethod:ScryfallApi.kt$ScryfallApi$private fun extractImageUrl(card: ScryfallCard, imageSize: String = "normal"): String?</ID>
+    <ID>CyclomaticComplexMethod:StepperComponent.kt$@Composable fun PixelStepNode( step: Step, isActive: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:CatalogScreen.kt$@Composable fun CatalogScreen(catalog: Catalog, onClose: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:CatalogScreen.kt$@Composable private fun PixelDropdownSelector(label: String, options: List&lt;String&gt;, selected: String, onSelect: (String) -&gt; Unit)</ID>
+    <ID>FunctionNaming:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
+    <ID>FunctionNaming:ExportScreen.kt$@Composable fun HeaderRow()</ID>
+    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosCatalogScreen( catalog: model.Catalog, onBack: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosExportScreen( matches: List&lt;model.DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosImportScreen( deckText: String, onDeckTextChange: (String) -&gt; Unit, onNext: () -&gt; Unit, onShowSavedImports: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosMatchesScreen( matches: List&lt;model.DeckEntryMatch&gt;, onBack: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosPreferencesScreen( includeSideboard: Boolean, includeCommanders: Boolean, includeTokens: Boolean, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosResolveScreen( match: model.DeckEntryMatch, onSelect: (model.CardVariant) -&gt; Unit, onBack: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosResultsScreen( matches: List&lt;model.DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:Main.kt$@Composable fun CompactPixelButton( text: String, onClick: () -&gt; Unit, enabled: Boolean = true, color: Color )</ID>
+    <ID>FunctionNaming:Main.kt$@Composable fun FrameWindowScope.CustomTitleBar( windowState: WindowState, onClose: () -&gt; Unit, isDarkTheme: Boolean, onToggleTheme: () -&gt; Unit, loadingCatalog: Boolean, hasCatalog: Boolean, hasMatches: Boolean, resultsEnabled: Boolean, onCatalogClick: () -&gt; Unit, onExportClick: () -&gt; Unit, onMatchesClick: () -&gt; Unit, onResultsClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:Main.kt$@Composable fun IosApp()</ID>
+    <ID>FunctionNaming:Main.kt$@Composable fun IosBottomNavBar( currentScreen: IosScreen, onNavigate: (IosScreen) -&gt; Unit, hasCatalog: Boolean, hasMatches: Boolean, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:Main.kt$@Composable fun IosNavigationHost( viewModel: MviViewModel, state: state.ViewState )</ID>
+    <ID>FunctionNaming:Main.kt$@Composable fun IosThemeToggleFab( isDarkTheme: Boolean, onToggle: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:Main.kt$@Composable fun RowScope.IosNavButton( text: String, isActive: Boolean, onClick: () -&gt; Unit, enabled: Boolean = true )</ID>
+    <ID>FunctionNaming:Main.kt$@Composable fun WindowControlButton( text: String, color: Color, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:MatchesScreen.kt$@Composable private fun PixelStatusDropdown(label: String, options: List&lt;String&gt;, selected: String, onSelect: (String) -&gt; Unit)</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun &lt;T&gt; PixelDraggableList( items: List&lt;T&gt;, onReorder: (List&lt;T&gt;) -&gt; Unit, modifier: Modifier = Modifier, itemContent: @Composable (item: T, index: Int, isDragging: Boolean) -&gt; Unit )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun BlinkingCursor( modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun EnchantedDivider( modifier: Modifier = Modifier, thickness: Dp = 2.dp )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun FantasySectionHeader( text: String, modifier: Modifier = Modifier, icon: String = "✦" )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun FantasyStarIcon( modifier: Modifier = Modifier, color: Color = Color(0xFFFBD38D), animated: Boolean = true )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun LazyListScrollIndicators( state: LazyListState, modifier: Modifier = Modifier, height: Dp = 12.dp, paddingHorizontal: Dp = 0.dp )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun MagicalLoadingSpinner( modifier: Modifier = Modifier, size: Dp = 48.dp )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun MagicalSparkles( modifier: Modifier = Modifier, count: Int = 5, color: Color = Color(0xFFB794F6) )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun MysticalText( text: String, modifier: Modifier = Modifier, style: TextStyle = MaterialTheme.typography.h6, color: Color = MaterialTheme.colors.primary, glowColor: Color = color.copy(alpha = 0.3f) )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun PixelBadge( text: String, modifier: Modifier = Modifier, color: Color = MaterialTheme.colors.primary )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun PixelButton( text: String, onClick: () -&gt; Unit, modifier: Modifier = Modifier, enabled: Boolean = true, variant: PixelButtonVariant = PixelButtonVariant.PRIMARY )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun PixelCard( modifier: Modifier = Modifier, glowing: Boolean = false, content: @Composable ColumnScope.() -&gt; Unit )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun PixelDivider( modifier: Modifier = Modifier, thickness: Dp = 2.dp, animated: Boolean = false )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun PixelDragHandle( isDragging: Boolean, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun PixelIconButton( icon: String, onClick: () -&gt; Unit, modifier: Modifier = Modifier, variant: PixelIconButtonVariant = PixelIconButtonVariant.PRIMARY, enabled: Boolean = true )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun PixelProgressBar( progress: Float, modifier: Modifier = Modifier, height: Dp = 24.dp, showPercentage: Boolean = true )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun PixelTextField( value: String, onValueChange: (String) -&gt; Unit, modifier: Modifier = Modifier, label: String = "", placeholder: String = "", singleLine: Boolean = false, maxLines: Int = Int.MAX_VALUE )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun ScanlineEffect( modifier: Modifier = Modifier, alpha: Float = 0.05f )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun ScrollableCardLazyList( modifier: Modifier = Modifier, state: LazyListState = rememberLazyListState(), indicatorsHeight: Dp = 12.dp, paddingHorizontalIndicators: Dp = 0.dp, content: @Composable () -&gt; Unit )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable private fun PixelArrowBadge( direction: PixelArrowDirection, badgeSize: Dp, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable private fun PixelDraggableItem( index: Int, isDragging: Boolean, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, content: @Composable () -&gt; Unit )</ID>
+    <ID>FunctionNaming:PreferencesWizardScreen.kt$@Composable fun DraggableVariantItem( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:PreferencesWizardScreen.kt$@Composable fun PreferencesWizardScreen( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:ResolveScreen.kt$@Composable fun ResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, )</ID>
+    <ID>FunctionNaming:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {} )</ID>
+    <ID>FunctionNaming:SavedImportsScreen.kt$@Composable fun SavedImportCard( import: SavedImport, onSelect: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:SavedImportsScreen.kt$@Composable fun SavedImportsDialog( savedImports: List&lt;SavedImport&gt;, onDismiss: () -&gt; Unit, onSelectImport: (String) -&gt; Unit, onDeleteImport: (String) -&gt; Unit )</ID>
+    <ID>FunctionNaming:StepperComponent.kt$@Composable fun AnimatedStepper( steps: List&lt;Step&gt;, currentStep: Int, onStepClick: (Int) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:StepperComponent.kt$@Composable fun PixelStepNode( step: Step, isActive: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:StepperComponent.kt$@Composable fun RowScope.PixelStepConnector( isCompleted: Boolean, isActive: Boolean, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:Theme.kt$@Composable fun AppTheme( darkTheme: Boolean = true, // Default to dark theme content: @Composable () -&gt; Unit )</ID>
+    <ID>LongMethod:CatalogCsvParser.kt$CatalogCsvParser$fun parse(csv: String, typePriceMap: Map&lt;String, Double&gt; = emptyMap()): Catalog</ID>
+    <ID>LongMethod:CatalogParser.kt$CatalogParser$fun parse(html: String): Catalog</ID>
+    <ID>LongMethod:CatalogScreen.kt$@Composable fun CatalogScreen(catalog: Catalog, onClose: () -&gt; Unit)</ID>
+    <ID>LongMethod:DecklistParser.kt$DecklistParser$fun parse(text: String, includeSideboard: Boolean, includeCommanders: Boolean): List&lt;DeckEntry&gt;</ID>
+    <ID>LongMethod:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
+    <ID>LongMethod:IosScreens.kt$@Composable fun IosImportScreen( deckText: String, onDeckTextChange: (String) -&gt; Unit, onNext: () -&gt; Unit, onShowSavedImports: () -&gt; Unit )</ID>
+    <ID>LongMethod:Main.kt$@Composable fun FrameWindowScope.CustomTitleBar( windowState: WindowState, onClose: () -&gt; Unit, isDarkTheme: Boolean, onToggleTheme: () -&gt; Unit, loadingCatalog: Boolean, hasCatalog: Boolean, hasMatches: Boolean, resultsEnabled: Boolean, onCatalogClick: () -&gt; Unit, onExportClick: () -&gt; Unit, onMatchesClick: () -&gt; Unit, onResultsClick: () -&gt; Unit )</ID>
+    <ID>LongMethod:Main.kt$@Composable fun IosNavigationHost( viewModel: MviViewModel, state: state.ViewState )</ID>
+    <ID>LongMethod:Main.kt$fun main()</ID>
+    <ID>LongMethod:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit )</ID>
+    <ID>LongMethod:PixelComponents.kt$@Composable fun FantasyStarIcon( modifier: Modifier = Modifier, color: Color = Color(0xFFFBD38D), animated: Boolean = true )</ID>
+    <ID>LongMethod:PixelComponents.kt$@Composable private fun PixelDraggableItem( index: Int, isDragging: Boolean, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, content: @Composable () -&gt; Unit )</ID>
+    <ID>LongMethod:PreferencesWizardScreen.kt$@Composable fun DraggableVariantItem( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
+    <ID>LongMethod:PreferencesWizardScreen.kt$@Composable fun PreferencesWizardScreen( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
+    <ID>LongMethod:ResolveScreen.kt$@Composable fun ResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, )</ID>
+    <ID>LongMethod:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {} )</ID>
+    <ID>LongMethod:SavedImportsScreen.kt$@Composable fun SavedImportCard( import: SavedImport, onSelect: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>LongMethod:SavedImportsScreen.kt$@Composable fun SavedImportsDialog( savedImports: List&lt;SavedImport&gt;, onDismiss: () -&gt; Unit, onSelectImport: (String) -&gt; Unit, onDeleteImport: (String) -&gt; Unit )</ID>
+    <ID>LongMethod:StepperComponent.kt$@Composable fun PixelStepNode( step: Step, isActive: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:StepperComponent.kt$@Composable fun RowScope.PixelStepConnector( isCompleted: Boolean, isActive: Boolean, modifier: Modifier = Modifier )</ID>
+    <ID>LongParameterList:CatalogCsvParser.kt$CatalogCsvParser$(cells: List&lt;String&gt;, headers: List&lt;String&gt;, idxSku: Int, idxName: Int, idxSet: Int, idxType: Int, idxPrice: Int)</ID>
+    <ID>LongParameterList:IosScreens.kt$( includeSideboard: Boolean, includeCommanders: Boolean, includeTokens: Boolean, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
+    <ID>LongParameterList:Main.kt$( windowState: WindowState, onClose: () -&gt; Unit, isDarkTheme: Boolean, onToggleTheme: () -&gt; Unit, loadingCatalog: Boolean, hasCatalog: Boolean, hasMatches: Boolean, resultsEnabled: Boolean, onCatalogClick: () -&gt; Unit, onExportClick: () -&gt; Unit, onMatchesClick: () -&gt; Unit, onResultsClick: () -&gt; Unit )</ID>
+    <ID>LongParameterList:PixelComponents.kt$( index: Int, isDragging: Boolean, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, content: @Composable () -&gt; Unit )</ID>
+    <ID>LongParameterList:PixelComponents.kt$( value: String, onValueChange: (String) -&gt; Unit, modifier: Modifier = Modifier, label: String = "", placeholder: String = "", singleLine: Boolean = false, maxLines: Int = Int.MAX_VALUE )</ID>
+    <ID>LongParameterList:PixelComponents.kt$( width: Float, height: Float, cornerSize: Float, strokeWidth: Float, color: Color, inner: Boolean = false )</ID>
+    <ID>LongParameterList:PreferencesWizardScreen.kt$( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
+    <ID>LongParameterList:PreferencesWizardScreen.kt$( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
+    <ID>MatchingDeclarationName:Normalizer.kt$NameNormalizer</ID>
+    <ID>MatchingDeclarationName:ResultsScreen.kt$SortOption</ID>
+    <ID>MaxLineLength:CatalogCsvParser.kt$CatalogCsvParser$private</ID>
+    <ID>MaxLineLength:CatalogCsvParser.kt$CatalogCsvParser$val dollarsFromCell = if (idxPrice &gt;= 0 &amp;&amp; idxPrice &lt; aligned.size) parsePriceCell(aligned[idxPrice]) else 0.0</ID>
+    <ID>MaxLineLength:CatalogScreen.kt$(query.isBlank() || v.nameOriginal.contains(query, true) || v.setCode.contains(query, true) || v.sku.contains(query, true))</ID>
+    <ID>MaxLineLength:CatalogScreen.kt$Text("NAME", modifier = Modifier.weight(0.40f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:CatalogScreen.kt$Text("PRICE", modifier = Modifier.weight(0.10f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:CatalogScreen.kt$Text("SET", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:CatalogScreen.kt$Text("SKU", modifier = Modifier.weight(0.18f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:CatalogScreen.kt$Text("TYPE", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DecklistParser.kt$DecklistParser$// Heuristic: if we saw a blank line after sideboard marker and now a new card line, treat as commander section</ID>
+    <ID>MaxLineLength:DecklistParser.kt$DecklistParser$// If remainder still contains an embedded " Set " fragment (without colon) at end due to partial copy, attempt to remove</ID>
+    <ID>MaxLineLength:ExportScreen.kt$"Normal (15-40 days) — " + if (normalShippingCost == 0) "Free" else formatPrice(normalShippingCost)</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Modifier.fillMaxWidth().background(MaterialTheme.colors.surface.copy(alpha = 0.6f)).padding(horizontal = 12.dp, vertical = 8.dp)</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Promotions.ShippingType.EXPRESS -&gt; if (selectedShippingCost == 0) "Express Free Shipping (3-7 days)" else "Express Shipping"</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Promotions.ShippingType.NORMAL -&gt; if (selectedShippingCost == 0) "Normal Free Shipping (15-40 days)" else "Normal Shipping"</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Row</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Text("Card Name", Modifier.weight(0.40f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Text("Price", Modifier.weight(0.09f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Text("Qty", Modifier.weight(0.07f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Text("SKU", Modifier.weight(0.20f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Text("Set", Modifier.weight(0.12f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Text("Shipping Options", style = MaterialTheme.typography.subtitle2, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Text("Type", Modifier.weight(0.12f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Text(expressLabel, style = MaterialTheme.typography.body2, color = if (expressEligible) MaterialTheme.colors.onSurface else MaterialTheme.colors.onSurface.copy(alpha = 0.6f))</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Text(first.nameOriginal, Modifier.weight(0.40f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Text(first.variantType, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Text(formatPrice(first.priceInCents), Modifier.weight(0.09f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Text(if (selectedShippingCost == 0) shippingText else "$shippingText: ${formatPrice(selectedShippingCost)}")</ID>
+    <ID>MaxLineLength:ExportScreen.kt$Text(qtyTotal.toString(), Modifier.weight(0.07f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:ExportScreen.kt$onClick = { if (expressEligible) selectedShipping = Promotions.ShippingType.EXPRESS }</ID>
+    <ID>MaxLineLength:IosMviPlatformServices.kt$IosMviPlatformServices$sb.appendLine("${variant.nameOriginal},${variant.setCode},${variant.sku},${variant.variantType},$qty,$priceStr")</ID>
+    <ID>MaxLineLength:Logging.kt$Logging$return "${ldt.date} ${ldt.hour.toString().padStart(2,'0')}:${ldt.minute.toString().padStart(2,'0')}:${ldt.second.toString().padStart(2,'0')}"</ID>
+    <ID>MaxLineLength:Main.kt$// Coming from results -&gt; resolve: slide up from bottom and fade in (vertical twin of stepper)</ID>
+    <ID>MaxLineLength:Main.kt$// Going back to results: slide down to bottom and fade out (vertical twin of stepper)</ID>
+    <ID>MaxLineLength:Main.kt$// Name will be auto-generated from commander or timestamp</ID>
+    <ID>MaxLineLength:Main.kt$onIncludeSideboardChange = { store.dispatch(MainIntent.ToggleIncludeSideboard(it)) }</ID>
+    <ID>MaxLineLength:Main.kt$onVariantPriorityChange = { store.dispatch(MainIntent.UpdateVariantPriority(it)) }</ID>
+    <ID>MaxLineLength:Main.kt$val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry)</ID>
+    <ID>MaxLineLength:MainStore.kt$MainStore$is MainIntent.SavePreferences -&gt; savePreferences(intent.variantPriority, intent.setPriority, intent.fuzzyEnabled)</ID>
+    <ID>MaxLineLength:MainStore.kt$MainStore$logs = Logging.log(s.app.logs, "INFO", "Catalog auto-loaded (remote): ${catalog.variants.size} variants")</ID>
+    <ID>MaxLineLength:MainStore.kt$MainStore$private</ID>
+    <ID>MaxLineLength:MainStore.kt$MainStore$private suspend</ID>
+    <ID>MaxLineLength:MainStore.kt$MainStore$update = { it.copy(variantPriority = variantPriority, setPriority = setPriority, fuzzyEnabled = fuzzyEnabled) }</ID>
+    <ID>MaxLineLength:MainStore.kt$MainStore$updateAppLogs("DEBUG", "Parsed entry: ${e.qty} ${e.cardName} (set=${e.setCodeHint}${e.collectorNumberHint?.let { ", #$it" } ?: ""})")</ID>
+    <ID>MaxLineLength:MainStore.kt$MainStore$val timestamp = "${localDateTime.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${localDateTime.day}, ${localDateTime.year} ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"</ID>
+    <ID>MaxLineLength:Matcher.kt$Matcher$DeckEntryMatch(entry, MatchStatus.AUTO_MATCHED, selected, exactNameMatches.map { MatchCandidate(it, 0, "exact") })</ID>
+    <ID>MaxLineLength:Matcher.kt$Matcher$return</ID>
+    <ID>MaxLineLength:Matcher.kt$Matcher$val filtered = entry.setCodeHint?.let { code -&gt; list.filter { it.setCode.equals(code, true) } }.orEmpty().ifEmpty { list }</ID>
+    <ID>MaxLineLength:Matcher.kt$Matcher$}</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$"Showing ${filtered.size} of ${matches.size} | Matched: ${matches.count { it.selectedVariant != null }} | Unmatched: $unmatchedCount"</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$Text("${m.deckEntry.qty}", modifier = Modifier.width(40.dp), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$Text("NAME", modifier = Modifier.weight(0.35f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$Text("PRICE", modifier = Modifier.width(70.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$Text("QTY", modifier = Modifier.width(40.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$Text("SET", modifier = Modifier.weight(0.10f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$Text("SKU", modifier = Modifier.weight(0.18f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$Text("STATUS", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$Text("TOTAL", modifier = Modifier.width(70.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$Text("VARIANT", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$Text(m.deckEntry.cardName, modifier = Modifier.weight(0.35f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$Text(v?.setCode ?: "-", modifier = Modifier.weight(0.10f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$Text(v?.sku ?: "-", modifier = Modifier.weight(0.18f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$Text(v?.variantType ?: "-", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$color = if (price != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$color = if (rowTotal != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt$val content = unmatched.joinToString("\n") { "${it.deckEntry.qty} ${it.deckEntry.cardName}" }</ID>
+    <ID>MaxLineLength:MviViewModel.kt$MviViewModel$is ViewIntent.SavePreferences -&gt; savePreferences(intent.variantPriority, intent.setPriority, intent.fuzzyEnabled)</ID>
+    <ID>MaxLineLength:MviViewModel.kt$MviViewModel$log("Parsed: ${e.qty} ${e.cardName} (${e.setCodeHint}${e.collectorNumberHint?.let { " #$it" } ?: ""})", "DEBUG")</ID>
+    <ID>MaxLineLength:PixelComponents.kt$val lastFullyVisible = lastVisible.offset + lastVisible.size &lt;= info.viewportEndOffset - info.afterContentPadding</ID>
+    <ID>MaxLineLength:PreferencesWizardScreen.kt$.</ID>
+    <ID>MaxLineLength:PreferencesWizardScreen.kt$Text("VARIANT PREFERENCES", style = MaterialTheme.typography.h6, fontWeight = FontWeight.Bold, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:PreferencesWizardScreen.kt$draggedCurrentIndex &lt; targetIndex &amp;&amp; index &gt; draggedCurrentIndex &amp;&amp; index &lt;= targetIndex -&gt; -64f</ID>
+    <ID>MaxLineLength:PreferencesWizardScreen.kt$draggedCurrentIndex &gt; targetIndex &amp;&amp; index &gt;= targetIndex &amp;&amp; index &lt; draggedCurrentIndex -&gt; 64f</ID>
+    <ID>MaxLineLength:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private</ID>
+    <ID>MaxLineLength:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$return</ID>
+    <ID>MaxLineLength:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$return runCatching { CatalogParser.parse(html) }.onSuccess { /* no-op */ }.onFailure { log("Table parse failed: ${it.message}") }.getOrNull()?.let { fillZeroPrices(it) }</ID>
+    <ID>MaxLineLength:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$val html = runCatching { fetchRaw(urlSource, log) }.onFailure { log("HTML fetch failed: ${it.message}") }.getOrNull() ?: return null</ID>
+    <ID>MaxLineLength:ResolveScreen.kt$.</ID>
+    <ID>MaxLineLength:ResolveScreen.kt$Text("ACTION", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResolveScreen.kt$Text("CARD NAME", Modifier.weight(0.3f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResolveScreen.kt$Text("MATCH INFO", Modifier.weight(0.3f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResolveScreen.kt$Text("PRICE", Modifier.width(80.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResolveScreen.kt$Text("SET", Modifier.width(70.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResolveScreen.kt$Text("VARIANT", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt$Text("${m.deckEntry.qty}", Modifier.width(50.dp), style = MaterialTheme.typography.body1)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt$color = if (ambiguous &gt; 0) Color(0xFFFF9800) else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt$color = if (missed &gt; 0) Color(0xFFF44336) else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt$if (filterMode == 0) MaterialTheme.colors.primary.copy(alpha = 0.2f) else MaterialTheme.colors.surface</ID>
+    <ID>MaxLineLength:SavedImportsScreen.kt$"${localDateTime.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${localDateTime.day}, ${localDateTime.year} ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"</ID>
+    <ID>MaxLineLength:SavedImportsScreen.kt$.</ID>
+    <ID>MaxLineLength:ScryfallImageEnricher.kt$ScryfallImageEnricher$log?.invoke("Fetching image for ${variant.nameOriginal} (${variant.setCode} #${variant.collectorNumber})")</ID>
+    <ID>MayBeConst:CsvExporter.kt$CsvExporter$private val header = "Card Name,Set,SKU,Card Type,Quantity,Base Price"</ID>
+    <ID>NestedBlockDepth:CatalogCsvParser.kt$CatalogCsvParser$private fun alignRow(cells: List&lt;String&gt;, headers: List&lt;String&gt;, idxSku: Int, idxName: Int, idxSet: Int, idxType: Int, idxPrice: Int): List&lt;String&gt;</ID>
+    <ID>NestedBlockDepth:DecklistParser.kt$DecklistParser$fun parse(text: String, includeSideboard: Boolean, includeCommanders: Boolean): List&lt;DeckEntry&gt;</ID>
+    <ID>NewLineAtEndOfFile:PreferencesWizardScreen.kt$ui.PreferencesWizardScreen.kt</ID>
+    <ID>ReturnCount:CatalogParser.kt$CatalogParser$fun extractValue(label: String): String?</ID>
+    <ID>ReturnCount:CatalogParser.kt$CatalogParser$fun parse(html: String): Catalog</ID>
+    <ID>ReturnCount:Levenshtein.kt$Levenshtein$fun distance(a: String, b: String): Int</ID>
+    <ID>ReturnCount:Matcher.kt$Matcher$private fun matchEntry(entry: DeckEntry, catalog: Catalog, config: MatchConfig): DeckEntryMatch</ID>
+    <ID>ReturnCount:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private fun loadWithCacheAge(maxAge: Duration, forceRefresh: Boolean = false, log: (String) -&gt; Unit = {}): Catalog?</ID>
+    <ID>ReturnCount:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private fun tryCsvThenHtml(log: (String) -&gt; Unit): Catalog?</ID>
+    <ID>SwallowedException:DesktopMviPlatformServices.kt$DesktopMviPlatformServices$e: Exception</ID>
+    <ID>SwallowedException:DesktopPlatformServices.kt$DesktopPlatformServices$e: Exception</ID>
+    <ID>SwallowedException:PlatformUtils.kt$e: Exception</ID>
+    <ID>SwallowedException:SavedImportsScreen.kt$e: Exception</ID>
+    <ID>SwallowedException:ScryfallApi.kt$ScryfallApi$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DatabaseCatalogDataSource.kt$DatabaseCatalogDataSource$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DesktopMviPlatformServices.kt$DesktopMviPlatformServices$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DesktopPlatformServices.kt$DesktopPlatformServices$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:IosMviPlatformServices.kt$IosMviPlatformServices$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MainStore.kt$MainStore$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MviViewModel.kt$MviViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:PlatformUtils.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$ex: Exception</ID>
+    <ID>TooGenericExceptionCaught:SavedImportsScreen.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ScryfallApi.kt$ScryfallApi$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ScryfallImageEnricher.kt$ScryfallImageEnricher$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:ScryfallApiImpl.kt$ScryfallApiImpl$throw Exception("HTTP $responseCode: ${connection.responseMessage}")</ID>
+    <ID>TooManyFunctions:MainStore.kt$MainStore</ID>
+    <ID>TooManyFunctions:MviViewModel.kt$MviViewModel</ID>
+    <ID>TooManyFunctions:PixelComponents.kt$ui.PixelComponents.kt</ID>
+    <ID>UnusedPrivateMember:IosMviPlatformServices.kt$IosMviPlatformServices$private fun fillZeroPrices(catalog: Catalog): Catalog</ID>
+    <ID>UnusedPrivateProperty:DatabaseCatalogDataSource.kt$DatabaseCatalogDataSource$private val password: String</ID>
+    <ID>UnusedPrivateProperty:DatabaseCatalogDataSource.kt$DatabaseCatalogDataSource$private val username: String</ID>
+    <ID>UnusedPrivateProperty:IosMviPlatformServices.kt$IosMviPlatformServices$private val urlApi = "https://www.usmtgproxy.com/wp-content/uploads/single-card-list.csv"</ID>
+    <ID>UnusedPrivateProperty:StepperComponent.kt$val glowRotation by infiniteTransition.animateFloat( initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable( animation = tween(3000, easing = LinearEasing), repeatMode = RepeatMode.Restart ) )</ID>
+  </CurrentIssues>
+</SmellBaseline>
