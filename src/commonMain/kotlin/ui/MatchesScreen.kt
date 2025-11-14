@@ -14,11 +14,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import model.DeckEntryMatch
 import model.MatchStatus
 import util.formatPrice
-import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
 
 @Composable
 fun MatchesScreen(
@@ -216,15 +215,13 @@ fun MatchesScreen(
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (unmatchedCount > 0) {
+                        val scope = rememberCoroutineScope()
                         PixelButton(
                             text = "Open in TCGplayer",
                             onClick = {
                                 val content = unmatched.joinToString("\n") { "${it.deckEntry.qty} ${it.deckEntry.cardName}" }
-                                try {
-                                    val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-                                    clipboard.setContents(StringSelection(content), null)
-                                } catch (e: Exception) {
-                                    // ignore clipboard errors on headless/non-awt
+                                scope.launch {
+                                    platform.copyToClipboard(content)
                                 }
                                 // Open TCGplayer Mass Entry page for Magic
                                 uriHandler.openUri("https://www.tcgplayer.com/massentry?productline=Magic")

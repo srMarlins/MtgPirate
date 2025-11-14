@@ -553,12 +553,12 @@ fun MagicalSparkles(
             repeat(count) { index ->
                 val angle = (sparklePhase + (index * 360f / count)) % 360f
                 val radius = size.minDimension / 3f
-                val x = center.x + radius * kotlin.math.cos(Math.toRadians(angle.toDouble())).toFloat()
-                val y = center.y + radius * kotlin.math.sin(Math.toRadians(angle.toDouble())).toFloat()
+                val x = center.x + radius * kotlin.math.cos(angle * kotlin.math.PI.toFloat() / 180f)
+                val y = center.y + radius * kotlin.math.sin(angle * kotlin.math.PI.toFloat() / 180f)
 
                 // Draw sparkle
                 val sparkleSize =
-                    3f + (kotlin.math.sin(Math.toRadians((sparklePhase * 2 + index * 60).toDouble())) * 2f).toFloat()
+                    3f + (kotlin.math.sin((sparklePhase * 2 + index * 60) * kotlin.math.PI.toFloat() / 180f) * 2f)
                 drawCircle(
                     color = color.copy(alpha = 0.8f),
                     radius = sparkleSize,
@@ -622,7 +622,7 @@ fun FantasyStarIcon(
         modifier = modifier
             .size(16.dp)
             .drawBehind {
-                val rotationRad = Math.toRadians(rotation.toDouble())
+                val rotationRad = rotation * kotlin.math.PI / 180.0
                 val centerX = size.width / 2
                 val centerY = size.height / 2
                 val outerRadius = size.minDimension / 2
@@ -633,7 +633,7 @@ fun FantasyStarIcon(
                 val path = androidx.compose.ui.graphics.Path()
 
                 for (i in 0 until points) {
-                    val angle = rotationRad + (i * Math.PI / (points / 2))
+                    val angle = rotationRad + (i * kotlin.math.PI / (points / 2))
                     val radius = if (i % 2 == 0) outerRadius else innerRadius
                     val x = centerX + (radius * kotlin.math.cos(angle).toFloat())
                     val y = centerY + (radius * kotlin.math.sin(angle).toFloat())
@@ -805,8 +805,8 @@ fun MagicalLoadingSpinner(
                 repeat(4) { index ->
                     val angle = rotation + (index * 90f)
                     val radius = size.toPx() / 2
-                    val x = center.x + radius * kotlin.math.cos(Math.toRadians(angle.toDouble())).toFloat()
-                    val y = center.y + radius * kotlin.math.sin(Math.toRadians(angle.toDouble())).toFloat()
+                    val x = center.x + radius * kotlin.math.cos(angle * kotlin.math.PI.toFloat() / 180f)
+                    val y = center.y + radius * kotlin.math.sin(angle * kotlin.math.PI.toFloat() / 180f)
 
                     drawCircle(
                         color = Color(0xFFFBD38D),

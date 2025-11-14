@@ -1,4 +1,6 @@
 package util
 
-fun formatPrice(cents: Int): String = String.format("%.2f", cents / 100.0)
+import platform.formatDecimal
+
+fun formatPrice(cents: Int): String = formatDecimal(cents / 100.0, 2)
 
