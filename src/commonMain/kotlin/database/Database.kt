@@ -3,7 +3,6 @@ package database
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.db.SqlDriver
-import com.srmarlins.mtgpirate.MtgPirateDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +12,7 @@ import model.Catalog
 import model.LogEntry
 import model.Preferences
 import model.SavedImport
+import org.srmarlins.mtgpirate.db.MtgPirateDatabase
 
 expect open class DatabaseDriverFactory {
     fun createDriver(): SqlDriver
