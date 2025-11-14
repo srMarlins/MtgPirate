@@ -25,6 +25,36 @@ A Kotlin Multiplatform desktop application for importing Magic: The Gathering de
 - **Kotlin Serialization** - JSON persistence
 - **KSoup** - HTML parsing for catalog fetching
 - **SQLDelight** - Type-safe SQL database (MVI architecture)
+- **Detekt** - Static code analysis for code quality
+
+## Development
+
+### Code Quality
+
+This project uses [Detekt](https://detekt.dev/) for static code analysis. Detekt runs automatically on all pull requests via GitHub Actions.
+
+**Running locally:**
+```bash
+./gradlew detekt
+```
+
+**Generate HTML report:**
+```bash
+./gradlew detekt
+# Open build/reports/detekt/detekt.html
+```
+
+**Update baseline** (if you need to update the baseline for existing issues):
+```bash
+./gradlew detektBaseline
+```
+
+The detekt configuration is in `detekt.yml` and includes rules for:
+- Code complexity
+- Potential bugs
+- Code style
+- Performance issues
+- Coroutines best practices
 
 ## Architecture
 
