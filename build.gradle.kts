@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.jetbrains.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.detekt)
 }
 
 group = "org.srmarlins"
@@ -126,5 +127,30 @@ sqldelight {
         create("MtgPirateDatabase") {
             packageName.set("com.srmarlins.mtgpirate")
         }
+    }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    config.setFrom("$projectDir/detekt.yml")
+    baseline = file("$projectDir/detekt-baseline.xml")
+    source.setFrom(
+        "src/commonMain/kotlin",
+        "src/desktopMain/kotlin",
+        "src/jvmMain/kotlin",
+        "src/iosMain/kotlin",
+        "src/macosMain/kotlin",
+        "src/appleMain/kotlin"
+    )
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        txt.required.set(true)
+        sarif.required.set(true)
+        md.required.set(true)
     }
 }
