@@ -14,7 +14,7 @@ data class ExportResult(
 )
 
 object CsvExporter {
-    private val header = "Card Name,Set,SKU,Card Type,Quantity,Base Price"
+    private const val HEADER = "Card Name,Set,SKU,Card Type,Quantity,Base Price"
 
     fun export(matches: List<DeckEntryMatch>, target: Path? = null): Path {
         val file = target ?: AppDirectories.exportsDir.resolve("export-${timestamp()}.csv")
@@ -25,7 +25,7 @@ object CsvExporter {
             Triple(variant.nameOriginal, variant.setCode, variant.sku)
         }
         val lines = mutableListOf<String>()
-        lines += header
+        lines += HEADER
         grouped.values.forEach { group ->
             val first = group.first().selectedVariant!!
             val qtyTotal = group.sumOf { it.deckEntry.qty }
@@ -61,7 +61,7 @@ object CsvExporter {
         val foundCardsPath = if (resolved.isNotEmpty()) {
             val file = AppDirectories.exportsDir.resolve("found-cards-${timestamp}.csv")
             val lines = mutableListOf<String>()
-            lines += header
+            lines += HEADER
 
             // Aggregate identical selected variants
             val grouped = resolved.groupBy {

@@ -1,5 +1,6 @@
 package catalog
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
@@ -30,14 +31,17 @@ object ScryfallApi {
         val normal: String? = null,
         val large: String? = null,
         val png: String? = null,
-        val art_crop: String? = null,
-        val border_crop: String? = null
+        @SerialName("art_crop")
+        val artCrop: String? = null,
+        @SerialName("border_crop")
+        val borderCrop: String? = null
     )
 
     @Serializable
     data class CardFace(
         val name: String? = null,
-        val image_uris: ImageUris? = null
+        @SerialName("image_uris")
+        val imageUris: ImageUris? = null
     )
 
     @Serializable
@@ -45,9 +49,12 @@ object ScryfallApi {
         val id: String,
         val name: String,
         val set: String,
-        val collector_number: String,
-        val image_uris: ImageUris? = null,
-        val card_faces: List<CardFace>? = null,
+        @SerialName("collector_number")
+        val collectorNumber: String,
+        @SerialName("image_uris")
+        val imageUris: ImageUris? = null,
+        @SerialName("card_faces")
+        val cardFaces: List<CardFace>? = null,
         val lang: String? = "en"
     )
 
@@ -127,25 +134,25 @@ object ScryfallApi {
      */
     private fun extractImageUrl(card: ScryfallCard, imageSize: String = "normal"): String? {
         // Try direct image_uris first (for single-faced cards)
-        card.image_uris?.let { uris ->
+        card.imageUris?.let { uris ->
             return when (imageSize) {
                 "small" -> uris.small
                 "large" -> uris.large
                 "png" -> uris.png
-                "art_crop" -> uris.art_crop
-                "border_crop" -> uris.border_crop
+                "art_crop" -> uris.artCrop
+                "border_crop" -> uris.borderCrop
                 else -> uris.normal
             }
         }
 
         // For double-faced/split cards, use the first face
-        card.card_faces?.firstOrNull()?.image_uris?.let { uris ->
+        card.cardFaces?.firstOrNull()?.imageUris?.let { uris ->
             return when (imageSize) {
                 "small" -> uris.small
                 "large" -> uris.large
                 "png" -> uris.png
-                "art_crop" -> uris.art_crop
-                "border_crop" -> uris.border_crop
+                "art_crop" -> uris.artCrop
+                "border_crop" -> uris.borderCrop
                 else -> uris.normal
             }
         }

@@ -21,8 +21,6 @@ class IosMviPlatformServices(
     private val database: Database
 ) : MviPlatformServices {
 
-    private val urlApi = "https://www.usmtgproxy.com/wp-content/uploads/single-card-list.csv"
-
     override suspend fun fetchCatalogFromRemote(log: (String) -> Unit): Catalog? {
         return withContext(Dispatchers.Default) {
             try {
@@ -87,25 +85,6 @@ class IosMviPlatformServices(
     }
 
     // Helper functions
-
-    private fun fillZeroPrices(catalog: Catalog): Catalog {
-        val centsMap = mapOf(
-            "Regular" to 220,
-            "Holo" to 300,
-            "Foil" to 350
-        )
-        var changed = false
-        val updated = catalog.variants.map { v ->
-            if (v.priceInCents <= 0) {
-                changed = true
-                val t = canonicalType(v.variantType)
-                v.copy(priceInCents = centsMap[t] ?: 0, variantType = t)
-            } else {
-                v.copy(variantType = canonicalType(v.variantType))
-            }
-        }
-        return if (changed) catalog.copy(variants = updated) else catalog
-    }
 
     private fun canonicalType(raw: String): String {
         val t = raw.trim().lowercase()
