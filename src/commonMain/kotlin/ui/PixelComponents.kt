@@ -144,8 +144,14 @@ fun PixelButton(
             .height(48.dp)
             .scale(pressScale)
             .offset(y = pressTranslationY)
+            .pixelBorder(
+                borderWidth = 3.dp,
+                enabled = enabled,
+                glowAlpha = if (enabled) glowAlpha else 0f
+            )
+            .clip(PixelShape(cornerSize = 9.dp))
             .drawBehind {
-                // Draw shadow for depth effect (lighter when pressed)
+                // Draw shadow for depth effect (lighter when pressed) - AFTER clipping
                 val shadowColor = Color.Black.copy(alpha = shadowAlpha)
                 val cornerSize = 9.dp.toPx()
                 val path = Path().apply {
@@ -161,27 +167,13 @@ fun PixelButton(
                 }
                 drawPath(path, shadowColor)
             }
-            .pixelBorder(
-                borderWidth = 3.dp,
-                enabled = enabled,
-                glowAlpha = if (enabled) glowAlpha else 0f
-            )
-            .clip(PixelShape(cornerSize = 9.dp))
             .background(backgroundColor)
-            .clickable(
-                enabled = enabled,
-                onClick = onClick,
-                interactionSource = interactionSource,
-                indication = null
-            )
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center
     ) {
-        // Add press overlay that respects button bounds (clipped by PixelShape above)
+        // Press overlay layer - before padding so it covers full background
         if (isPressed) {
             Box(
                 modifier = Modifier
-                    .matchParentSize()
+                    .fillMaxSize()
                     .background(
                         if (variant == PixelButtonVariant.PRIMARY) 
                             Color.White.copy(alpha = 0.2f)
@@ -191,12 +183,26 @@ fun PixelButton(
             )
         }
         
-        Text(
-            text = text.uppercase(),
-            color = textColor,
-            style = MaterialTheme.typography.button,
-            fontWeight = FontWeight.Bold
-        )
+        // Content layer with clickable and padding
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    enabled = enabled,
+                    onClick = onClick,
+                    interactionSource = interactionSource,
+                    indication = null
+                )
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text.uppercase(),
+                color = textColor,
+                style = MaterialTheme.typography.button,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
@@ -1179,19 +1185,12 @@ fun PixelIconButton(
             .background(
                 if (isHovered) buttonColor.copy(alpha = 0.2f) else Color.Transparent
             )
-            .clickable(
-                enabled = enabled,
-                onClick = onClick,
-                interactionSource = interactionSource,
-                indication = null
-            ),
-        contentAlignment = Alignment.Center
     ) {
-        // Add press overlay that respects button bounds
+        // Press overlay layer - before clickable so it covers full background
         if (isPressed) {
             Box(
                 modifier = Modifier
-                    .matchParentSize()
+                    .fillMaxSize()
                     .background(
                         when (variant) {
                             PixelIconButtonVariant.PRIMARY -> colors.primary.copy(alpha = 0.3f)
@@ -1202,12 +1201,25 @@ fun PixelIconButton(
             )
         }
         
-        Text(
-            text = icon,
-            style = MaterialTheme.typography.body1,
-            color = if (enabled) textColor else textColor.copy(alpha = 0.3f),
-            fontWeight = FontWeight.Bold
-        )
+        // Content layer with clickable
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    enabled = enabled,
+                    onClick = onClick,
+                    interactionSource = interactionSource,
+                    indication = null
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = icon,
+                style = MaterialTheme.typography.body1,
+                color = if (enabled) textColor else textColor.copy(alpha = 0.3f),
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 

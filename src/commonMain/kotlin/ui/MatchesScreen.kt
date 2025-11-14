@@ -283,26 +283,33 @@ private fun PixelStatusDropdown(label: String, options: List<String>, selected: 
                 .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = if (expanded) 0.5f else 0.2f)
                 .clip(PixelShape(cornerSize = 6.dp))
                 .background(MaterialTheme.colors.surface)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null
-                ) { expanded = true }
-                .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            // Add press overlay that respects button bounds
+            // Press overlay layer - before clickable so it covers full background
             if (isPressed) {
                 Box(
                     modifier = Modifier
-                        .matchParentSize()
+                        .fillMaxSize()
                         .background(MaterialTheme.colors.primary.copy(alpha = 0.15f))
                 )
             }
             
-            Text(
-                "$label: ${selected.uppercase()}",
-                style = MaterialTheme.typography.button,
-                fontWeight = FontWeight.Bold
-            )
+            // Content layer with clickable and padding
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) { expanded = true }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Text(
+                    "$label: ${selected.uppercase()}",
+                    style = MaterialTheme.typography.button,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
         DropdownMenu(
             expanded = expanded,

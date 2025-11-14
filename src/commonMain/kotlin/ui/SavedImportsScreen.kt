@@ -298,27 +298,12 @@ fun SavedImportCard(
                         .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
                         .clip(PixelShape(cornerSize = 4.dp))
                         .background(buttonColor)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null
-                        ) {
-                            if (showDeleteConfirm) {
-                                // Second click - actually delete
-                                onDelete()
-                                showDeleteConfirm = false
-                            } else {
-                                // First click - show checkmark
-                                showDeleteConfirm = true
-                            }
-                        }
-                        .padding(8.dp),
-                    contentAlignment = Alignment.Center
                 ) {
-                    // Add press overlay that respects button bounds
+                    // Press overlay layer - before clickable so it covers full background
                     if (isPressed) {
                         Box(
                             modifier = Modifier
-                                .matchParentSize()
+                                .fillMaxSize()
                                 .background(
                                     if (showDeleteConfirm)
                                         MaterialTheme.colors.secondary.copy(alpha = 0.3f)
@@ -328,14 +313,35 @@ fun SavedImportCard(
                         )
                     }
                     
-                    Text(
-                        text = icon,
-                        style = MaterialTheme.typography.body2,
-                        color = if (showDeleteConfirm)
-                            MaterialTheme.colors.secondary
-                        else
-                            MaterialTheme.colors.error
-                    )
+                    // Content layer with clickable and padding
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                if (showDeleteConfirm) {
+                                    // Second click - actually delete
+                                    onDelete()
+                                    showDeleteConfirm = false
+                                } else {
+                                    // First click - show checkmark
+                                    showDeleteConfirm = true
+                                }
+                            }
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = icon,
+                            style = MaterialTheme.typography.body2,
+                            color = if (showDeleteConfirm)
+                                MaterialTheme.colors.secondary
+                            else
+                                MaterialTheme.colors.error
+                        )
+                    }
                 }
             }
         }
