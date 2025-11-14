@@ -212,7 +212,10 @@ fun IosPreferencesScreen(
                         .fillMaxWidth()
                         .weight(1f)
                         .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
-                        .background(MaterialTheme.colors.surface.copy(alpha = 0.5f), shape = PixelShape(cornerSize = 6.dp))
+                        .background(
+                            MaterialTheme.colors.surface.copy(alpha = 0.5f),
+                            shape = PixelShape(cornerSize = 6.dp)
+                        )
                         .padding(8.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
