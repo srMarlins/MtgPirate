@@ -37,7 +37,7 @@ class MviViewModelTest {
 
         // Create in-memory database for testing
         val driver = createInMemoryDriver()
-        database = Database(object : DatabaseDriverFactory {
+        database = Database(object : DatabaseDriverFactory() {
             override fun createDriver() = driver
         })
 

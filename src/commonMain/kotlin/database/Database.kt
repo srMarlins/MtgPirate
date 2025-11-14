@@ -14,7 +14,7 @@ import model.LogEntry
 import model.Preferences
 import model.SavedImport
 
-expect class DatabaseDriverFactory {
+expect open class DatabaseDriverFactory {
     fun createDriver(): SqlDriver
 }
 

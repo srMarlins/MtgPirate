@@ -58,6 +58,12 @@ kotlin {
                 implementation(compose.desktop.currentOs)
             }
         }
+        val desktopTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(libs.kotlinx.coroutines.test)
+            }
+        }
         val appleMain by creating {
             dependsOn(commonMain)
             dependencies {
