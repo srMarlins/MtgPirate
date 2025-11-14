@@ -1,7 +1,13 @@
 package ui
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -10,6 +16,8 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
@@ -245,14 +253,51 @@ fun MatchesScreen(
 @Composable
 private fun PixelStatusDropdown(label: String, options: List<String>, selected: String, onSelect: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+    
+    // Interaction source to track press state
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    // Animate press state for physical feeling
+    val pressScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        )
+    )
+
+    val pressTranslationY by animateDpAsState(
+        targetValue = if (isPressed) 1.dp else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        )
+    )
+    
     Column {
         Box(
             modifier = Modifier
+                .scale(pressScale)
+                .offset(y = pressTranslationY)
                 .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = if (expanded) 0.5f else 0.2f)
-                .background(MaterialTheme.colors.surface, shape = PixelShape(cornerSize = 6.dp))
-                .clickable { expanded = true }
+                .clip(PixelShape(cornerSize = 6.dp))
+                .background(MaterialTheme.colors.surface)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) { expanded = true }
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
+            // Add press overlay that respects button bounds
+            if (isPressed) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(MaterialTheme.colors.primary.copy(alpha = 0.15f))
+                )
+            }
+            
             Text(
                 "$label: ${selected.uppercase()}",
                 style = MaterialTheme.typography.button,

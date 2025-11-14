@@ -2,9 +2,15 @@
 package ui
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,6 +19,8 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -261,12 +269,39 @@ fun SavedImportCard(
                     derivedStateOf { if (showDeleteConfirm) "✓" else "🗑" }
                 }
 
+                // Interaction source to track press state
+                val interactionSource = remember { MutableInteractionSource() }
+                val isPressed by interactionSource.collectIsPressedAsState()
+
+                // Animate press state for physical feeling
+                val pressScale by animateFloatAsState(
+                    targetValue = if (isPressed) 0.95f else 1f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessHigh
+                    )
+                )
+
+                val pressTranslationY by animateDpAsState(
+                    targetValue = if (isPressed) 1.dp else 0.dp,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessHigh
+                    )
+                )
+
                 Box(
                     modifier = Modifier
                         .size(40.dp)
+                        .scale(pressScale)
+                        .offset(y = pressTranslationY)
                         .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
-                        .background(buttonColor, shape = PixelShape(cornerSize = 4.dp))
-                        .clickable {
+                        .clip(PixelShape(cornerSize = 4.dp))
+                        .background(buttonColor)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
                             if (showDeleteConfirm) {
                                 // Second click - actually delete
                                 onDelete()
@@ -279,6 +314,20 @@ fun SavedImportCard(
                         .padding(8.dp),
                     contentAlignment = Alignment.Center
                 ) {
+                    // Add press overlay that respects button bounds
+                    if (isPressed) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(
+                                    if (showDeleteConfirm)
+                                        MaterialTheme.colors.secondary.copy(alpha = 0.3f)
+                                    else
+                                        MaterialTheme.colors.error.copy(alpha = 0.3f)
+                                )
+                        )
+                    }
+                    
                     Text(
                         text = icon,
                         style = MaterialTheme.typography.body2,

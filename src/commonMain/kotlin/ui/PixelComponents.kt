@@ -1135,30 +1135,73 @@ fun PixelIconButton(
         else -> colors.onSurface
     }
 
+    // Interaction source to track press state
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
     // Hover state
     var isHovered by remember { mutableStateOf(false) }
 
-    val scale by animateFloatAsState(
-        targetValue = if (isHovered) 1.1f else 1f,
+    // Animate press state for physical feeling
+    val pressScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        )
+    )
+
+    val pressTranslationY by animateDpAsState(
+        targetValue = if (isPressed) 1.dp else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        )
+    )
+
+    // Combine hover scale with press scale
+    val hoverScale by animateFloatAsState(
+        targetValue = if (isHovered && !isPressed) 1.1f else 1f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
     )
 
     Box(
         modifier = modifier
             .size(32.dp)
-            .scale(scale)
+            .scale(pressScale * hoverScale)
+            .offset(y = pressTranslationY)
             .pixelBorder(
                 borderWidth = 2.dp,
                 enabled = enabled,
                 glowAlpha = if (isHovered) 0.5f else 0.2f
             )
+            .clip(PixelShape(cornerSize = 6.dp))
             .background(
-                if (isHovered) buttonColor.copy(alpha = 0.2f) else Color.Transparent,
-                shape = PixelShape(cornerSize = 6.dp)
+                if (isHovered) buttonColor.copy(alpha = 0.2f) else Color.Transparent
             )
-            .clickable(enabled = enabled, onClick = onClick),
+            .clickable(
+                enabled = enabled,
+                onClick = onClick,
+                interactionSource = interactionSource,
+                indication = null
+            ),
         contentAlignment = Alignment.Center
     ) {
+        // Add press overlay that respects button bounds
+        if (isPressed) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        when (variant) {
+                            PixelIconButtonVariant.PRIMARY -> colors.primary.copy(alpha = 0.3f)
+                            PixelIconButtonVariant.SECONDARY -> colors.secondary.copy(alpha = 0.3f)
+                            PixelIconButtonVariant.DANGER -> Color.White.copy(alpha = 0.3f)
+                        }
+                    )
+            )
+        }
+        
         Text(
             text = icon,
             style = MaterialTheme.typography.body1,
