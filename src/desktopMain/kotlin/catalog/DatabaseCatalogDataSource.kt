@@ -29,7 +29,9 @@ import kotlinx.coroutines.withContext
  */
 class DatabaseCatalogDataSource(
     private val jdbcUrl: String,
+    @Suppress("UnusedPrivateProperty")
     private val username: String,
+    @Suppress("UnusedPrivateProperty")
     private val password: String
 ) : CatalogDataSource {
     

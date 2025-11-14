@@ -86,15 +86,6 @@ class IosMviPlatformServices(
 
     // Helper functions
 
-    private fun canonicalType(raw: String): String {
-        val t = raw.trim().lowercase()
-        return when {
-            "foil" in t -> "Foil"
-            "holo" in t -> "Holo"
-            else -> "Regular"
-        }
-    }
-
     private fun generateCsvContent(matches: List<DeckEntryMatch>): String {
         val sb = StringBuilder()
         sb.appendLine("Card Name,Set,SKU,Card Type,Quantity,Base Price")

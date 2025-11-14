@@ -3,12 +3,6 @@
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
     <ID>ComplexCondition:CatalogCsvParser.kt$CatalogCsvParser$cells.size &gt; headers.size &amp;&amp; idxSku &gt;= 0 &amp;&amp; idxName &gt;= 0 &amp;&amp; idxSet &gt;= 0 &amp;&amp; idxType &gt;= 0</ID>
-    <ID>ConstructorParameterNaming:ScryfallApi.kt$ScryfallApi.CardFace$val image_uris: ImageUris? = null</ID>
-    <ID>ConstructorParameterNaming:ScryfallApi.kt$ScryfallApi.ImageUris$val art_crop: String? = null</ID>
-    <ID>ConstructorParameterNaming:ScryfallApi.kt$ScryfallApi.ImageUris$val border_crop: String? = null</ID>
-    <ID>ConstructorParameterNaming:ScryfallApi.kt$ScryfallApi.ScryfallCard$val card_faces: List&lt;CardFace&gt;? = null</ID>
-    <ID>ConstructorParameterNaming:ScryfallApi.kt$ScryfallApi.ScryfallCard$val collector_number: String</ID>
-    <ID>ConstructorParameterNaming:ScryfallApi.kt$ScryfallApi.ScryfallCard$val image_uris: ImageUris? = null</ID>
     <ID>CyclomaticComplexMethod:CatalogCsvParser.kt$CatalogCsvParser$fun parse(csv: String, typePriceMap: Map&lt;String, Double&gt; = emptyMap()): Catalog</ID>
     <ID>CyclomaticComplexMethod:CatalogCsvParser.kt$CatalogCsvParser$private fun alignRow(cells: List&lt;String&gt;, headers: List&lt;String&gt;, idxSku: Int, idxName: Int, idxSet: Int, idxType: Int, idxPrice: Int): List&lt;String&gt;</ID>
     <ID>CyclomaticComplexMethod:CatalogParser.kt$CatalogParser$fun parse(html: String): Catalog</ID>
@@ -104,7 +98,6 @@
     <ID>LongParameterList:PixelComponents.kt$( width: Float, height: Float, cornerSize: Float, strokeWidth: Float, color: Color, inner: Boolean = false )</ID>
     <ID>LongParameterList:PreferencesWizardScreen.kt$( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
     <ID>LongParameterList:PreferencesWizardScreen.kt$( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
-    <ID>MatchingDeclarationName:Normalizer.kt$NameNormalizer</ID>
     <ID>MatchingDeclarationName:ResultsScreen.kt$SortOption</ID>
     <ID>MaxLineLength:CatalogCsvParser.kt$CatalogCsvParser$private</ID>
     <ID>MaxLineLength:CatalogCsvParser.kt$CatalogCsvParser$val dollarsFromCell = if (idxPrice &gt;= 0 &amp;&amp; idxPrice &lt; aligned.size) parsePriceCell(aligned[idxPrice]) else 0.0</ID>
@@ -196,10 +189,8 @@
     <ID>MaxLineLength:SavedImportsScreen.kt$"${localDateTime.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${localDateTime.day}, ${localDateTime.year} ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"</ID>
     <ID>MaxLineLength:SavedImportsScreen.kt$.</ID>
     <ID>MaxLineLength:ScryfallImageEnricher.kt$ScryfallImageEnricher$log?.invoke("Fetching image for ${variant.nameOriginal} (${variant.setCode} #${variant.collectorNumber})")</ID>
-    <ID>MayBeConst:CsvExporter.kt$CsvExporter$private val header = "Card Name,Set,SKU,Card Type,Quantity,Base Price"</ID>
     <ID>NestedBlockDepth:CatalogCsvParser.kt$CatalogCsvParser$private fun alignRow(cells: List&lt;String&gt;, headers: List&lt;String&gt;, idxSku: Int, idxName: Int, idxSet: Int, idxType: Int, idxPrice: Int): List&lt;String&gt;</ID>
     <ID>NestedBlockDepth:DecklistParser.kt$DecklistParser$fun parse(text: String, includeSideboard: Boolean, includeCommanders: Boolean): List&lt;DeckEntry&gt;</ID>
-    <ID>NewLineAtEndOfFile:PreferencesWizardScreen.kt$ui.PreferencesWizardScreen.kt</ID>
     <ID>ReturnCount:CatalogParser.kt$CatalogParser$fun extractValue(label: String): String?</ID>
     <ID>ReturnCount:CatalogParser.kt$CatalogParser$fun parse(html: String): Catalog</ID>
     <ID>ReturnCount:Levenshtein.kt$Levenshtein$fun distance(a: String, b: String): Int</ID>
@@ -227,10 +218,5 @@
     <ID>TooManyFunctions:MainStore.kt$MainStore</ID>
     <ID>TooManyFunctions:MviViewModel.kt$MviViewModel</ID>
     <ID>TooManyFunctions:PixelComponents.kt$ui.PixelComponents.kt</ID>
-    <ID>UnusedPrivateMember:IosMviPlatformServices.kt$IosMviPlatformServices$private fun fillZeroPrices(catalog: Catalog): Catalog</ID>
-    <ID>UnusedPrivateProperty:DatabaseCatalogDataSource.kt$DatabaseCatalogDataSource$private val password: String</ID>
-    <ID>UnusedPrivateProperty:DatabaseCatalogDataSource.kt$DatabaseCatalogDataSource$private val username: String</ID>
-    <ID>UnusedPrivateProperty:IosMviPlatformServices.kt$IosMviPlatformServices$private val urlApi = "https://www.usmtgproxy.com/wp-content/uploads/single-card-list.csv"</ID>
-    <ID>UnusedPrivateProperty:StepperComponent.kt$val glowRotation by infiniteTransition.animateFloat( initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable( animation = tween(3000, easing = LinearEasing), repeatMode = RepeatMode.Restart ) )</ID>
   </CurrentIssues>
 </SmellBaseline>
