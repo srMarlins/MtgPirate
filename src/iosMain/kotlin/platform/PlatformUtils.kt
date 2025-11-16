@@ -1,33 +1,42 @@
 package platform
 
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.Foundation.NSNumber
+import platform.Foundation.NSNumberFormatter
+import platform.Foundation.NSNumberFormatterDecimalStyle
+import platform.UIKit.UIPasteboard
+import platform.posix.gettimeofday
+import platform.posix.timeval
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 
-actual fun currentTimeMillis(): Long {
-    // Note: This is a simplified implementation for iOS.
-    // For a production app, use platform.Foundation.NSDate.timeIntervalSince1970() * 1000
-    return 0L
+/**
+ * Get current time in milliseconds since epoch.
+ * Uses POSIX gettimeofday for accurate timestamps on iOS.
+ */
+@OptIn(ExperimentalForeignApi::class)
+actual fun currentTimeMillis(): Long = memScoped {
+    val timeVal = alloc<timeval>()
+    gettimeofday(timeVal.ptr, null)
+    timeVal.tv_sec * 1000L + timeVal.tv_usec / 1000L
 }
 
+/**
+ * Format a double value with specified decimal places.
+ * Uses NSNumberFormatter for proper iOS locale formatting.
+ */
+@OptIn(ExperimentalForeignApi::class)
 actual fun formatDecimal(value: Double, decimalPlaces: Int): String {
-    // Simple decimal formatting for iOS
-    val multiplier = when (decimalPlaces) {
-        1 -> 10.0
-        2 -> 100.0
-        3 -> 1000.0
-        else -> 100.0
+    val formatter = NSNumberFormatter().apply {
+        numberStyle = NSNumberFormatterDecimalStyle
+        minimumFractionDigits = decimalPlaces.toULong()
+        maximumFractionDigits = decimalPlaces.toULong()
     }
-    val rounded = (value * multiplier).toLong().toDouble() / multiplier
-    
-    // Format with proper decimal places
-    val intPart = rounded.toLong()
-    val fracPart = (rounded - intPart) * multiplier
-    return when (decimalPlaces) {
-        1 -> "$intPart.${fracPart.toLong()}"
-        2 -> "$intPart.${fracPart.toLong().toString().padStart(2, '0')}"
-        else -> rounded.toString()
-    }
+    return formatter.stringFromNumber(NSNumber(value)) ?: value.toString()
 }
 
 actual fun maxOf(a: Int, b: Int): Int = max(a, b)
@@ -36,8 +45,11 @@ actual fun minOf(a: Int, b: Int): Int = min(a, b)
 
 actual fun abs(value: Int): Int = value.absoluteValue
 
+/**
+ * Copy text to the iOS system clipboard.
+ * Uses UIPasteboard for native clipboard integration.
+ */
+@OptIn(ExperimentalForeignApi::class)
 actual suspend fun copyToClipboard(text: String) {
-    // Note: For a production iOS app, implement with:
-    // platform.UIKit.UIPasteboard.generalPasteboard.string = text
-    // This requires the proper iOS interop setup
+    UIPasteboard.generalPasteboard.string = text
 }

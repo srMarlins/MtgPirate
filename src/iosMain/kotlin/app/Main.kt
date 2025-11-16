@@ -4,13 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,23 +21,21 @@ import kotlinx.coroutines.SupervisorJob
 import platform.IosMviPlatformServices
 import state.MviViewModel
 import state.ViewIntent
+import state.ViewState
 import ui.*
 
 /**
- * Main iOS app composable with MVI architecture and pixel design.
+ * Main iOS app entry point with MVI architecture and pixel design.
+ * Initializes the app dependencies and renders the navigation host.
  */
 @Composable
 fun IosApp() {
-    // Create app-level coroutine scope
     val scope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
-    
-    // Initialize database and stores
     val database = remember { Database(DatabaseDriverFactory()) }
     val catalogStore = remember { CatalogStore(database) }
     val importsStore = remember { ImportsStore(database) }
     val platformServices = remember { IosMviPlatformServices(database) }
     
-    // Create MVI ViewModel
     val viewModel = remember {
         MviViewModel(
             scope = scope,
@@ -51,161 +46,56 @@ fun IosApp() {
         )
     }
     
-    // Collect view state
     val state by viewModel.viewState.collectAsState()
     
-    // Initialize on first launch
     LaunchedEffect(Unit) {
         viewModel.processIntent(ViewIntent.Init)
     }
     
-    // Apply pixel theme
     AppTheme(darkTheme = state.isDarkTheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
         ) {
-            // Main navigation with wizard flow
-            IosNavigationHost(
-                viewModel = viewModel,
-                state = state
-            )
+            iosNavigationHost(viewModel = viewModel, state = state)
         }
     }
 }
 
 /**
- * iOS navigation host managing wizard flow and screens.
+ * iOS navigation host managing wizard flow and screen navigation.
  */
 @Composable
-fun IosNavigationHost(
+fun iosNavigationHost(
     viewModel: MviViewModel,
-    state: state.ViewState
+    state: ViewState
 ) {
-    // Track current screen
     var currentScreen by remember { mutableStateOf(IosScreen.IMPORT) }
     
-    // Navigation helper
-    fun navigateTo(screen: IosScreen) {
-        currentScreen = screen
-    }
-    
     Box(modifier = Modifier.fillMaxSize()) {
-        // Background scanline effect
         ScanlineEffect(alpha = 0.02f)
         
-        // Render current screen
-        when (currentScreen) {
-            IosScreen.IMPORT -> IosImportScreen(
-                deckText = state.deckText,
-                onDeckTextChange = { viewModel.processIntent(ViewIntent.UpdateDeckText(it)) },
-                onNext = {
-                    viewModel.processIntent(ViewIntent.ParseDeck)
-                    viewModel.processIntent(ViewIntent.CompleteWizardStep(1))
-                    navigateTo(IosScreen.PREFERENCES)
-                },
-                onShowSavedImports = {
-                    viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(true))
-                }
-            )
-            
-            IosScreen.PREFERENCES -> IosPreferencesScreen(
-                includeSideboard = state.includeSideboard,
-                includeCommanders = state.includeCommanders,
-                includeTokens = state.includeTokens,
-                variantPriority = state.preferences.variantPriority,
-                onIncludeSideboardChange = { viewModel.processIntent(ViewIntent.ToggleIncludeSideboard(it)) },
-                onIncludeCommandersChange = { viewModel.processIntent(ViewIntent.ToggleIncludeCommanders(it)) },
-                onIncludeTokensChange = { viewModel.processIntent(ViewIntent.ToggleIncludeTokens(it)) },
-                onVariantPriorityChange = { viewModel.processIntent(ViewIntent.UpdateVariantPriority(it)) },
-                onBack = { navigateTo(IosScreen.IMPORT) },
-                onNext = {
-                    viewModel.processIntent(ViewIntent.CompleteWizardStep(2))
-                    viewModel.processIntent(ViewIntent.RunMatch)
-                    navigateTo(IosScreen.RESULTS)
-                }
-            )
-            
-            IosScreen.RESULTS -> IosResultsScreen(
-                matches = state.matches,
-                onResolve = { idx ->
-                    viewModel.processIntent(ViewIntent.OpenResolve(idx))
-                    navigateTo(IosScreen.RESOLVE)
-                },
-                onBack = { navigateTo(IosScreen.PREFERENCES) },
-                onNext = {
-                    viewModel.processIntent(ViewIntent.CompleteWizardStep(3))
-                    navigateTo(IosScreen.EXPORT)
-                }
-            )
-            
-            IosScreen.RESOLVE -> {
-                val index = state.showCandidatesFor
-                val match = index?.let { state.matches.getOrNull(it) }
-                if (index != null && match != null) {
-                    IosResolveScreen(
-                        match = match,
-                        onSelect = { variant ->
-                            viewModel.processIntent(ViewIntent.ResolveCandidate(index, variant))
-                            viewModel.processIntent(ViewIntent.CloseResolve)
-                            navigateTo(IosScreen.RESULTS)
-                        },
-                        onBack = {
-                            viewModel.processIntent(ViewIntent.CloseResolve)
-                            navigateTo(IosScreen.RESULTS)
-                        }
-                    )
-                } else {
-                    navigateTo(IosScreen.RESULTS)
-                }
-            }
-            
-            IosScreen.EXPORT -> IosExportScreen(
-                matches = state.matches,
-                onBack = { navigateTo(IosScreen.RESULTS) },
-                onExport = {
-                    viewModel.processIntent(ViewIntent.ExportCsv)
-                    viewModel.processIntent(ViewIntent.CompleteWizardStep(4))
-                }
-            )
-            
-            IosScreen.CATALOG -> {
-                val catalog = state.catalog
-                if (catalog != null) {
-                    IosCatalogScreen(
-                        catalog = catalog,
-                        onBack = { navigateTo(IosScreen.IMPORT) }
-                    )
-                } else {
-                    navigateTo(IosScreen.IMPORT)
-                }
-            }
-            
-            IosScreen.MATCHES -> IosMatchesScreen(
-                matches = state.matches,
-                onBack = { navigateTo(IosScreen.RESULTS) }
-            )
-        }
+        renderScreen(
+            currentScreen = currentScreen,
+            state = state,
+            viewModel = viewModel,
+            onNavigate = { currentScreen = it }
+        )
         
-        // Bottom navigation bar with pixel styling
         IosBottomNavBar(
             currentScreen = currentScreen,
-            onNavigate = { navigateTo(it) },
+            onNavigate = { currentScreen = it },
             hasCatalog = state.catalog != null,
             hasMatches = state.matches.isNotEmpty(),
             modifier = Modifier.align(Alignment.BottomCenter)
         )
         
-        // Theme toggle floating action button
         IosThemeToggleFab(
             isDarkTheme = state.isDarkTheme,
             onToggle = { viewModel.processIntent(ViewIntent.ToggleTheme) },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
+            modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
         )
         
-        // Saved imports dialog
         if (state.showSavedImportsWindow) {
             SavedImportsDialog(
                 savedImports = state.savedImports,
@@ -214,7 +104,7 @@ fun IosNavigationHost(
                 },
                 onSelectImport = { importId ->
                     viewModel.processIntent(ViewIntent.LoadSavedImport(importId))
-                    navigateTo(IosScreen.IMPORT)
+                    currentScreen = IosScreen.IMPORT
                 },
                 onDeleteImport = { importId ->
                     viewModel.processIntent(ViewIntent.DeleteSavedImport(importId))
@@ -225,7 +115,202 @@ fun IosNavigationHost(
 }
 
 /**
- * iOS screen enum for navigation.
+ * Render the current screen based on navigation state.
+ */
+@Composable
+private fun renderScreen(
+    currentScreen: IosScreen,
+    state: ViewState,
+    viewModel: MviViewModel,
+    onNavigate: (IosScreen) -> Unit
+) {
+    when (currentScreen) {
+        IosScreen.IMPORT -> renderImportScreen(state, viewModel, onNavigate)
+        IosScreen.PREFERENCES -> renderPreferencesScreen(state, viewModel, onNavigate)
+        IosScreen.RESULTS -> renderResultsScreen(state, viewModel, onNavigate)
+        IosScreen.RESOLVE -> renderResolveScreen(state, viewModel, onNavigate)
+        IosScreen.EXPORT -> renderExportScreen(state, viewModel, onNavigate)
+        IosScreen.CATALOG -> renderCatalogScreen(state, onNavigate)
+        IosScreen.MATCHES -> renderMatchesScreen(state, onNavigate)
+    }
+}
+
+@Composable
+private fun renderImportScreen(state: ViewState, viewModel: MviViewModel, onNavigate: (IosScreen) -> Unit) {
+    importScreen(
+        state = state,
+        onNext = {
+            viewModel.processIntent(ViewIntent.ParseDeck)
+            viewModel.processIntent(ViewIntent.CompleteWizardStep(1))
+            onNavigate(IosScreen.PREFERENCES)
+        },
+        onShowSavedImports = {
+            viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(true))
+        },
+        onDeckTextChange = { viewModel.processIntent(ViewIntent.UpdateDeckText(it)) }
+    )
+}
+
+@Composable
+private fun renderPreferencesScreen(state: ViewState, viewModel: MviViewModel, onNavigate: (IosScreen) -> Unit) {
+    preferencesScreen(
+        state = state,
+        viewModel = viewModel,
+        onBack = { onNavigate(IosScreen.IMPORT) },
+        onNext = {
+            viewModel.processIntent(ViewIntent.CompleteWizardStep(2))
+            viewModel.processIntent(ViewIntent.RunMatch)
+            onNavigate(IosScreen.RESULTS)
+        }
+    )
+}
+
+@Composable
+private fun renderResultsScreen(state: ViewState, viewModel: MviViewModel, onNavigate: (IosScreen) -> Unit) {
+    resultsScreen(
+        state = state,
+        onResolve = { idx ->
+            viewModel.processIntent(ViewIntent.OpenResolve(idx))
+            onNavigate(IosScreen.RESOLVE)
+        },
+        onBack = { onNavigate(IosScreen.PREFERENCES) },
+        onNext = {
+            viewModel.processIntent(ViewIntent.CompleteWizardStep(3))
+            onNavigate(IosScreen.EXPORT)
+        }
+    )
+}
+
+@Composable
+private fun renderResolveScreen(state: ViewState, viewModel: MviViewModel, onNavigate: (IosScreen) -> Unit) {
+    val index = state.showCandidatesFor
+    val match = index?.let { state.matches.getOrNull(it) }
+    if (index != null && match != null) {
+        IosResolveScreen(
+            match = match,
+            onSelect = { variant ->
+                viewModel.processIntent(ViewIntent.ResolveCandidate(index, variant))
+                viewModel.processIntent(ViewIntent.CloseResolve)
+                onNavigate(IosScreen.RESULTS)
+            },
+            onBack = {
+                viewModel.processIntent(ViewIntent.CloseResolve)
+                onNavigate(IosScreen.RESULTS)
+            }
+        )
+    } else {
+        onNavigate(IosScreen.RESULTS)
+    }
+}
+
+@Composable
+private fun renderExportScreen(state: ViewState, viewModel: MviViewModel, onNavigate: (IosScreen) -> Unit) {
+    exportScreen(
+        state = state,
+        onBack = { onNavigate(IosScreen.RESULTS) },
+        onExport = {
+            viewModel.processIntent(ViewIntent.ExportCsv)
+            viewModel.processIntent(ViewIntent.CompleteWizardStep(4))
+        }
+    )
+}
+
+@Composable
+private fun renderCatalogScreen(state: ViewState, onNavigate: (IosScreen) -> Unit) {
+    state.catalog?.let { catalog ->
+        IosCatalogScreen(
+            catalog = catalog,
+            onBack = { onNavigate(IosScreen.IMPORT) }
+        )
+    } ?: run { onNavigate(IosScreen.IMPORT) }
+}
+
+@Composable
+private fun renderMatchesScreen(state: ViewState, onNavigate: (IosScreen) -> Unit) {
+    IosMatchesScreen(
+        matches = state.matches,
+        onBack = { onNavigate(IosScreen.RESULTS) }
+    )
+}
+
+/**
+ * Helper composable for import screen.
+ */
+@Composable
+private fun importScreen(
+    state: ViewState,
+    onNext: () -> Unit,
+    onShowSavedImports: () -> Unit,
+    onDeckTextChange: (String) -> Unit
+) {
+    IosImportScreen(
+        deckText = state.deckText,
+        onDeckTextChange = onDeckTextChange,
+        onNext = onNext,
+        onShowSavedImports = onShowSavedImports
+    )
+}
+
+/**
+ * Helper composable for preferences screen.
+ */
+@Composable
+private fun preferencesScreen(
+    state: ViewState,
+    viewModel: MviViewModel,
+    onBack: () -> Unit,
+    onNext: () -> Unit
+) {
+    IosPreferencesScreen(
+        includeSideboard = state.includeSideboard,
+        includeCommanders = state.includeCommanders,
+        includeTokens = state.includeTokens,
+        variantPriority = state.preferences.variantPriority,
+        onIncludeSideboardChange = { viewModel.processIntent(ViewIntent.ToggleIncludeSideboard(it)) },
+        onIncludeCommandersChange = { viewModel.processIntent(ViewIntent.ToggleIncludeCommanders(it)) },
+        onIncludeTokensChange = { viewModel.processIntent(ViewIntent.ToggleIncludeTokens(it)) },
+        onVariantPriorityChange = { viewModel.processIntent(ViewIntent.UpdateVariantPriority(it)) },
+        onBack = onBack,
+        onNext = onNext
+    )
+}
+
+/**
+ * Helper composable for results screen.
+ */
+@Composable
+private fun resultsScreen(
+    state: ViewState,
+    onResolve: (Int) -> Unit,
+    onBack: () -> Unit,
+    onNext: () -> Unit
+) {
+    IosResultsScreen(
+        matches = state.matches,
+        onResolve = onResolve,
+        onBack = onBack,
+        onNext = onNext
+    )
+}
+
+/**
+ * Helper composable for export screen.
+ */
+@Composable
+private fun exportScreen(
+    state: ViewState,
+    onBack: () -> Unit,
+    onExport: () -> Unit
+) {
+    IosExportScreen(
+        matches = state.matches,
+        onBack = onBack,
+        onExport = onExport
+    )
+}
+
+/**
+ * iOS screen navigation destinations.
  */
 enum class IosScreen {
     IMPORT,
@@ -236,6 +321,7 @@ enum class IosScreen {
     CATALOG,
     MATCHES
 }
+
 
 /**
  * iOS bottom navigation bar with pixel styling.
