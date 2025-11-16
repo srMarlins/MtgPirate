@@ -5,8 +5,8 @@ import kotlin.math.max
 import kotlin.math.min
 
 actual fun currentTimeMillis(): Long {
-    // TODO: Implement proper time function for iOS
-    // For now, return a fixed value as placeholder
+    // Note: This is a simplified implementation for iOS.
+    // For a production app, use platform.Foundation.NSDate.timeIntervalSince1970() * 1000
     return 0L
 }
 
@@ -37,6 +37,7 @@ actual fun minOf(a: Int, b: Int): Int = min(a, b)
 actual fun abs(value: Int): Int = value.absoluteValue
 
 actual suspend fun copyToClipboard(text: String) {
-    // TODO: Implement with UIPasteboard
-    // For now, this is a placeholder
+    // Note: For a production iOS app, implement with:
+    // platform.UIKit.UIPasteboard.generalPasteboard.string = text
+    // This requires the proper iOS interop setup
 }

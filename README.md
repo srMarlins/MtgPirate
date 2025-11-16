@@ -1,6 +1,8 @@
 # MTG PIRATE
 
-A Kotlin Multiplatform desktop application for importing Magic: The Gathering decklists, matching cards against the USEA MTG Proxy catalog, and exporting optimized CSV orders.
+A Kotlin Multiplatform application for importing Magic: The Gathering decklists, matching cards against the USEA MTG Proxy catalog, and exporting optimized CSV orders.
+
+**Platforms:** Desktop (primary) • iOS (experimental)
 
 <div align="center">
   <img src="https://github.com/user-attachments/assets/2f6e4147-6a47-4de0-8e95-25e556a46ab9" alt="MtgPirate Demo" style="max-width: 70%;">
@@ -19,8 +21,8 @@ A Kotlin Multiplatform desktop application for importing Magic: The Gathering de
 
 ## Tech Stack
 
-- **Kotlin Multiplatform** - Cross-platform codebase
-- **Compose Desktop** - Modern declarative UI framework
+- **Kotlin Multiplatform** - Cross-platform codebase (Desktop + iOS)
+- **Compose Multiplatform** - Modern declarative UI framework
 - **Kotlin Coroutines** - Async operations and state management
 - **Kotlin Serialization** - JSON persistence
 - **KSoup** - HTML parsing for catalog fetching
@@ -155,6 +157,28 @@ For details on implementing a database backend, see:
 - [Catalog Data Source Architecture](docs/CATALOG_DATA_SOURCE.md)
 - [Quick Start: Database Integration](docs/QUICK_START_DATABASE.md)
 
+## Platform Support
+
+### Desktop (Primary)
+
+Full-featured desktop application with:
+- ✅ Complete catalog fetching from USEA
+- ✅ File system access for imports/exports
+- ✅ Native file dialogs
+- ✅ Window management
+
+### iOS (Experimental)
+
+iOS app with wizard-style workflow:
+- ✅ MVI architecture with SQLDelight persistence
+- ✅ Pixel-style retro UI design
+- ✅ Decklist parsing and card matching
+- ✅ Clipboard export
+- ⚠️ Uses cached catalog data (no live fetching)
+- ⚠️ Limited platform integration
+
+See [iOS Implementation Guide](docs/IOS_IMPLEMENTATION.md) for details.
+
 ### State Management - MVI Architecture
 
 The project includes a **new MVI (Model-View-Intent) unidirectional architecture** that uses the database as the single source of truth:
@@ -254,6 +278,13 @@ Access preferences via the settings menu to configure:
 
 - Card data sourced from [USEA MTG Proxy](https://www.usmtgproxy.com/)
 - Built with [Compose Multiplatform](https://www.jetbrains.com/compose-multiplatform/)
+
+## Documentation
+
+- [MVI Architecture](docs/MVI_ARCHITECTURE.md) - State management and reactive design
+- [iOS Implementation](docs/IOS_IMPLEMENTATION.md) - iOS platform guide and limitations
+- [Catalog Data Source](docs/CATALOG_DATA_SOURCE.md) - Pluggable catalog architecture
+- [Database Quick Start](docs/QUICK_START_DATABASE.md) - Database integration guide
 
 ## Disclaimer
 

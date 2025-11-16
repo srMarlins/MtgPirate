@@ -30,6 +30,10 @@ kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
+    
+    // Apply default hierarchy template explicitly
+    applyDefaultHierarchyTemplate()
+    
     // Configure toolchain and compiler options for all JVM targets (Kotlin 2.x DSL)
     jvmToolchain(17)
     sourceSets {
@@ -59,14 +63,22 @@ kotlin {
                 implementation(compose.desktop.currentOs)
             }
         }
-        val appleMain by creating {
-            dependsOn(commonMain)
+        val desktopTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(libs.kotlinx.coroutines.test)
+            }
+        }
+        
+        // Use default Kotlin hierarchy template for intermediate source sets
+        // Default hierarchy automatically creates appleMain for iOS + macOS targets
+        // See: https://kotlinlang.org/docs/multiplatform/multiplatform-hierarchy.html
+        val appleMain by getting {
             dependencies {
                 implementation(libs.sqldelight.driver.native)
             }
         }
-        val iosMain by creating {
-            dependsOn(appleMain)
+        val iosMain by getting {
             dependencies {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
@@ -74,17 +86,11 @@ kotlin {
                 implementation(compose.ui)
             }
         }
-        val macosMain by creating {
-            dependsOn(appleMain)
+        val macosMain by getting {
             dependencies {
                 implementation(compose.desktop.macos_arm64)
             }
         }
-        val macosX64Main by getting { dependsOn(macosMain) }
-        val macosArm64Main by getting { dependsOn(macosMain) }
-        val iosX64Main by getting { dependsOn(iosMain) }
-        val iosArm64Main by getting { dependsOn(iosMain) }
-        val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
     }
 }
 
