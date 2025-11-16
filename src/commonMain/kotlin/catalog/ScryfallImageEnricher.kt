@@ -47,7 +47,7 @@ object ScryfallImageEnricher {
                 log?.invoke("Fetching image for ${variant.nameOriginal} (${variant.setCode}) via search")
                 val card = ScryfallApi.searchCard(variant.nameOriginal, variant.setCode)
                 if (card != null) {
-                    ScryfallApi.getCardImageUrl(card.set, card.collector_number, imageSize)
+                    ScryfallApi.getCardImageUrl(card.set, card.collectorNumber, imageSize)
                 } else null
             }
 

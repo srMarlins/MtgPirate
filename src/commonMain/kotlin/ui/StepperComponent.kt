@@ -101,16 +101,6 @@ fun PixelStepNode(
         )
     )
 
-    // Glow rotation for active state
-    val glowRotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        )
-    )
-
     val circleColor = when (step.state) {
         StepState.COMPLETED -> colors.primary
         StepState.ACTIVE -> colors.secondary
