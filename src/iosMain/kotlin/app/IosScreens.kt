@@ -36,24 +36,16 @@ fun IosImportScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .safeDrawingPadding()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .padding(bottom = 80.dp), // Space for bottom nav
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.Top
         ) {
-            // Animated Stepper for wizard progress
-            AnimatedStepper(
-                steps = listOf(
-                    Step(1, "Import", "Paste decklist", StepState.ACTIVE),
-                    Step(2, "Config", "Set options", StepState.LOCKED),
-                    Step(3, "Results", "Review cards", StepState.LOCKED),
-                    Step(4, "Export", "Generate CSV", StepState.LOCKED)
-                ),
+            // Compact stepper for mobile
+            CompactStepper(
                 currentStep = 1,
-                onStepClick = { },
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
 
             // Title with pixel styling - compact for mobile
             Column(modifier = Modifier.padding(bottom = 8.dp)) {
@@ -141,23 +133,15 @@ fun IosPreferencesScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .safeDrawingPadding()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .padding(bottom = 80.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            // Animated Stepper for wizard progress
-            AnimatedStepper(
-                steps = listOf(
-                    Step(1, "Import", "Paste decklist", StepState.COMPLETED),
-                    Step(2, "Config", "Set options", StepState.ACTIVE),
-                    Step(3, "Results", "Review cards", StepState.LOCKED),
-                    Step(4, "Export", "Generate CSV", StepState.LOCKED)
-                ),
+            // Compact stepper for mobile
+            CompactStepper(
                 currentStep = 2,
-                onStepClick = { },
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
 
             // Compact mobile header
             Column(modifier = Modifier.padding(bottom = 8.dp)) {
@@ -344,22 +328,15 @@ fun IosResultsScreen(
         ScanlineEffect(alpha = 0.03f)
         
         Column(modifier = Modifier.fillMaxSize()) {
-            // Add stepper at the top with safe padding
+            // Compact stepper at the top with safe padding
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .safeDrawingPadding()
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                AnimatedStepper(
-                    steps = listOf(
-                        Step(1, "Import", "Paste decklist", StepState.COMPLETED),
-                        Step(2, "Config", "Set options", StepState.COMPLETED),
-                        Step(3, "Results", "Review cards", StepState.ACTIVE),
-                        Step(4, "Export", "Generate CSV", StepState.LOCKED)
-                    ),
+                CompactStepper(
                     currentStep = 3,
-                    onStepClick = { },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -447,23 +424,15 @@ fun IosExportScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .safeDrawingPadding()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .padding(bottom = 80.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            // Animated Stepper for wizard progress
-            AnimatedStepper(
-                steps = listOf(
-                    Step(1, "Import", "Paste decklist", StepState.COMPLETED),
-                    Step(2, "Config", "Set options", StepState.COMPLETED),
-                    Step(3, "Results", "Review cards", StepState.COMPLETED),
-                    Step(4, "Export", "Generate CSV", StepState.ACTIVE)
-                ),
+            // Compact stepper for mobile
+            CompactStepper(
                 currentStep = 4,
-                onStepClick = { },
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
 
             // Header
             Column(modifier = Modifier.padding(bottom = 8.dp)) {
@@ -509,17 +478,17 @@ fun IosExportScreen(
             ) {
                 // Summary Card
                 item {
-                    exportSummaryCard(resolved, unresolved)
+                    ExportSummaryCard(resolved, unresolved)
                 }
 
                 // Pricing Card
                 item {
-                    exportPricingCard(promo)
+                    ExportPricingCard(promo)
                 }
 
                 // Shipping Card
                 item {
-                    exportShippingCard(
+                    ExportShippingCard(
                         selectedShipping = selectedShipping,
                         onShippingChange = { selectedShipping = it },
                         normalShippingCost = normalShippingCost,

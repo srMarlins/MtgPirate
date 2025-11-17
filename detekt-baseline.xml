@@ -22,6 +22,11 @@
     <ID>FunctionNaming:CatalogScreen.kt$@Composable private fun PixelDropdownSelector(label: String, options: List&lt;String&gt;, selected: String, onSelect: (String) -&gt; Unit)</ID>
     <ID>FunctionNaming:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
     <ID>FunctionNaming:ExportScreen.kt$@Composable fun HeaderRow()</ID>
+    <ID>FunctionNaming:IosCompactStepper.kt$@Composable fun CompactStepper( currentStep: Int, totalSteps: Int = 4, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:IosExportHelpers.kt$@Composable fun ExportPricingCard(promo: util.Promotions.Result)</ID>
+    <ID>FunctionNaming:IosExportHelpers.kt$@Composable fun ExportShippingCard( selectedShipping: util.Promotions.ShippingType, onShippingChange: (util.Promotions.ShippingType) -&gt; Unit, normalShippingCost: Int, expressEligible: Boolean )</ID>
+    <ID>FunctionNaming:IosExportHelpers.kt$@Composable fun ExportSummaryCard( resolved: List&lt;model.DeckEntryMatch&gt;, unresolved: List&lt;model.DeckEntryMatch&gt; )</ID>
+    <ID>FunctionNaming:IosExportHelpers.kt$@Composable private fun ShippingOptionRow( isSelected: Boolean, onClick: () -&gt; Unit, title: String, subtitle: String, isEnabled: Boolean, isPrimary: Boolean )</ID>
     <ID>FunctionNaming:IosMobileWrappers.kt$@Composable fun MobilePaddingWrapper( content: @Composable BoxScope.() -&gt; Unit )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosCatalogScreen( catalog: model.Catalog, onBack: () -&gt; Unit, onEnrichVariant: ((model.CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosExportScreen( matches: List&lt;model.DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit )</ID>

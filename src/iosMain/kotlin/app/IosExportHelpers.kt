@@ -25,7 +25,6 @@ fun calculateShippingCost(
     return when (selectedShipping) {
         util.Promotions.ShippingType.EXPRESS -> if (expressEligible) 0 else normalShippingCost
         util.Promotions.ShippingType.NORMAL -> normalShippingCost
-        else -> normalShippingCost
     }
 }
 
@@ -33,7 +32,7 @@ fun calculateShippingCost(
  * Summary card showing matched/unmatched cards count.
  */
 @Composable
-fun exportSummaryCard(
+fun ExportSummaryCard(
     resolved: List<model.DeckEntryMatch>,
     unresolved: List<model.DeckEntryMatch>
 ) {
@@ -90,7 +89,7 @@ fun exportSummaryCard(
  * Pricing card showing order value, discount, and subtotal.
  */
 @Composable
-fun exportPricingCard(promo: util.Promotions.Result) {
+fun ExportPricingCard(promo: util.Promotions.Result) {
     FantasySectionHeader(text = "Pricing & Promotions")
     PixelCard(glowing = false) {
         Column(
@@ -145,7 +144,7 @@ fun exportPricingCard(promo: util.Promotions.Result) {
  * Shipping option card with radio button selection.
  */
 @Composable
-fun exportShippingCard(
+fun ExportShippingCard(
     selectedShipping: util.Promotions.ShippingType,
     onShippingChange: (util.Promotions.ShippingType) -> Unit,
     normalShippingCost: Int,
@@ -158,7 +157,7 @@ fun exportShippingCard(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Normal Shipping option
-            shippingOptionRow(
+            ShippingOptionRow(
                 isSelected = selectedShipping == util.Promotions.ShippingType.NORMAL,
                 onClick = { onShippingChange(util.Promotions.ShippingType.NORMAL) },
                 title = "Normal Shipping",
@@ -168,7 +167,7 @@ fun exportShippingCard(
             )
 
             // Express Shipping option
-            shippingOptionRow(
+            ShippingOptionRow(
                 isSelected = selectedShipping == util.Promotions.ShippingType.EXPRESS,
                 onClick = {
                     if (expressEligible) {
@@ -200,7 +199,7 @@ private fun buildExpressShippingSubtitle(expressEligible: Boolean): String {
  * Single shipping option row with radio button.
  */
 @Composable
-private fun shippingOptionRow(
+private fun ShippingOptionRow(
     isSelected: Boolean,
     onClick: () -> Unit,
     title: String,
