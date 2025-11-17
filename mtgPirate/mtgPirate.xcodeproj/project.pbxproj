@@ -24,7 +24,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		9F1978D42EC7166E00B53AF2 /* Exceptions for "mtgPirate" folder in "mtgPirate" target */ = {
+		9FB15C9F2ECBA13500F73E28 /* Exceptions for "mtgPirate" folder in "mtgPirate" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -37,7 +37,7 @@
 		9F78BD0B2EC6F4DD005D557C /* mtgPirate */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				9F1978D42EC7166E00B53AF2 /* Exceptions for "mtgPirate" folder in "mtgPirate" target */,
+				9FB15C9F2ECBA13500F73E28 /* Exceptions for "mtgPirate" folder in "mtgPirate" target */,
 			);
 			path = mtgPirate;
 			sourceTree = "<group>";

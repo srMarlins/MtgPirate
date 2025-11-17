@@ -119,6 +119,7 @@ class MviViewModel(
             is ViewIntent.SaveCurrentImport -> saveCurrentImport(intent.name)
             is ViewIntent.LoadSavedImport -> loadSavedImport(intent.importId)
             is ViewIntent.DeleteSavedImport -> deleteSavedImport(intent.importId)
+            is ViewIntent.EnrichVariantWithImage -> enrichVariantWithImage(intent.variant)
         }
     }
 
@@ -454,6 +455,32 @@ class MviViewModel(
         }
     }
 
+    private fun enrichVariantWithImage(variant: CardVariant) {
+        // Skip if already has an image URL
+        if (variant.imageUrl != null) return
+        
+        scope.launch {
+            try {
+                log("Fetching image for ${variant.nameOriginal} (${variant.setCode})...", "DEBUG")
+                
+                // Use ScryfallImageEnricher to fetch the image URL
+                val enrichedVariant = catalog.ScryfallImageEnricher.enrichVariant(
+                    variant = variant,
+                    imageSize = "normal",
+                    log = { msg -> log(msg, "DEBUG") }
+                )
+                
+                // If we got an image URL, update the database
+                if (enrichedVariant.imageUrl != null) {
+                    catalogStore.updateVariantImageUrl(variant.sku, enrichedVariant.imageUrl)
+                    log("Updated image URL for ${variant.nameOriginal}", "DEBUG")
+                }
+            } catch (e: Exception) {
+                log("Failed to enrich variant ${variant.nameOriginal}: ${e.message}", "DEBUG")
+            }
+        }
+    }
+
     private fun log(message: String, level: String = "INFO") {
         scope.launch {
             platformServices.addLog(LogEntry(level, message, Clock.System.now().toString()))
@@ -541,6 +568,7 @@ sealed class ViewIntent {
     data class SaveCurrentImport(val name: String) : ViewIntent()
     data class LoadSavedImport(val importId: String) : ViewIntent()
     data class DeleteSavedImport(val importId: String) : ViewIntent()
+    data class EnrichVariantWithImage(val variant: CardVariant) : ViewIntent()
 }
 
 /**

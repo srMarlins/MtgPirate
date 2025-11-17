@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import model.CardVariant
 import model.DeckEntryMatch
 import model.MatchStatus
 import util.formatPrice
@@ -22,7 +23,8 @@ import util.formatPrice
 @Composable
 fun MatchesScreen(
     matches: List<DeckEntryMatch>,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onEnrichVariant: ((CardVariant) -> Unit)? = null
 ) {
     var query by remember { mutableStateOf("") }
     var statusFilter by remember { mutableStateOf("Matched") }
@@ -136,6 +138,16 @@ fun MatchesScreen(
                             val v = m.selectedVariant
                             val price = v?.priceInCents
                             val rowTotal = price?.let { it * m.deckEntry.qty }
+                            
+                            // Trigger image enrichment when variant comes into view
+                            v?.let { variant ->
+                                androidx.compose.runtime.LaunchedEffect(variant.sku) {
+                                    if (variant.imageUrl == null) {
+                                        onEnrichVariant?.invoke(variant)
+                                    }
+                                }
+                            }
+                            
                             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
                                 Text("${m.deckEntry.qty}", modifier = Modifier.width(40.dp), style = MaterialTheme.typography.body2)
                                 Text(m.deckEntry.cardName, modifier = Modifier.weight(0.35f), style = MaterialTheme.typography.body2)

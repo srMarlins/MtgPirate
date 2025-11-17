@@ -23,6 +23,7 @@ fun ResolveScreen(
     match: DeckEntryMatch,
     onSelect: (CardVariant) -> Unit,
     onBack: () -> Unit,
+    onEnrichVariant: ((CardVariant) -> Unit)? = null,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         // Scanline effect
@@ -124,6 +125,14 @@ fun ResolveScreen(
                         LazyColumn(Modifier.fillMaxSize(), state = listState) {
                             items(sorted) { cand: MatchCandidate ->
                                 val variant = cand.variant
+                                
+                                // Trigger image enrichment when variant comes into view
+                                androidx.compose.runtime.LaunchedEffect(variant.sku) {
+                                    if (variant.imageUrl == null) {
+                                        onEnrichVariant?.invoke(variant)
+                                    }
+                                }
+                                
                                 Row(
                                     Modifier.fillMaxWidth().padding(vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically

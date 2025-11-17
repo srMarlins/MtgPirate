@@ -10,25 +10,25 @@
     <ID>CyclomaticComplexMethod:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
     <ID>CyclomaticComplexMethod:Main.kt$fun main()</ID>
     <ID>CyclomaticComplexMethod:MainStore.kt$MainStore$fun dispatch(intent: MainIntent)</ID>
-    <ID>CyclomaticComplexMethod:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit )</ID>
+    <ID>CyclomaticComplexMethod:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>CyclomaticComplexMethod:MviViewModel.kt$MviViewModel$fun processIntent(intent: ViewIntent)</ID>
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt$@Composable fun DraggableVariantItem( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt$@Composable fun PreferencesWizardScreen( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
     <ID>CyclomaticComplexMethod:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private fun loadWithCacheAge(maxAge: Duration, forceRefresh: Boolean = false, log: (String) -&gt; Unit = {}): Catalog?</ID>
-    <ID>CyclomaticComplexMethod:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {} )</ID>
+    <ID>CyclomaticComplexMethod:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>CyclomaticComplexMethod:ScryfallApi.kt$ScryfallApi$private fun extractImageUrl(card: ScryfallCard, imageSize: String = "normal"): String?</ID>
     <ID>CyclomaticComplexMethod:StepperComponent.kt$@Composable fun PixelStepNode( step: Step, isActive: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
-    <ID>FunctionNaming:CatalogScreen.kt$@Composable fun CatalogScreen(catalog: Catalog, onClose: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:CatalogScreen.kt$@Composable fun CatalogScreen( catalog: Catalog, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:CatalogScreen.kt$@Composable private fun PixelDropdownSelector(label: String, options: List&lt;String&gt;, selected: String, onSelect: (String) -&gt; Unit)</ID>
     <ID>FunctionNaming:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
     <ID>FunctionNaming:ExportScreen.kt$@Composable fun HeaderRow()</ID>
-    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosCatalogScreen( catalog: model.Catalog, onBack: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosCatalogScreen( catalog: model.Catalog, onBack: () -&gt; Unit, onEnrichVariant: ((model.CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosExportScreen( matches: List&lt;model.DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosImportScreen( deckText: String, onDeckTextChange: (String) -&gt; Unit, onNext: () -&gt; Unit, onShowSavedImports: () -&gt; Unit )</ID>
-    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosMatchesScreen( matches: List&lt;model.DeckEntryMatch&gt;, onBack: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosMatchesScreen( matches: List&lt;model.DeckEntryMatch&gt;, onBack: () -&gt; Unit, onEnrichVariant: ((model.CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosPreferencesScreen( includeSideboard: Boolean, includeCommanders: Boolean, includeTokens: Boolean, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
-    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosResolveScreen( match: model.DeckEntryMatch, onSelect: (model.CardVariant) -&gt; Unit, onBack: () -&gt; Unit )</ID>
-    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosResultsScreen( matches: List&lt;model.DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosResolveScreen( match: model.DeckEntryMatch, onSelect: (model.CardVariant) -&gt; Unit, onBack: () -&gt; Unit, onEnrichVariant: ((model.CardVariant) -&gt; Unit)? = null )</ID>
+    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosResultsScreen( matches: List&lt;model.DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit, onEnrichVariant: ((model.CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:Main.kt$@Composable fun CompactPixelButton( text: String, onClick: () -&gt; Unit, enabled: Boolean = true, color: Color )</ID>
     <ID>FunctionNaming:Main.kt$@Composable fun FrameWindowScope.CustomTitleBar( windowState: WindowState, onClose: () -&gt; Unit, isDarkTheme: Boolean, onToggleTheme: () -&gt; Unit, loadingCatalog: Boolean, hasCatalog: Boolean, hasMatches: Boolean, resultsEnabled: Boolean, onCatalogClick: () -&gt; Unit, onExportClick: () -&gt; Unit, onMatchesClick: () -&gt; Unit, onResultsClick: () -&gt; Unit )</ID>
     <ID>FunctionNaming:Main.kt$@Composable fun IosApp()</ID>
@@ -37,7 +37,7 @@
     <ID>FunctionNaming:Main.kt$@Composable fun IosThemeToggleFab( isDarkTheme: Boolean, onToggle: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:Main.kt$@Composable fun RowScope.IosNavButton( text: String, isActive: Boolean, onClick: () -&gt; Unit, enabled: Boolean = true )</ID>
     <ID>FunctionNaming:Main.kt$@Composable fun WindowControlButton( text: String, color: Color, onClick: () -&gt; Unit )</ID>
-    <ID>FunctionNaming:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:MatchesScreen.kt$@Composable private fun PixelStatusDropdown(label: String, options: List&lt;String&gt;, selected: String, onSelect: (String) -&gt; Unit)</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun &lt;T&gt; PixelDraggableList( items: List&lt;T&gt;, onReorder: (List&lt;T&gt;) -&gt; Unit, modifier: Modifier = Modifier, itemContent: @Composable (item: T, index: Int, isDragging: Boolean) -&gt; Unit )</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun BlinkingCursor( modifier: Modifier = Modifier )</ID>
@@ -62,8 +62,8 @@
     <ID>FunctionNaming:PixelComponents.kt$@Composable private fun PixelDraggableItem( index: Int, isDragging: Boolean, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, content: @Composable () -&gt; Unit )</ID>
     <ID>FunctionNaming:PreferencesWizardScreen.kt$@Composable fun DraggableVariantItem( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
     <ID>FunctionNaming:PreferencesWizardScreen.kt$@Composable fun PreferencesWizardScreen( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
-    <ID>FunctionNaming:ResolveScreen.kt$@Composable fun ResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {} )</ID>
+    <ID>FunctionNaming:ResolveScreen.kt$@Composable fun ResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, )</ID>
+    <ID>FunctionNaming:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:SavedImportsScreen.kt$@Composable fun SavedImportCard( import: SavedImport, onSelect: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>FunctionNaming:SavedImportsScreen.kt$@Composable fun SavedImportsDialog( savedImports: List&lt;SavedImport&gt;, onDismiss: () -&gt; Unit, onSelectImport: (String) -&gt; Unit, onDeleteImport: (String) -&gt; Unit )</ID>
     <ID>FunctionNaming:StepperComponent.kt$@Composable fun AnimatedStepper( steps: List&lt;Step&gt;, currentStep: Int, onStepClick: (Int) -&gt; Unit, modifier: Modifier = Modifier )</ID>
@@ -72,20 +72,20 @@
     <ID>FunctionNaming:Theme.kt$@Composable fun AppTheme( darkTheme: Boolean = true, // Default to dark theme content: @Composable () -&gt; Unit )</ID>
     <ID>LongMethod:CatalogCsvParser.kt$CatalogCsvParser$fun parse(csv: String, typePriceMap: Map&lt;String, Double&gt; = emptyMap()): Catalog</ID>
     <ID>LongMethod:CatalogParser.kt$CatalogParser$fun parse(html: String): Catalog</ID>
-    <ID>LongMethod:CatalogScreen.kt$@Composable fun CatalogScreen(catalog: Catalog, onClose: () -&gt; Unit)</ID>
+    <ID>LongMethod:CatalogScreen.kt$@Composable fun CatalogScreen( catalog: Catalog, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>LongMethod:DecklistParser.kt$DecklistParser$fun parse(text: String, includeSideboard: Boolean, includeCommanders: Boolean): List&lt;DeckEntry&gt;</ID>
     <ID>LongMethod:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
     <ID>LongMethod:IosScreens.kt$@Composable fun IosImportScreen( deckText: String, onDeckTextChange: (String) -&gt; Unit, onNext: () -&gt; Unit, onShowSavedImports: () -&gt; Unit )</ID>
     <ID>LongMethod:Main.kt$@Composable fun FrameWindowScope.CustomTitleBar( windowState: WindowState, onClose: () -&gt; Unit, isDarkTheme: Boolean, onToggleTheme: () -&gt; Unit, loadingCatalog: Boolean, hasCatalog: Boolean, hasMatches: Boolean, resultsEnabled: Boolean, onCatalogClick: () -&gt; Unit, onExportClick: () -&gt; Unit, onMatchesClick: () -&gt; Unit, onResultsClick: () -&gt; Unit )</ID>
     <ID>LongMethod:Main.kt$@Composable fun IosNavigationHost( viewModel: MviViewModel, state: state.ViewState )</ID>
     <ID>LongMethod:Main.kt$fun main()</ID>
-    <ID>LongMethod:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit )</ID>
+    <ID>LongMethod:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>LongMethod:PixelComponents.kt$@Composable fun FantasyStarIcon( modifier: Modifier = Modifier, color: Color = Color(0xFFFBD38D), animated: Boolean = true )</ID>
     <ID>LongMethod:PixelComponents.kt$@Composable private fun PixelDraggableItem( index: Int, isDragging: Boolean, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, content: @Composable () -&gt; Unit )</ID>
     <ID>LongMethod:PreferencesWizardScreen.kt$@Composable fun DraggableVariantItem( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
     <ID>LongMethod:PreferencesWizardScreen.kt$@Composable fun PreferencesWizardScreen( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
-    <ID>LongMethod:ResolveScreen.kt$@Composable fun ResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, )</ID>
-    <ID>LongMethod:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {} )</ID>
+    <ID>LongMethod:ResolveScreen.kt$@Composable fun ResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, )</ID>
+    <ID>LongMethod:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>LongMethod:SavedImportsScreen.kt$@Composable fun SavedImportCard( import: SavedImport, onSelect: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>LongMethod:SavedImportsScreen.kt$@Composable fun SavedImportsDialog( savedImports: List&lt;SavedImport&gt;, onDismiss: () -&gt; Unit, onSelectImport: (String) -&gt; Unit, onDeleteImport: (String) -&gt; Unit )</ID>
     <ID>LongMethod:StepperComponent.kt$@Composable fun PixelStepNode( step: Step, isActive: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
@@ -98,6 +98,7 @@
     <ID>LongParameterList:PixelComponents.kt$( width: Float, height: Float, cornerSize: Float, strokeWidth: Float, color: Color, inner: Boolean = false )</ID>
     <ID>LongParameterList:PreferencesWizardScreen.kt$( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
     <ID>LongParameterList:PreferencesWizardScreen.kt$( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
+    <ID>LongParameterList:ResultsScreen.kt$( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>MatchingDeclarationName:ResultsScreen.kt$SortOption</ID>
     <ID>MaxLineLength:CatalogCsvParser.kt$CatalogCsvParser$private</ID>
     <ID>MaxLineLength:CatalogCsvParser.kt$CatalogCsvParser$val dollarsFromCell = if (idxPrice &gt;= 0 &amp;&amp; idxPrice &lt; aligned.size) parsePriceCell(aligned[idxPrice]) else 0.0</ID>

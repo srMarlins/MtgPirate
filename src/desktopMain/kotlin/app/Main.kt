@@ -733,7 +733,7 @@ fun main() = application {
                                 ) {
                                     val catalog = state.app.catalog
                                     if (catalog != null) {
-                                        CatalogScreen(catalog = catalog) { navController.navigateUp() }
+                                        CatalogScreen(catalog = catalog, onClose = { navController.navigateUp() })
                                     } else {
                                         Text("No catalog loaded.", modifier = Modifier.padding(16.dp))
                                     }
@@ -743,7 +743,7 @@ fun main() = application {
                                     enterTransition = { EnterTransition.None },
                                     exitTransition = { ExitTransition.None }
                                 ) {
-                                    MatchesScreen(matches = state.app.matches) { navController.navigateUp() }
+                                    MatchesScreen(matches = state.app.matches, onClose = { navController.navigateUp() })
                                 }
                                 composable(
                                     "resolve",

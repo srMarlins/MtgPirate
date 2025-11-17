@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.rememberLazyListState
+import model.CardVariant
 import model.DeckEntryMatch
 import model.MatchStatus
 import util.formatPrice
@@ -39,7 +40,8 @@ fun ResultsScreen(
     onResolve: (Int) -> Unit,
     onShowAllCandidates: (Int) -> Unit,
     onClose: () -> Unit,
-    onExport: () -> Unit = {}
+    onExport: () -> Unit = {},
+    onEnrichVariant: ((CardVariant) -> Unit)? = null
 ) {
     val totalMatched = matches.filter { it.selectedVariant != null }
     val totalCents = totalMatched.sumOf { it.selectedVariant!!.priceInCents * it.deckEntry.qty }
@@ -382,6 +384,15 @@ fun ResultsScreen(
                             val globalIndex = matches.indexOf(m)
                             val variant = m.selectedVariant
                             val rowTotal = variant?.priceInCents?.let { it * m.deckEntry.qty }
+
+                            // Trigger image enrichment when variant comes into view
+                            variant?.let { v ->
+                                androidx.compose.runtime.LaunchedEffect(v.sku) {
+                                    if (v.imageUrl == null) {
+                                        onEnrichVariant?.invoke(v)
+                                    }
+                                }
+                            }
 
                             Row(
                                 Modifier.fillMaxWidth().padding(12.dp),

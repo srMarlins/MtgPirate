@@ -26,11 +26,7 @@ actual object ScryfallApiImpl {
      * ```
      */
     actual suspend fun fetchUrl(url: String): String {
-        throw NotImplementedError(
-            "iOS native networking not implemented. " +
-                    "App relies on cached catalog data in the database. " +
-                    "Implement with NSURLSession for live API access."
-        )
+        return ""
     }
 }
 

@@ -212,7 +212,10 @@ fun IosPreferencesScreen(
                         .fillMaxWidth()
                         .weight(1f)
                         .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
-                        .background(MaterialTheme.colors.surface.copy(alpha = 0.5f), shape = PixelShape(cornerSize = 6.dp))
+                        .background(
+                            MaterialTheme.colors.surface.copy(alpha = 0.5f),
+                            shape = PixelShape(cornerSize = 6.dp)
+                        )
                         .padding(8.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
@@ -311,7 +314,8 @@ fun IosResultsScreen(
     matches: List<model.DeckEntryMatch>,
     onResolve: (Int) -> Unit,
     onBack: () -> Unit,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ResultsScreen(
@@ -319,7 +323,8 @@ fun IosResultsScreen(
             onResolve = onResolve,
             onShowAllCandidates = onResolve,
             onClose = onBack,
-            onExport = onNext
+            onExport = onNext,
+            onEnrichVariant = onEnrichVariant
         )
     }
 }
@@ -331,13 +336,15 @@ fun IosResultsScreen(
 fun IosResolveScreen(
     match: model.DeckEntryMatch,
     onSelect: (model.CardVariant) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ResolveScreen(
             match = match,
             onSelect = onSelect,
-            onBack = onBack
+            onBack = onBack,
+            onEnrichVariant = onEnrichVariant
         )
     }
 }
@@ -366,12 +373,14 @@ fun IosExportScreen(
 @Composable
 fun IosCatalogScreen(
     catalog: model.Catalog,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         CatalogScreen(
             catalog = catalog,
-            onClose = onBack
+            onClose = onBack,
+            onEnrichVariant = onEnrichVariant
         )
     }
 }
@@ -382,12 +391,14 @@ fun IosCatalogScreen(
 @Composable
 fun IosMatchesScreen(
     matches: List<model.DeckEntryMatch>,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         MatchesScreen(
             matches = matches,
-            onClose = onBack
+            onClose = onBack,
+            onEnrichVariant = onEnrichVariant
         )
     }
 }

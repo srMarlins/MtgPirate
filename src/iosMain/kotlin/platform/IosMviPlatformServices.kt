@@ -1,8 +1,12 @@
 package platform
 
 import catalog.CatalogCsvParser
+import catalog.KtorRemoteCatalogDataSource
 import catalog.ScryfallImageEnricher
 import database.Database
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.darwin.Darwin
+import io.ktor.client.plugins.logging.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -17,28 +21,27 @@ import state.MviPlatformServices
  * iOS implementation of MVI platform services.
  * 
  * Provides platform-specific operations for the MVI ViewModel on iOS, including:
- * - Catalog fetching (currently uses cached database data)
+ * - Catalog fetching via Ktor-based remote data source
  * - Preferences management via SQLDelight database
  * - Logging operations
  * - CSV export (copies to clipboard for sharing)
- * 
- * Note: Network fetching is not implemented as the app works with cached catalog data.
- * The catalog should be pre-populated in the database or fetched via a desktop build first.
  */
 class IosMviPlatformServices(
     private val database: Database
 ) : MviPlatformServices {
 
+    private val httpClient = HttpClient(Darwin) {
+        install(Logging) { level = LogLevel.INFO }
+    }
+
     override suspend fun fetchCatalogFromRemote(log: (String) -> Unit): Catalog? {
         return withContext(Dispatchers.Default) {
             try {
-                log("Fetching catalog from remote API...")
-                
-                // Note: Network implementation requires NSURLSession interop
-                // For iOS deployment, pre-populate the database with catalog data
-                // or sync via a backend service
-                log("Network fetching not implemented for iOS - using cached catalog data")
-                null
+                log("Fetching catalog from remote API (iOS)...")
+                val ds = KtorRemoteCatalogDataSource(httpClient)
+                val catalog = ds.load(forceRefresh = true, log = log)
+                if (catalog == null) log("Catalog fetch returned null")
+                catalog
             } catch (e: Exception) {
                 log("Error loading catalog: ${e.message}")
                 null
@@ -50,10 +53,10 @@ class IosMviPlatformServices(
         withContext(Dispatchers.Default) {
             // Get current preferences from database
             val currentPrefs = database.observePreferences().first() ?: Preferences()
-            
+
             // Apply update
             val newPrefs = update(currentPrefs)
-            
+
             // Save back to database
             database.insertPreferences(newPrefs)
         }
@@ -62,7 +65,7 @@ class IosMviPlatformServices(
     override suspend fun addLog(log: LogEntry) {
         withContext(Dispatchers.Default) {
             database.insertLog(log)
-            
+
             // Clean up old logs to prevent database bloat
             database.deleteOldLogs(keepCount = 1000L)
         }
@@ -73,12 +76,12 @@ class IosMviPlatformServices(
             try {
                 // Generate CSV content
                 val csvContent = generateCsvContent(matches)
-                
+
                 // Copy to clipboard for sharing
                 // In a production iOS app, this would use the UIActivityViewController
                 // to present sharing options (Files app, email, etc.)
                 copyToClipboard(csvContent)
-                
+
                 onComplete("CSV copied to clipboard (${matches.size} cards)")
             } catch (e: Exception) {
                 onComplete("Export failed: ${e.message}")
@@ -99,21 +102,21 @@ class IosMviPlatformServices(
     private fun generateCsvContent(matches: List<DeckEntryMatch>): String {
         val sb = StringBuilder()
         sb.appendLine("Card Name,Set,SKU,Card Type,Quantity,Base Price")
-        
+
         var regularCount = 0
         var holoCount = 0
         var foilCount = 0
         var totalPriceCents = 0
-        
+
         matches.forEach { match ->
             val variant = match.selectedVariant
             if (variant != null) {
                 val qty = match.deckEntry.qty
                 val priceCents = variant.priceInCents
                 val priceStr = platform.formatDecimal(priceCents / 100.0, 2)
-                
+
                 sb.appendLine("${variant.nameOriginal},${variant.setCode},${variant.sku},${variant.variantType},$qty,$priceStr")
-                
+
                 when (variant.variantType) {
                     "Regular" -> regularCount += qty
                     "Holo" -> holoCount += qty
@@ -122,14 +125,14 @@ class IosMviPlatformServices(
                 totalPriceCents += priceCents * qty
             }
         }
-        
+
         sb.appendLine()
         sb.appendLine("--- Summary ---")
         sb.appendLine("Regular Cards,$regularCount")
         sb.appendLine("Holo Cards,$holoCount")
         sb.appendLine("Foil Cards,$foilCount")
-        sb.appendLine("Total Price,${platform.formatDecimal(totalPriceCents / 100.0, 2)}")
-        
+        sb.appendLine("Total Price,${formatDecimal(totalPriceCents / 100.0, 2)}")
+
         return sb.toString()
     }
 }

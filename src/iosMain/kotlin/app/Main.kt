@@ -136,6 +136,9 @@ fun IosNavigationHost(
                 onNext = {
                     viewModel.processIntent(ViewIntent.CompleteWizardStep(3))
                     navigateTo(IosScreen.EXPORT)
+                },
+                onEnrichVariant = { variant ->
+                    viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
                 }
             )
             
@@ -153,6 +156,9 @@ fun IosNavigationHost(
                         onBack = {
                             viewModel.processIntent(ViewIntent.CloseResolve)
                             navigateTo(IosScreen.RESULTS)
+                        },
+                        onEnrichVariant = { variant ->
+                            viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
                         }
                     )
                 } else {
@@ -174,7 +180,10 @@ fun IosNavigationHost(
                 if (catalog != null) {
                     IosCatalogScreen(
                         catalog = catalog,
-                        onBack = { navigateTo(IosScreen.IMPORT) }
+                        onBack = { navigateTo(IosScreen.IMPORT) },
+                        onEnrichVariant = { variant ->
+                            viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                        }
                     )
                 } else {
                     navigateTo(IosScreen.IMPORT)
@@ -183,7 +192,10 @@ fun IosNavigationHost(
             
             IosScreen.MATCHES -> IosMatchesScreen(
                 matches = state.matches,
-                onBack = { navigateTo(IosScreen.RESULTS) }
+                onBack = { navigateTo(IosScreen.RESULTS) },
+                onEnrichVariant = { variant ->
+                    viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                }
             )
         }
         
