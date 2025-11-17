@@ -1,5 +1,12 @@
 package catalog
 
+import io.ktor.client.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -7,14 +14,8 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
 /**
- * Platform-specific implementation for HTTP requests.
- */
-expect object ScryfallApiImpl {
-    suspend fun fetchUrl(url: String): String
-}
-
-/**
  * Scryfall API client for fetching card images.
+ * Uses Ktor HttpClient for multiplatform compatibility.
  * See: https://scryfall.com/docs/api
  */
 object ScryfallApi {
@@ -24,6 +25,23 @@ object ScryfallApi {
     }
 
     private const val BASE_URL = "https://api.scryfall.com"
+
+    /**
+     * Create a configured HttpClient for Scryfall API requests.
+     * Can be overridden with a custom client for testing or specific configuration.
+     */
+    private var httpClient: HttpClient? = null
+
+    private fun getClient(): HttpClient {
+        return httpClient ?: HttpClient {
+            install(ContentNegotiation) {
+                json(json)
+            }
+            install(Logging) {
+                level = LogLevel.INFO
+            }
+        }.also { httpClient = it }
+    }
 
     @Serializable
     data class ImageUris(
@@ -162,10 +180,20 @@ object ScryfallApi {
 
     /**
      * Fetch a URL and return the response body as a string.
-     * This delegates to the platform-specific implementation.
+     * Uses Ktor HttpClient for multiplatform compatibility.
      */
     private suspend fun fetchUrl(url: String): String {
-        return ScryfallApiImpl.fetchUrl(url)
+        val client = getClient()
+        val response = client.get(url) {
+            header(HttpHeaders.UserAgent, "MtgPirate/1.0")
+            accept(ContentType.Application.Json)
+        }
+        
+        if (response.status.isSuccess()) {
+            return response.bodyAsText()
+        } else {
+            throw Exception("HTTP ${response.status.value}: ${response.status.description}")
+        }
     }
 }
 
