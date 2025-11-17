@@ -146,6 +146,10 @@ fun PixelTextField(
     maxLines: Int = Int.MAX_VALUE
 ) {
     val colors = MaterialTheme.colors
+    
+    // Use a stable key based on the label to prevent TextField recreation
+    // This helps avoid cursor jumping issues on iOS
+    val textFieldKey = remember(label) { label.ifEmpty { "pixel_text_field" } }
 
     Column(modifier = modifier) {
         if (label.isNotEmpty()) {
@@ -165,26 +169,30 @@ fun PixelTextField(
                 .background(colors.surface, shape = PixelShape(cornerSize = 6.dp))
                 .padding(12.dp)
         ) {
-            TextField(
-                value = value,
-                onValueChange = onValueChange,
-                placeholder = {
-                    Text(
-                        text = placeholder,
-                        color = colors.onSurface.copy(alpha = 0.4f)
-                    )
-                },
-                colors = TextFieldDefaults.textFieldColors(
-                    textColor = colors.onSurface,
-                    backgroundColor = Color.Transparent,
-                    cursorColor = colors.primary,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                singleLine = singleLine,
-                maxLines = maxLines,
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Use key() to ensure TextField identity remains stable across recompositions
+            // This prevents cursor jumping on iOS when parent composables recompose
+            androidx.compose.runtime.key(textFieldKey) {
+                TextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    placeholder = {
+                        Text(
+                            text = placeholder,
+                            color = colors.onSurface.copy(alpha = 0.4f)
+                        )
+                    },
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = colors.onSurface,
+                        backgroundColor = Color.Transparent,
+                        cursorColor = colors.primary,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    singleLine = singleLine,
+                    maxLines = maxLines,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }

@@ -30,28 +30,43 @@ fun MatchesScreen(
     var statusFilter by remember { mutableStateOf("Matched") }
     val statusOptions = remember { listOf("All", "Matched", "Unmatched", "Ambiguous", "Not Found", "Unresolved") }
 
-    val filtered = matches.filter { m ->
-        val name = m.deckEntry.cardName
-        val set = m.selectedVariant?.setCode ?: m.candidates.firstOrNull()?.variant?.setCode ?: ""
-        val sku = m.selectedVariant?.sku ?: m.candidates.firstOrNull()?.variant?.sku ?: ""
-        val statusOkay = when (statusFilter) {
-            "All" -> true
-            "Matched" -> m.status == MatchStatus.AUTO_MATCHED || m.status == MatchStatus.MANUAL_SELECTED
-            "Unmatched" -> m.selectedVariant == null
-            "Ambiguous" -> m.status == MatchStatus.AMBIGUOUS
-            "Not Found" -> m.status == MatchStatus.NOT_FOUND
-            "Unresolved" -> m.status == MatchStatus.UNRESOLVED
-            else -> true
+    // Use derivedStateOf to avoid refiltering on every recomposition
+    val filtered by remember {
+        derivedStateOf {
+            matches.filter { m ->
+                val name = m.deckEntry.cardName
+                val set = m.selectedVariant?.setCode ?: m.candidates.firstOrNull()?.variant?.setCode ?: ""
+                val sku = m.selectedVariant?.sku ?: m.candidates.firstOrNull()?.variant?.sku ?: ""
+                val statusOkay = when (statusFilter) {
+                    "All" -> true
+                    "Matched" -> m.status == MatchStatus.AUTO_MATCHED || m.status == MatchStatus.MANUAL_SELECTED
+                    "Unmatched" -> m.selectedVariant == null
+                    "Ambiguous" -> m.status == MatchStatus.AMBIGUOUS
+                    "Not Found" -> m.status == MatchStatus.NOT_FOUND
+                    "Unresolved" -> m.status == MatchStatus.UNRESOLVED
+                    else -> true
+                }
+                val q = query.trim()
+                val queryOkay = q.isBlank() || name.contains(q, true) || set.contains(q, true) || sku.contains(q, true)
+                statusOkay && queryOkay
+            }
         }
-        val q = query.trim()
-        val queryOkay = q.isBlank() || name.contains(q, true) || set.contains(q, true) || sku.contains(q, true)
-        statusOkay && queryOkay
     }
 
-    val totalCents = filtered.filter { it.selectedVariant != null }
-        .sumOf { it.deckEntry.qty * it.selectedVariant!!.priceInCents }
-    val unmatched = matches.filter { it.selectedVariant == null && it.deckEntry.include }
-    val unmatchedCount = unmatched.size
+    val totalCents by remember {
+        derivedStateOf {
+            filtered.filter { it.selectedVariant != null }
+                .sumOf { it.deckEntry.qty * it.selectedVariant!!.priceInCents }
+        }
+    }
+    
+    val unmatched by remember {
+        derivedStateOf {
+            matches.filter { it.selectedVariant == null && it.deckEntry.include }
+        }
+    }
+    
+    val unmatchedCount by remember { derivedStateOf { unmatched.size } }
     val uriHandler = LocalUriHandler.current
 
     Box(modifier = Modifier.fillMaxSize()) {

@@ -27,9 +27,14 @@ fun CatalogScreen(
     val variants = catalog.variants
     val variantTypes = remember { listOf("All") + variants.map { it.variantType }.distinct().sorted() }
 
-    val filtered = variants.filter { v ->
-        (variantFilter == "All" || v.variantType.equals(variantFilter, true)) &&
-        (query.isBlank() || v.nameOriginal.contains(query, true) || v.setCode.contains(query, true) || v.sku.contains(query, true))
+    // Use derivedStateOf to avoid refiltering on every recomposition
+    val filtered by remember {
+        derivedStateOf {
+            variants.filter { v ->
+                (variantFilter == "All" || v.variantType.equals(variantFilter, true)) &&
+                (query.isBlank() || v.nameOriginal.contains(query, true) || v.setCode.contains(query, true) || v.sku.contains(query, true))
+            }
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

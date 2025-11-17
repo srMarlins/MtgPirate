@@ -28,6 +28,10 @@ fun IosImportScreen(
     onNext: () -> Unit,
     onShowSavedImports: () -> Unit
 ) {
+    // Memoize the blank check to prevent unnecessary recompositions
+    val isBlank by remember { derivedStateOf { deckText.isBlank() } }
+    val isNotBlank by remember { derivedStateOf { deckText.isNotBlank() } }
+    
     Box(modifier = Modifier.fillMaxSize()) {
         // Scanline effect overlay
         ScanlineEffect(alpha = 0.03f)
@@ -67,7 +71,7 @@ fun IosImportScreen(
 
             // Deck text input with pixel card
             PixelCard(
-                glowing = deckText.isBlank(),
+                glowing = isBlank,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
@@ -100,7 +104,7 @@ fun IosImportScreen(
                 PixelButton(
                     text = "Next →",
                     onClick = onNext,
-                    enabled = deckText.isNotBlank(),
+                    enabled = isNotBlank,
                     modifier = Modifier.weight(1f).height(52.dp),
                     variant = PixelButtonVariant.SECONDARY
                 )
