@@ -57,6 +57,8 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.ksoup)
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.logging)
                 implementation(libs.navigation.compose)
                 implementation(libs.sqldelight.coroutines.extensions)
                 implementation(libs.sqldelight.runtime)
@@ -86,6 +88,7 @@ kotlin {
                 implementation(compose.material)
                 implementation(compose.ui)
                 implementation(libs.sqldelight.driver.native)
+                implementation(libs.ktor.client.darwin)
             }
         }
     }
