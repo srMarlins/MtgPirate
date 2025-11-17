@@ -1,6 +1,8 @@
 package app
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Checkbox
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -9,10 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ui.*
+// Add import for safeDrawingPadding
+import androidx.compose.foundation.layout.safeDrawingPadding
 
 /**
  * iOS Import Screen - Step 1 of the wizard.
  * Allows users to paste their decklist with pixel design styling.
+ * Optimized for mobile portrait layout and safe area insets.
  */
 @Composable
 fun IosImportScreen(
@@ -24,41 +29,39 @@ fun IosImportScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // Scanline effect overlay
         ScanlineEffect(alpha = 0.03f)
-        
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(12.dp)
                 .padding(bottom = 80.dp), // Space for bottom nav
             verticalArrangement = Arrangement.Top
         ) {
-            // Title with pixel styling
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 8.dp)
-            ) {
+            // Title with pixel styling - compact for mobile
+            Column(modifier = Modifier.padding(bottom = 6.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "▸ DECK IMPORT",
+                        style = MaterialTheme.typography.h5,
+                        color = MaterialTheme.colors.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    PixelBadge(
+                        text = "1/4",
+                        color = MaterialTheme.colors.secondary
+                    )
+                }
+                Spacer(Modifier.height(2.dp))
                 Text(
-                    "▸ DECK IMPORT",
-                    style = MaterialTheme.typography.h4,
-                    color = MaterialTheme.colors.primary,
-                    fontWeight = FontWeight.Bold
+                    "└─ Paste your decklist",
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
                 )
-                Spacer(Modifier.width(8.dp))
-                PixelBadge(
-                    text = "STEP 1/4",
-                    color = MaterialTheme.colors.secondary
-                )
-                Spacer(Modifier.width(8.dp))
-                BlinkingCursor()
             }
-            
-            Text(
-                "└─ Paste your decklist below",
-                style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            
+
+            Spacer(Modifier.height(8.dp))
+
             // Deck text input with pixel card
             PixelCard(
                 glowing = deckText.isBlank(),
@@ -76,10 +79,10 @@ fun IosImportScreen(
                         .fillMaxHeight()
                 )
             }
-            
-            Spacer(Modifier.height(16.dp))
-            
-            // Action buttons
+
+            Spacer(Modifier.height(10.dp))
+
+            // Action buttons - touch-friendly height
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -87,15 +90,15 @@ fun IosImportScreen(
                 PixelButton(
                     text = "📚 Saved",
                     onClick = onShowSavedImports,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).height(48.dp),
                     variant = PixelButtonVariant.SURFACE
                 )
-                
+
                 PixelButton(
                     text = "Next →",
                     onClick = onNext,
                     enabled = deckText.isNotBlank(),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).height(48.dp),
                     variant = PixelButtonVariant.SECONDARY
                 )
             }
@@ -105,6 +108,7 @@ fun IosImportScreen(
 
 /**
  * iOS Preferences Screen - Step 2 of the wizard.
+ * Mobile-optimized layout for portrait screens and safe area insets.
  */
 @Composable
 fun IosPreferencesScreen(
@@ -119,22 +123,188 @@ fun IosPreferencesScreen(
     onBack: () -> Unit,
     onNext: () -> Unit
 ) {
-    PreferencesWizardScreen(
-        includeSideboard = includeSideboard,
-        includeCommanders = includeCommanders,
-        includeTokens = includeTokens,
-        variantPriority = variantPriority,
-        onIncludeSideboardChange = onIncludeSideboardChange,
-        onIncludeCommandersChange = onIncludeCommandersChange,
-        onIncludeTokensChange = onIncludeTokensChange,
-        onVariantPriorityChange = onVariantPriorityChange,
-        onBack = onBack,
-        onNext = onNext
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        ScanlineEffect(alpha = 0.03f)
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp)
+                .padding(bottom = 80.dp)
+        ) {
+            // Compact mobile header
+            Column(modifier = Modifier.padding(bottom = 6.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "▸ CONFIGURE",
+                        style = MaterialTheme.typography.h5,
+                        color = MaterialTheme.colors.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    PixelBadge(text = "2/4", color = MaterialTheme.colors.secondary)
+                }
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    "└─ Card matching preferences",
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                )
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            // Card Inclusion - Vertical stack for mobile
+            PixelCard(glowing = false) {
+                Text(
+                    "CARD INCLUSION:",
+                    style = MaterialTheme.typography.body2,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colors.primary,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = includeSideboard, onCheckedChange = onIncludeSideboardChange)
+                        Spacer(Modifier.width(4.dp))
+                        Text("Sideboard", style = MaterialTheme.typography.body2)
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = includeCommanders, onCheckedChange = onIncludeCommandersChange)
+                        Spacer(Modifier.width(4.dp))
+                        Text("Commanders", style = MaterialTheme.typography.body2)
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = includeTokens, onCheckedChange = onIncludeTokensChange)
+                        Spacer(Modifier.width(4.dp))
+                        Text("Tokens", style = MaterialTheme.typography.body2)
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            // Variant Priority
+            PixelCard(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                glowing = false
+            ) {
+                Text(
+                    "VARIANT PREFERENCES",
+                    style = MaterialTheme.typography.body2,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colors.primary
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    "└─ Tap arrows to reorder priority",
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                )
+                Spacer(Modifier.height(8.dp))
+
+                // Simple list with reorder buttons for mobile
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
+                        .background(MaterialTheme.colors.surface.copy(alpha = 0.5f), shape = PixelShape(cornerSize = 6.dp))
+                        .padding(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    variantPriority.ifEmpty { listOf("Regular", "Foil", "Holo") }.forEachIndexed { index, variant ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .pixelBorder(borderWidth = 1.dp, enabled = true, glowAlpha = 0.1f)
+                                .background(MaterialTheme.colors.surface, shape = PixelShape(cornerSize = 4.dp))
+                                .padding(8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    "${index + 1}.",
+                                    style = MaterialTheme.typography.caption,
+                                    color = MaterialTheme.colors.primary,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.width(24.dp)
+                                )
+                                Text(variant, style = MaterialTheme.typography.body2)
+                            }
+
+                            Row {
+                                // Up button
+                                PixelButton(
+                                    text = "▲",
+                                    onClick = {
+                                        if (index > 0) {
+                                            val newList = variantPriority.toMutableList()
+                                            val temp = newList[index]
+                                            newList[index] = newList[index - 1]
+                                            newList[index - 1] = temp
+                                            onVariantPriorityChange(newList)
+                                        }
+                                    },
+                                    enabled = index > 0,
+                                    modifier = Modifier.width(40.dp).height(32.dp),
+                                    variant = PixelButtonVariant.SURFACE
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                // Down button
+                                PixelButton(
+                                    text = "▼",
+                                    onClick = {
+                                        if (index < variantPriority.size - 1) {
+                                            val newList = variantPriority.toMutableList()
+                                            val temp = newList[index]
+                                            newList[index] = newList[index + 1]
+                                            newList[index + 1] = temp
+                                            onVariantPriorityChange(newList)
+                                        }
+                                    },
+                                    enabled = index < variantPriority.size - 1,
+                                    modifier = Modifier.width(40.dp).height(32.dp),
+                                    variant = PixelButtonVariant.SURFACE
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(10.dp))
+
+            // Action buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                PixelButton(
+                    text = "← Back",
+                    onClick = onBack,
+                    modifier = Modifier.weight(1f).height(48.dp),
+                    variant = PixelButtonVariant.SURFACE
+                )
+
+                PixelButton(
+                    text = "Next →",
+                    onClick = onNext,
+                    modifier = Modifier.weight(1f).height(48.dp),
+                    variant = PixelButtonVariant.SECONDARY
+                )
+            }
+        }
+    }
 }
 
 /**
  * iOS Results Screen - Step 3 of the wizard.
+ * Mobile-optimized for portrait layout and safe area insets.
  */
 @Composable
 fun IosResultsScreen(
@@ -143,13 +313,15 @@ fun IosResultsScreen(
     onBack: () -> Unit,
     onNext: () -> Unit
 ) {
-    ResultsScreen(
-        matches = matches,
-        onResolve = onResolve,
-        onShowAllCandidates = onResolve,
-        onClose = onBack,
-        onExport = onNext
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        ResultsScreen(
+            matches = matches,
+            onResolve = onResolve,
+            onShowAllCandidates = onResolve,
+            onClose = onBack,
+            onExport = onNext
+        )
+    }
 }
 
 /**
@@ -161,11 +333,13 @@ fun IosResolveScreen(
     onSelect: (model.CardVariant) -> Unit,
     onBack: () -> Unit
 ) {
-    ResolveScreen(
-        match = match,
-        onSelect = onSelect,
-        onBack = onBack
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        ResolveScreen(
+            match = match,
+            onSelect = onSelect,
+            onBack = onBack
+        )
+    }
 }
 
 /**
@@ -177,11 +351,13 @@ fun IosExportScreen(
     onBack: () -> Unit,
     onExport: () -> Unit
 ) {
-    ExportScreen(
-        matches = matches,
-        onBack = onBack,
-        onExport = onExport
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        ExportScreen(
+            matches = matches,
+            onBack = onBack,
+            onExport = onExport
+        )
+    }
 }
 
 /**
@@ -192,10 +368,12 @@ fun IosCatalogScreen(
     catalog: model.Catalog,
     onBack: () -> Unit
 ) {
-    CatalogScreen(
-        catalog = catalog,
-        onClose = onBack
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        CatalogScreen(
+            catalog = catalog,
+            onClose = onBack
+        )
+    }
 }
 
 /**
@@ -206,8 +384,10 @@ fun IosMatchesScreen(
     matches: List<model.DeckEntryMatch>,
     onBack: () -> Unit
 ) {
-    MatchesScreen(
-        matches = matches,
-        onClose = onBack
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        MatchesScreen(
+            matches = matches,
+            onClose = onBack
+        )
+    }
 }

@@ -30,6 +30,13 @@ A Kotlin Multiplatform application for importing Magic: The Gathering decklists,
 - 💾 **Import History** - Save and reload previous imports
 - 🎨 **Dark Theme** - Modern Compose UI with dark mode
 - ⚙️ **Flexible Options** - Include/exclude sideboard, commanders, and tokens
+- 📱 **iOS Support** - Full native iOS app with Compose Multiplatform
+
+## Platforms
+
+- **Desktop**: macOS (Intel & Apple Silicon), Windows, Linux
+- **iOS**: iPhone and iPad (iOS 14+)
+- **Coming Soon**: Android
 
 ## Tech Stack
 
@@ -162,6 +169,48 @@ The catalog system supports pluggable data sources:
 ## Platform Support
 
 ### Desktop (Primary)
+## Running the App
+
+### Desktop
+
+Run the desktop application:
+```bash
+./gradlew run
+```
+
+Or build a distributable package:
+```bash
+./gradlew packageDmg  # macOS
+./gradlew packageExe  # Windows
+```
+
+### iOS
+
+The iOS app is located in the `mtgPirate/` directory.
+
+This will:
+1. Build the Kotlin framework
+2. Open the Xcode project
+3. You can then click Run in Xcode to launch the app!
+
+**Manual Steps:**
+1. Build the framework:
+   ```bash
+   ./gradlew linkDebugFrameworkIosSimulatorArm64
+   ```
+2. Open Xcode:
+   ```bash
+   open mtgPirate/mtgPirate.xcodeproj
+   ```
+3. Follow setup instructions in `mtgPirate/README_XCODE_SETUP.md`
+4. Click Run in Xcode
+
+**Note**: iOS apps cannot be run from IntelliJ - they require Xcode to run on simulators or devices.
+
+For detailed iOS setup and troubleshooting, see:
+
+### State Management - MVI Architecture
+>>>>>>> ec045f3 (Base ios implementation)
 
 Full-featured desktop application:
 - ✅ Complete catalog fetching from USEA

@@ -2,7 +2,7 @@ package database
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import com.srmarlins.mtgpirate.MtgPirateDatabase
+import org.srmarlins.mtgpirate.db.MtgPirateDatabase
 import java.util.*
 
 actual open class DatabaseDriverFactory {

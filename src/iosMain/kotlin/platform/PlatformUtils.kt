@@ -1,43 +1,25 @@
 package platform
 
-import kotlin.math.absoluteValue
-import kotlin.math.max
-import kotlin.math.min
+import platform.Foundation.NSDate
+import platform.Foundation.timeIntervalSince1970
+import kotlin.math.pow
+import kotlin.math.round
+import kotlin.math.abs as kAbs
 
-actual fun currentTimeMillis(): Long {
-    // Note: This is a simplified implementation for iOS.
-    // For a production app, use platform.Foundation.NSDate.timeIntervalSince1970() * 1000
-    return 0L
-}
+actual fun currentTimeMillis(): Long = (NSDate().timeIntervalSince1970 * 1000).toLong()
 
 actual fun formatDecimal(value: Double, decimalPlaces: Int): String {
-    // Simple decimal formatting for iOS
-    val multiplier = when (decimalPlaces) {
-        1 -> 10.0
-        2 -> 100.0
-        3 -> 1000.0
-        else -> 100.0
-    }
-    val rounded = (value * multiplier).toLong().toDouble() / multiplier
-    
-    // Format with proper decimal places
-    val intPart = rounded.toLong()
-    val fracPart = (rounded - intPart) * multiplier
-    return when (decimalPlaces) {
-        1 -> "$intPart.${fracPart.toLong()}"
-        2 -> "$intPart.${fracPart.toLong().toString().padStart(2, '0')}"
-        else -> rounded.toString()
-    }
+    val factor = 10.0.pow(decimalPlaces)
+    val rounded = round(value * factor) / factor
+    return "$$rounded"
 }
 
-actual fun maxOf(a: Int, b: Int): Int = max(a, b)
+actual fun maxOf(a: Int, b: Int): Int = if (a > b) a else b
 
-actual fun minOf(a: Int, b: Int): Int = min(a, b)
+actual fun minOf(a: Int, b: Int): Int = if (a < b) a else b
 
-actual fun abs(value: Int): Int = value.absoluteValue
+actual fun abs(value: Int): Int = kAbs(value)
 
 actual suspend fun copyToClipboard(text: String) {
-    // Note: For a production iOS app, implement with:
-    // platform.UIKit.UIPasteboard.generalPasteboard.string = text
-    // This requires the proper iOS interop setup
+    platform.UIKit.UIPasteboard.generalPasteboard.string = text
 }

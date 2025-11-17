@@ -33,13 +33,13 @@ import ui.*
 fun IosApp() {
     // Create app-level coroutine scope
     val scope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
-    
+
     // Initialize database and stores
     val database = remember { Database(DatabaseDriverFactory()) }
     val catalogStore = remember { CatalogStore(database) }
     val importsStore = remember { ImportsStore(database) }
     val platformServices = remember { IosMviPlatformServices(database) }
-    
+
     // Create MVI ViewModel
     val viewModel = remember {
         MviViewModel(
@@ -50,15 +50,15 @@ fun IosApp() {
             platformServices = platformServices
         )
     }
-    
+
     // Collect view state
     val state by viewModel.viewState.collectAsState()
-    
+
     // Initialize on first launch
     LaunchedEffect(Unit) {
         viewModel.processIntent(ViewIntent.Init)
     }
-    
+
     // Apply pixel theme
     AppTheme(darkTheme = state.isDarkTheme) {
         Surface(
@@ -90,7 +90,7 @@ fun IosNavigationHost(
         currentScreen = screen
     }
     
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
         // Background scanline effect
         ScanlineEffect(alpha = 0.02f)
         
@@ -329,3 +329,12 @@ fun IosThemeToggleFab(
         )
     }
 }
+
+/**
+ * Entry point for iOS app to create the main UIViewController.
+ * Call this function from Swift to launch the Compose UI.
+ */
+fun MainViewController() = androidx.compose.ui.window.ComposeUIViewController {
+    IosApp()
+}
+
