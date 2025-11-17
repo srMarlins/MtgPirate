@@ -91,9 +91,7 @@ class IosMviPlatformServices(
 
     override suspend fun copyToClipboard(text: String) {
         withContext(Dispatchers.Default) {
-            // Note: For production iOS app, implement with:
-            // platform.UIKit.UIPasteboard.generalPasteboard.string = text
-            // Requires proper iOS platform interop setup
+            platform.copyToClipboard(text)
         }
     }
 
@@ -131,7 +129,7 @@ class IosMviPlatformServices(
         sb.appendLine("Regular Cards,$regularCount")
         sb.appendLine("Holo Cards,$holoCount")
         sb.appendLine("Foil Cards,$foilCount")
-        sb.appendLine("Total Price,${formatDecimal(totalPriceCents / 100.0, 2)}")
+        sb.appendLine("Total Price,${platform.formatDecimal(totalPriceCents / 100.0, 2)}")
 
         return sb.toString()
     }

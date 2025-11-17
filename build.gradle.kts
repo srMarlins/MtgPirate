@@ -59,6 +59,8 @@ kotlin {
                 implementation(libs.ksoup)
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.logging)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
                 implementation(libs.navigation.compose)
                 implementation(libs.sqldelight.coroutines.extensions)
                 implementation(libs.sqldelight.runtime)
@@ -75,6 +77,7 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.sqldelight.driver.sqlite)
+                implementation(libs.ktor.client.cio)
             }
         }
 
