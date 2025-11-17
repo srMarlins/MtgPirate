@@ -8,15 +8,27 @@ A Kotlin Multiplatform application for importing Magic: The Gathering decklists,
   <img src="https://github.com/user-attachments/assets/2f6e4147-6a47-4de0-8e95-25e556a46ab9" alt="MtgPirate Demo" style="max-width: 70%;">
 </div>
 
+## Table of Contents
 
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [How to Use](#how-to-use)
+- [Development](#development)
+- [Architecture](#architecture)
+- [Platform Support](#platform-support)
+- [Configuration](#configuration)
+- [Troubleshooting](#troubleshooting)
+- [Documentation](#documentation)
 
-- 📋 **Decklist Import** - Paste decklists from various formats (MTGO, Arena, MTGGoldfish, etc.)
-- 🎯 **Intelligent Card Matching** - Fuzzy matching with set code hints and collector number support
+## Features
+
+- 📋 **Decklist Import** - Paste decklists from various formats (MTGO, Arena, MTGGoldfish)
+- 🎯 **Intelligent Matching** - Fuzzy matching with set codes and collector numbers
 - 💰 **Price Calculation** - Real-time pricing from USEA MTG Proxy catalog
-- 🔍 **Ambiguity Resolution** - Interactive UI for resolving multiple card variants
-- 📊 **CSV Export** - Generate ready-to-order CSV files with aggregated quantities
+- 🔍 **Ambiguity Resolution** - Interactive UI for multiple card variants
+- 📊 **CSV Export** - Ready-to-order CSV files with aggregated quantities
 - 💾 **Import History** - Save and reload previous imports
-- 🎨 **Dark Theme** - Eye-friendly interface with modern Compose UI
+- 🎨 **Dark Theme** - Modern Compose UI with dark mode
 - ⚙️ **Flexible Options** - Include/exclude sideboard, commanders, and tokens
 
 ## Tech Stack
@@ -60,56 +72,50 @@ The detekt configuration is in `detekt.yml` and includes rules for:
 
 ## Architecture
 
-This project implements two state management approaches:
+MtgPirate implements two state management approaches:
 
-1. **Legacy: MainStore** - In-memory state with manual persistence
-2. **New: MVI (Model-View-Intent)** - Database-backed reactive architecture ✨
+1. **MainStore (Legacy)** - In-memory state with manual persistence
+2. **MVI (Model-View-Intent)** - Database-backed reactive architecture ✨ *Recommended*
 
-The **MVI architecture** (recommended for new features) provides:
-- 🗄️ **Database as source of truth** - State persists across restarts
-- 🔄 **Reactive UI** - Automatic updates via Kotlin Flows
-- 🎯 **Unidirectional data flow** - Easy to debug and test
-- 🧪 **Testable** - Mock services for unit testing
-- 🔌 **Platform-agnostic** - Works on Desktop, iOS, Android
+The **MVI architecture** provides:
+- 🗄️ Database as source of truth
+- 🔄 Reactive UI via Kotlin Flows
+- 🎯 Unidirectional data flow
+- 🧪 Testable with mock services
+- 🔌 Platform-agnostic (Desktop, iOS, Android)
 
-See [MVI Architecture Documentation](docs/MVI_ARCHITECTURE.md) for details.
+📖 See [MVI Architecture Documentation](docs/MVI_ARCHITECTURE.md) for details.
 
 ## How to Use
 
-### Step 1: Import Your Decklist
+### Import Your Decklist
 
 1. Launch the application
 2. Paste your decklist in the text area
-3. Configure options:
-   - ✅ Include Sideboard
-   - ✅ Include Commanders
-   - ✅ Include Tokens
+3. Configure options (sideboard, commanders, tokens)
 4. Click **Parse & Match**
 
-### Step 2: Resolve Ambiguities
+### Resolve Ambiguities
 
-- Cards with multiple variants will be highlighted
-- Click **Resolve** to choose the specific version you want
-- Options include different sets, foil variants, and special editions
+- Cards with multiple variants are highlighted
+- Click **Resolve** to choose the specific version
+- Select from different sets, foil variants, or special editions
 
-### Step 3: Review & Export
+### Review & Export
 
 - Review matched cards and pricing summary
 - Click **Export CSV** to generate your order file
-- Import the CSV to USEA MTG Proxy for ordering
+- Import to USEA MTG Proxy for ordering
 
 ### Supported Decklist Formats
 
-The parser supports various formats including:
-
 ```
-# Standard format with quantities
+# Standard format
 4 Lightning Bolt
 1 Black Lotus
 
 # With set codes
 4 Lightning Bolt (M11)
-1 Black Lotus (LEA)
 
 # With collector numbers
 4 Lightning Bolt (M11 148)
@@ -117,11 +123,10 @@ The parser supports various formats including:
 # Sideboard markers
 SIDEBOARD:
 3 Thoughtseize
-
-# MTGO format
+# or
 SB: 3 Thoughtseize
 
-# Commander section (after blank line following sideboard)
+# Commander (after sideboard)
 1 Commander Name
 ```
 
@@ -145,23 +150,20 @@ src/
     └── platform/             # Platform services
 ```
 
-### Catalog Data Source Architecture
+### Catalog Data Sources
 
-The catalog system uses a pluggable architecture that allows swapping between different data sources:
+The catalog system supports pluggable data sources:
+- **RemoteCatalogDataSource** (current) - Fetches from USEA HTTP/CSV
+- **DatabaseCatalogDataSource** (template) - For database integration
+- **Mock sources** - For unit testing
 
-- **Current**: `RemoteCatalogDataSource` - Fetches from USEA HTTP/CSV endpoints
-- **Future**: `DatabaseCatalogDataSource` - Template for database integration
-- **Testing**: Mock data sources for unit testing
-
-For details on implementing a database backend, see:
-- [Catalog Data Source Architecture](docs/CATALOG_DATA_SOURCE.md)
-- [Quick Start: Database Integration](docs/QUICK_START_DATABASE.md)
+📖 See [Catalog Data Source Architecture](docs/CATALOG_DATA_SOURCE.md) and [Database Quick Start](docs/QUICK_START_DATABASE.md).
 
 ## Platform Support
 
 ### Desktop (Primary)
 
-Full-featured desktop application with:
+Full-featured desktop application:
 - ✅ Complete catalog fetching from USEA
 - ✅ File system access for imports/exports
 - ✅ Native file dialogs
@@ -169,57 +171,31 @@ Full-featured desktop application with:
 
 ### iOS (Experimental)
 
-iOS app with wizard-style workflow:
-- ✅ MVI architecture with SQLDelight persistence
-- ✅ Pixel-style retro UI design
-- ✅ Decklist parsing and card matching
+Wizard-style iOS app:
+- ✅ MVI architecture with SQLDelight
+- ✅ Pixel-style retro UI
+- ✅ Decklist parsing and matching
 - ✅ Clipboard export
-- ⚠️ Uses cached catalog data (no live fetching)
+- ⚠️ Uses cached catalog (no live fetching)
 - ⚠️ Limited platform integration
 
-See [iOS Implementation Guide](docs/IOS_IMPLEMENTATION.md) for details.
-
-### State Management - MVI Architecture
-
-The project includes a **new MVI (Model-View-Intent) unidirectional architecture** that uses the database as the single source of truth:
-
-- **ViewState**: Immutable UI state derived from database flows and local UI state
-- **ViewIntent**: Sealed class representing all possible user actions
-- **ViewEffect**: One-time side effects (toasts, navigation, dialogs)
-- **Database**: SQLDelight database stores catalog, preferences, imports, and logs
-- **Reactive Flows**: Database changes automatically propagate to UI
-
-**Data Flow**: Remote API → Database → ViewModel (Flows) → UI
-
-The MVI architecture provides:
-- ✅ State persists across app restarts (database-backed)
-- ✅ Reactive UI updates via Kotlin Flows
-- ✅ Unidirectional data flow (easy to debug)
-- ✅ Platform-agnostic design (works across Desktop, iOS, Android)
-- ✅ Testable architecture with mock services
-
-For details, see:
-- [MVI Architecture Documentation](docs/MVI_ARCHITECTURE.md)
-
-**Note**: Both `MainStore` (legacy) and `MviViewModel` (new) coexist in the codebase. The MVI implementation is the recommended approach for new features.
+📖 See [iOS Implementation Guide](docs/IOS_IMPLEMENTATION.md).
 
 ## Data Storage
 
 Application data is stored in the `data/` directory:
-
-- `catalog.json` - Cached card catalog from USEA
+- `catalog.json` - Cached card catalog
 - `preferences.json` - User preferences
 - `saved-imports.json` - Import history
 
 ## Matching Algorithm
 
-MtgPirate uses an intelligent matching system:
-
-1. **Normalization** - Card names are normalized (removing punctuation, lowercase)
-2. **Exact Match** - First attempts exact name match
-3. **Set Code Hints** - Uses provided set codes to narrow options
-4. **Fuzzy Matching** - Levenshtein distance for typos and variations
-5. **Variant Selection** - Auto-selects cheapest Regular variant when unique
+Intelligent matching system:
+1. **Normalization** - Remove punctuation, lowercase
+2. **Exact Match** - Attempt exact name match first
+3. **Set Code Hints** - Narrow options using provided set codes
+4. **Fuzzy Matching** - Levenshtein distance for typos
+5. **Auto-Selection** - Choose cheapest Regular variant when unique
 6. **Manual Resolution** - User resolves ambiguous matches
 
 ## Export Format
@@ -242,37 +218,32 @@ Total Price,10.80
 
 ### Catalog Update
 
-The catalog is automatically fetched from USEA on first run. To force a refresh:
-
-1. Open the Catalog window from the menu
+Automatically fetched on first run. To force refresh:
+1. Open Catalog window from menu
 2. Click **Refresh Catalog**
 
 ### Preferences
 
-Access preferences via the settings menu to configure:
-
+Configure via settings menu:
 - Default include/exclude options
-- Theme settings (coming soon)
+- Theme settings
 - Export directory defaults
 
 ## Troubleshooting
 
-### Catalog won't load
-
+**Catalog won't load**
 - Check internet connection
 - Verify USEA website is accessible
-- Try clearing `data/catalog.json` and restarting
+- Clear `data/catalog.json` and restart
 
-### Cards not matching
+**Cards not matching**
+- Check spelling in decklist
+- Add set codes: `Card Name (SET)`
+- Use manual resolution for ambiguous matches
 
-- Check spelling in your decklist
-- Add set codes in parentheses: `Card Name (SET)`
-- Use the manual resolution UI for ambiguous matches
-
-### Export fails
-
-- Ensure you have write permissions in the export directory
-- Check that all cards are resolved (no red highlights)
+**Export fails**
+- Ensure write permissions in export directory
+- Verify all cards are resolved (no red highlights)
 
 ## Acknowledgments
 

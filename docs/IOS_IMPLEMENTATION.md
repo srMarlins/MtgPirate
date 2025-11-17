@@ -1,15 +1,26 @@
 # iOS Implementation Guide
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Features](#features)
+- [Limitations](#limitations)
+- [Building](#building)
+- [Database Setup](#database-setup)
+- [Testing](#testing)
+- [Extending](#extending)
+- [Troubleshooting](#troubleshooting)
+
 ## Overview
 
-MtgPirate includes an iOS implementation built with:
-
-- **Kotlin Multiplatform** - Shared business logic and UI code
-- **Compose Multiplatform** - Declarative UI framework
+iOS implementation built with:
+- **Kotlin Multiplatform** - Shared business logic
+- **Compose Multiplatform** - Declarative UI
 - **MVI Architecture** - Reactive state management
-- **SQLDelight** - Type-safe database persistence
+- **SQLDelight** - Type-safe persistence
 
-The iOS app provides a wizard-style workflow for importing MTG decklists, matching cards against the catalog, and exporting CSV orders.
+The iOS app provides a wizard-style workflow for importing MTG decklists, matching cards, and exporting CSV orders.
 
 ## Architecture
 
@@ -17,115 +28,70 @@ The iOS app provides a wizard-style workflow for importing MTG decklists, matchi
 
 ```
 src/
-├── commonMain/           # Shared code (UI, models, business logic)
-│   ├── kotlin/
-│   │   ├── ui/          # Compose UI components
-│   │   ├── state/       # MVI ViewModel
-│   │   ├── model/       # Data models
-│   │   ├── catalog/     # Catalog parsing
-│   │   ├── deck/        # Decklist parser
-│   │   └── match/       # Card matching algorithm
-│   └── sqldelight/      # Database schema
+├── commonMain/           # Shared code (UI, models, logic)
+│   ├── ui/              # Compose UI components
+│   ├── state/           # MVI ViewModel
+│   ├── model/           # Data models
+│   ├── catalog/         # Catalog parsing
+│   └── deck/            # Decklist parser
 │
-└── iosMain/             # iOS-specific implementations
-    └── kotlin/
-        ├── app/         # iOS app entry point and navigation
-        ├── platform/    # Platform utilities (clipboard, time)
-        ├── catalog/     # Scryfall API stub
-        └── database/    # SQLite driver factory
+└── iosMain/             # iOS-specific
+    ├── app/             # Entry point and navigation
+    ├── platform/        # Platform utilities
+    ├── catalog/         # Scryfall API stub
+    └── database/        # SQLite driver
 ```
 
 ### Platform-Specific Implementation
 
-iOS-specific code provides platform implementations for:
-
-1. **Database Driver** (`DatabaseDriverFactory.kt`)
-   - Uses SQLDelight's `NativeSqliteDriver` for iOS
-   - Stores database in app's document directory
-
-2. **Platform Services** (`IosMviPlatformServices.kt`)
-   - Catalog operations (uses cached data)
-   - CSV export (copies to clipboard)
-   - Preferences management
-   - Logging
-
-3. **Platform Utilities** (`PlatformUtils.kt`)
-   - Time functions
-   - Decimal formatting
-   - Clipboard operations (stubs)
-
-4. **App Entry Point** (`Main.kt`)
-   - iOS navigation host
-   - Wizard flow management
-   - Screen routing
+iOS-specific code provides:
+1. **Database Driver** - SQLDelight's `NativeSqliteDriver`
+2. **Platform Services** - Catalog, CSV export, preferences, logging
+3. **Platform Utilities** - Time, decimal formatting, clipboard
+4. **App Entry Point** - Navigation and wizard flow
 
 ## Features
 
 ### Wizard Flow
 
-The iOS app implements a 4-step wizard:
-
-```
-┌──────────────┐
-│ 1. Import    │ ← Paste decklist
-└──────┬───────┘
-       │
-┌──────▼───────┐
-│ 2. Prefs     │ ← Configure options (sideboard, tokens, etc.)
-└──────┬───────┘
-       │
-┌──────▼───────┐
-│ 3. Results   │ ← Review matches, resolve ambiguities
-└──────┬───────┘
-       │
-┌──────▼───────┐
-│ 4. Export    │ ← Export CSV to clipboard
-└──────────────┘
-```
+4-step wizard:
+1. **Import** - Paste decklist
+2. **Preferences** - Configure options (sideboard, tokens)
+3. **Results** - Review matches, resolve ambiguities
+4. **Export** - Export CSV to clipboard
 
 ### Navigation
 
-The iOS app includes:
-
-- **Bottom Navigation Bar** - Quick access to Import, Catalog, and Matches
-- **Theme Toggle FAB** - Switch between light/dark themes
-- **Wizard Progress** - Visual indicators for current step
+- **Bottom Nav Bar** - Quick access to Import, Catalog, Matches
+- **Theme Toggle FAB** - Switch light/dark themes
+- **Wizard Progress** - Visual step indicators
 - **Back Navigation** - Return to previous steps
 
 ### UI Features
 
-All UI components use the **Pixel Design System** with:
-
-- ✨ Retro pixel-style borders and corners
+**Pixel Design System:**
+- ✨ Retro pixel-style borders
 - 💫 Scanline effects for CRT aesthetic
 - 🌈 Glowing borders and animations
 - 🎯 Consistent spacing and typography
 - 🎨 Dark/light theme support
 
-## Current Limitations
+## Limitations
 
-The iOS implementation has some intentional limitations:
+### Network Operations (Not Implemented)
 
-### 1. Network Operations
-
-**Status:** Not implemented
-
-The iOS app relies on **cached catalog data** in the SQLDelight database. Network fetching via Scryfall or USEA APIs is not implemented.
+iOS app uses **cached catalog data** only. Network fetching not implemented.
 
 **Workarounds:**
-- Pre-populate the database with catalog data
-- Use the Desktop app to fetch and sync catalog
+- Pre-populate database with catalog data
+- Use Desktop app to fetch and sync
 - Implement NSURLSession networking if needed
 
-**Files affected:**
-- `src/iosMain/kotlin/catalog/ScryfallApiImpl.kt`
-- `src/iosMain/kotlin/platform/IosMviPlatformServices.kt`
+**Files:** `catalog/ScryfallApiImpl.kt`, `platform/IosMviPlatformServices.kt`
 
-### 2. Clipboard Operations
+### Clipboard Operations (Stub)
 
-**Status:** Stub implementation
-
-Clipboard operations are defined but not fully implemented with iOS platform APIs.
+Clipboard defined but not fully implemented.
 
 **Production implementation:**
 ```kotlin
@@ -136,15 +102,11 @@ actual suspend fun copyToClipboard(text: String) {
 }
 ```
 
-**Files affected:**
-- `src/iosMain/kotlin/platform/PlatformUtils.kt`
+**File:** `platform/PlatformUtils.kt`
 
-### 3. Time Functions
+### Time Functions (Simplified)
 
-**Status:** Simplified implementation
-
-`currentTimeMillis()` returns a fixed value. For production:
-
+`currentTimeMillis()` returns fixed value. For production:
 ```kotlin
 import platform.Foundation.NSDate
 
@@ -153,61 +115,48 @@ actual fun currentTimeMillis(): Long {
 }
 ```
 
-**Files affected:**
-- `src/iosMain/kotlin/platform/PlatformUtils.kt`
+**File:** `platform/PlatformUtils.kt`
 
-### 4. File Export
+### File Export (Clipboard Only)
 
-**Status:** Clipboard-only
+CSV export copies to clipboard. For production, use `UIActivityViewController` to save/share files.
 
-CSV export copies data to clipboard. For production, implement with `UIActivityViewController` to save to Files app or share.
-
-## Building for iOS
+## Building
 
 ### Prerequisites
 
-1. **macOS** - Required for iOS development
-2. **Xcode** - Latest version
-3. **Kotlin Multiplatform Plugin** - For Kotlin/Native compilation
-4. **CocoaPods** (optional) - For dependency management
+- **macOS** - Required for iOS development
+- **Xcode** - Latest version
+- **Kotlin Multiplatform Plugin** - For Kotlin/Native
+- **CocoaPods** (optional) - For dependency management
 
 ### Build Configuration
 
-The iOS build uses Kotlin/Native to compile to native iOS binaries:
-
+Kotlin/Native targets:
 ```kotlin
-// build.gradle.kts
-iosX64()      // iOS simulator (Intel)
-iosArm64()    // iOS devices (64-bit)
-iosSimulatorArm64()  // iOS simulator (Apple Silicon)
+iosX64()               // iOS simulator (Intel)
+iosArm64()             // iOS devices (64-bit)
+iosSimulatorArm64()    // iOS simulator (Apple Silicon)
 ```
 
 ### Build Commands
 
 ```bash
-# Build iOS framework
+# Build iOS framework for simulator
 ./gradlew :linkDebugFrameworkIosSimulatorArm64
 
 # Build for device
 ./gradlew :linkReleaseFrameworkIosArm64
 ```
 
-### Integration with Xcode
-
-1. Create an Xcode project
-2. Add the compiled Kotlin framework
-3. Implement Swift wrapper for the Compose UI
-4. Configure app bundle and provisioning
-
-Example Swift integration:
+### Xcode Integration
 
 ```swift
 import shared
 
 struct ContentView: View {
     var body: some View {
-        ComposeView()
-            .ignoresSafeArea()
+        ComposeView().ignoresSafeArea()
     }
 }
 
@@ -224,34 +173,27 @@ struct ComposeView: UIViewControllerRepresentable {
 
 ### Pre-populating Catalog
 
-The iOS app requires catalog data in the database. Options:
+Options for populating catalog:
 
-1. **Use Desktop to Fetch:**
+1. **Use Desktop App:**
    ```bash
-   # Run desktop app to fetch catalog
-   ./gradlew run
-   # Copy database from desktop to iOS resources
+   ./gradlew run  # Fetch catalog
    cp data/pirate.db ios/resources/
    ```
 
 2. **Bundle Pre-filled Database:**
    - Include `pirate.db` in iOS app bundle
-   - Copy to documents directory on first launch
+   - Copy to documents on first launch
 
-3. **Implement Backend Sync:**
-   - Create API endpoint that serves catalog data
-   - Fetch and populate database on iOS app launch
+3. **Backend Sync:**
+   - Create API endpoint serving catalog
+   - Fetch and populate on app launch
 
 ### Database Location
 
 ```kotlin
-// iOS database location
 val documentsDir = NSFileManager.defaultManager.URLForDirectory(
-    NSDocumentDirectory,
-    NSUserDomainMask,
-    null,
-    true,
-    null
+    NSDocumentDirectory, NSUserDomainMask, null, true, null
 )
 val dbPath = "${documentsDir?.path}/pirate.db"
 ```
@@ -259,8 +201,6 @@ val dbPath = "${documentsDir?.path}/pirate.db"
 ## Testing
 
 ### Unit Testing
-
-Shared code can be tested on any platform:
 
 ```bash
 # Run common tests
@@ -270,9 +210,7 @@ Shared code can be tested on any platform:
 ./gradlew iosSimulatorArm64Test
 ```
 
-### UI Testing
-
-Use Xcode's UI testing framework:
+### UI Testing (Xcode)
 
 ```swift
 class MtgPirateUITests: XCTestCase {
@@ -280,50 +218,28 @@ class MtgPirateUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         
-        // Test import screen
         let importField = app.textFields["DECKLIST.TXT"]
         importField.tap()
         importField.typeText("4 Lightning Bolt\n")
         
-        // Test next button
         app.buttons["Next →"].tap()
-        
-        // Verify preferences screen
         XCTAssertTrue(app.staticTexts["STEP 2/4"].exists)
     }
 }
 ```
 
-## Performance Considerations
+### Performance
 
-### Memory
+- **Memory** - Efficient SQLite, optimized Compose recomposition
+- **Battery** - Efficient database, no background networking
+- **App Size** - Base ~5-10 MB, with database ~15-20 MB
 
-- SQLDelight uses efficient native SQLite
-- Compose Multiplatform optimizes recomposition
-- Large catalogs (10k+ cards) work smoothly
-
-### Battery
-
-- Database operations are efficient
-- No background networking (since not implemented)
-- UI animations use hardware acceleration
-
-### App Size
-
-- Base app: ~5-10 MB
-- With database: ~15-20 MB (depends on catalog size)
-- Kotlin/Native produces compact binaries
-
-## Extending the iOS Implementation
+## Extending
 
 ### Adding Network Support
 
-To implement catalog fetching:
-
-1. **Update ScryfallApiImpl.kt:**
 ```kotlin
 import platform.Foundation.*
-import kotlinx.cinterop.*
 
 actual suspend fun fetchUrl(url: String): String = suspendCoroutine { cont ->
     val nsUrl = NSURL.URLWithString(url)!!
@@ -341,38 +257,17 @@ actual suspend fun fetchUrl(url: String): String = suspendCoroutine { cont ->
 }
 ```
 
-2. **Update IosMviPlatformServices.kt:**
-```kotlin
-override suspend fun fetchCatalogFromRemote(log: (String) -> Unit): Catalog? {
-    return try {
-        log("Fetching from USEA API...")
-        val csvText = fetchUrl(urlApi)
-        val catalog = CatalogCsvParser.parse(csvText)
-        log("Fetched ${catalog.variants.size} variants")
-        catalog
-    } catch (e: Exception) {
-        log("Error: ${e.message}")
-        null
-    }
-}
-```
-
 ### Adding File Export
-
-To support saving files:
 
 ```kotlin
 import platform.UIKit.*
-import platform.Foundation.*
 
 fun exportCsvToFile(csvContent: String, viewController: UIViewController) {
     val tempDir = NSTemporaryDirectory()
     val filePath = "$tempDir/mtg-order.csv"
     
-    // Write to file
     csvContent.writeToFile(filePath, true, NSUTF8StringEncoding)
     
-    // Share with UIActivityViewController
     val fileUrl = NSURL.fileURLWithPath(filePath)
     val activityVC = UIActivityViewController(
         activityItems = listOf(fileUrl),
@@ -383,9 +278,7 @@ fun exportCsvToFile(csvContent: String, viewController: UIViewController) {
 }
 ```
 
-### Adding Biometric Authentication
-
-To secure catalog data:
+### Adding Biometric Auth
 
 ```kotlin
 import platform.LocalAuthentication.*
@@ -409,59 +302,34 @@ suspend fun authenticateUser(): Boolean = suspendCoroutine { cont ->
 
 ## Troubleshooting
 
-### Common Issues
+**Database not found**
+- Ensure database is bundled or created on first launch
+- Check `DatabaseDriverFactory` creates database if missing
 
-**Problem:** Database not found
-```
-Solution: Ensure database is bundled or created on first launch
-Check: DatabaseDriverFactory creates the database if missing
-```
+**Compose UI not rendering**
+- Verify Xcode links Kotlin framework correctly
+- Check framework search paths in Build Settings
 
-**Problem:** Compose UI not rendering
-```
-Solution: Verify Xcode project links the Kotlin framework correctly
-Check: Framework search paths in Build Settings
-```
+**App crashes on device**
+- Check code signing and provisioning profiles
+- Review Xcode logs for missing entitlements
 
-**Problem:** App crashes on device
-```
-Solution: Check code signing and provisioning profiles
-Check: Xcode logs for missing entitlements
-```
-
-**Problem:** Catalog is empty
-```
-Solution: Pre-populate database with catalog data
-Check: Database contains CardVariant entries
-```
+**Catalog is empty**
+- Pre-populate database with catalog data
+- Verify database contains `CardVariant` entries
 
 ## Future Enhancements
 
-Potential iOS-specific features:
-
-- ✨ **Widget Support** - Display recent imports on home screen
-- 📸 **Camera Scanner** - Scan physical cards to add to decklist
-- 🔔 **Push Notifications** - Alert when catalog updates
-- 🌐 **CloudKit Sync** - Sync imports across devices
-- 🎙️ **Siri Integration** - Voice commands for imports
-- ⌚ **watchOS App** - Quick catalog lookup on Apple Watch
+- ✨ Widget support - Recent imports on home screen
+- 📸 Camera scanner - Scan physical cards
+- 🔔 Push notifications - Catalog update alerts
+- 🌐 CloudKit sync - Sync across devices
+- 🎙️ Siri integration - Voice commands
+- ⌚ watchOS app - Quick catalog lookup
 
 ## Resources
 
 - [Kotlin Multiplatform Mobile](https://kotlinlang.org/lp/mobile/)
 - [Compose Multiplatform iOS](https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-multiplatform-ios-overview.html)
 - [SQLDelight on iOS](https://cashapp.github.io/sqldelight/native_sqlite_driver/)
-- [Apple Developer Documentation](https://developer.apple.com/documentation/)
-
-## Support
-
-For iOS-specific issues:
-
-1. Check this documentation first
-2. Review the [MVI Architecture](MVI_ARCHITECTURE.md) docs
-3. Examine the Desktop implementation for reference
-4. Open an issue on GitHub with:
-   - iOS version
-   - Device model
-   - Xcode version
-   - Error logs
+- [Apple Developer Docs](https://developer.apple.com/documentation/)

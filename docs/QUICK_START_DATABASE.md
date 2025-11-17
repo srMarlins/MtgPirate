@@ -1,38 +1,47 @@
-# Quick Start: Swapping to Database Backend
+# Database Backend Quick Start
 
-This guide shows you how to quickly swap from the remote HTTP/CSV catalog to a database-backed implementation.
+## Table of Contents
 
-## Step 1: Choose Your Database
+- [Step 1: Choose Database](#step-1-choose-database)
+- [Step 2: Add Dependencies](#step-2-add-dependencies)
+- [Step 3: Create Schema](#step-3-create-schema)
+- [Step 4: Implement Data Source](#step-4-implement-data-source)
+- [Step 5: Configure](#step-5-configure)
+- [Step 6: Populate Database](#step-6-populate-database)
+- [Step 7: Test](#step-7-test)
+- [Hybrid Approach](#hybrid-approach)
+- [Advanced Topics](#advanced-topics)
 
-First, decide which database you want to use. Common choices:
-- PostgreSQL (recommended for production)
-- MySQL/MariaDB
-- SQLite (for local/embedded use)
-- H2 (for testing)
+## Step 1: Choose Database
 
-## Step 2: Add Database Dependencies
+Common choices:
+- **PostgreSQL** (recommended for production)
+- **MySQL/MariaDB**
+- **SQLite** (for local/embedded)
+- **H2** (for testing)
 
-Add your database driver to `build.gradle.kts`:
+## Step 2: Add Dependencies
+
+Add database driver to `build.gradle.kts`:
 
 ```kotlin
-// In the desktopMain dependencies block
 val desktopMain by getting {
     dependencies {
-        // Existing dependencies...
+        // PostgreSQL
+        implementation("org.postgresql:postgresql:42.7.1")
         
-        // Add your database driver
-        implementation("org.postgresql:postgresql:42.7.1") // For PostgreSQL
-        // OR
-        implementation("mysql:mysql-connector-java:8.0.33") // For MySQL
-        // OR
-        implementation("org.xerial:sqlite-jdbc:3.44.1.0") // For SQLite
+        // OR MySQL
+        implementation("mysql:mysql-connector-java:8.0.33")
+        
+        // OR SQLite
+        implementation("org.xerial:sqlite-jdbc:3.44.1.0")
     }
 }
 ```
 
-## Step 3: Create Database Schema
+## Step 3: Create Schema
 
-Create your database tables. Example SQL:
+Create database tables:
 
 ```sql
 CREATE TABLE card_variants (
@@ -50,16 +59,16 @@ CREATE TABLE card_variants (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Add indexes for performance
+-- Performance indexes
 CREATE INDEX idx_name_normalized ON card_variants(name_normalized);
 CREATE INDEX idx_set_code ON card_variants(set_code);
 CREATE INDEX idx_sku ON card_variants(sku);
 CREATE INDEX idx_active ON card_variants(active);
 ```
 
-## Step 4: Implement Your Data Source
+## Step 4: Implement Data Source
 
-Edit `src/desktopMain/kotlin/catalog/DatabaseCatalogDataSource.kt` and replace the TODO sections:
+Edit `src/desktopMain/kotlin/catalog/DatabaseCatalogDataSource.kt`:
 
 ```kotlin
 package catalog
@@ -83,15 +92,8 @@ class DatabaseCatalogDataSource(
                 
                 val connection = DriverManager.getConnection(jdbcUrl, username, password)
                 val statement = connection.prepareStatement("""
-                    SELECT 
-                        name_original, 
-                        name_normalized, 
-                        set_code, 
-                        sku, 
-                        variant_type, 
-                        price_cents, 
-                        collector_number, 
-                        image_url
+                    SELECT name_original, name_normalized, set_code, sku, 
+                           variant_type, price_cents, collector_number, image_url
                     FROM card_variants
                     WHERE active = true
                     ORDER BY name_normalized, set_code
@@ -120,7 +122,7 @@ class DatabaseCatalogDataSource(
                 connection.close()
                 
                 val catalog = Catalog(variants = results)
-                log("Loaded ${catalog.variants.size} variants from database")
+                log("Loaded ${catalog.variants.size} variants")
                 catalog
             } catch (e: Exception) {
                 log("Database load failed: ${e.message}")
@@ -131,15 +133,14 @@ class DatabaseCatalogDataSource(
 }
 ```
 
-## Step 5: Configure the Data Source
+## Step 5: Configure
 
-In `src/desktopMain/kotlin/platform/DesktopPlatformServices.kt`, configure the data source on initialization:
+In `src/desktopMain/kotlin/platform/DesktopPlatformServices.kt`:
 
 ```kotlin
 class DesktopPlatformServices : PlatformServices {
     
     init {
-        // Configure database data source
         val dbSource = DatabaseCatalogDataSource(
             jdbcUrl = System.getenv("DB_URL") 
                 ?: "jdbc:postgresql://localhost:5432/mtgpirate",
@@ -147,27 +148,24 @@ class DesktopPlatformServices : PlatformServices {
             password = System.getenv("DB_PASSWORD") ?: "your_password"
         )
         
-        // Swap in the database implementation
         CatalogFetcher.setDataSource(dbSource)
     }
     
-    // ... rest of the class remains unchanged
+    // ... rest unchanged
 }
 ```
 
-## Step 6: Populate the Database
+## Step 6: Populate Database
 
-Create a one-time migration script to populate your database from the remote source:
+Migration script to populate from remote source:
 
 ```kotlin
-// In a separate migration tool or script
 fun main() = runBlocking {
     // Load from remote
     val remoteSource = RemoteCatalogDataSource()
     val catalog = remoteSource.load(forceRefresh = true) { println(it) }
     
     if (catalog != null) {
-        // Connect to database
         val connection = DriverManager.getConnection(jdbcUrl, username, password)
         val insertStmt = connection.prepareStatement("""
             INSERT INTO card_variants 
@@ -192,55 +190,50 @@ fun main() = runBlocking {
         }
         
         connection.close()
-        println("Successfully migrated ${catalog.variants.size} variants to database")
+        println("Migrated ${catalog.variants.size} variants to database")
     }
 }
 ```
 
-## Step 7: Test It
+## Step 7: Test
 
-Run your application and verify:
+Verify the implementation:
 
-1. The catalog loads from the database
-2. All card searches work correctly
+1. Catalog loads from database
+2. Card searches work correctly
 3. Performance is acceptable
-4. Error handling works (try disconnecting the database)
+4. Error handling works (try disconnecting database)
 
-## Optional: Hybrid Approach
+## Hybrid Approach
 
-For a safer migration, use the hybrid approach:
+Safer migration with automatic fallback:
 
 ```kotlin
 init {
     val dbSource = DatabaseCatalogDataSource(...)
     val remoteSource = RemoteCatalogDataSource()
     
-    // Try database first, fallback to remote
     val hybridSource = HybridCatalogDataSource(dbSource, remoteSource)
     CatalogFetcher.setDataSource(hybridSource)
 }
 ```
 
-This way:
-- ✅ Fast loading from database when available
-- ✅ Automatic fallback to remote if database fails
+**Benefits:**
+- ✅ Fast loading from database
+- ✅ Automatic fallback to remote
 - ✅ No downtime during migration
-- ✅ Can validate database data against remote
+- ✅ Can validate database data
 
-## Rollback Plan
-
-If you need to rollback to the remote source:
-
+**Rollback:**
 ```kotlin
-// Simply restore the default
 CatalogFetcher.setDataSource(RemoteCatalogDataSource())
 ```
 
-That's it! Your application now uses a database for catalog data.
+## Advanced Topics
 
-## Advanced: Connection Pooling
+### Connection Pooling (Production)
 
-For production, use a connection pool:
+Use HikariCP for connection pooling:
 
 ```kotlin
 import com.zaxxer.hikari.HikariConfig
@@ -282,7 +275,7 @@ class PooledDatabaseCatalogDataSource(
 }
 ```
 
-Remember to add HikariCP dependency:
+**Add dependency:**
 ```kotlin
 implementation("com.zaxxer:HikariCP:5.1.0")
 ```

@@ -1,98 +1,80 @@
-# Catalog Data Source Abstraction
+# Catalog Data Source Architecture
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Current Implementation](#current-implementation)
+- [Usage](#usage)
+- [Custom Data Sources](#custom-data-sources)
+- [Testing](#testing)
+- [Migration Path](#migration-path)
+- [Benefits](#benefits)
 
 ## Overview
 
-The catalog data source abstraction provides a clean separation between the catalog data retrieval logic and the rest of the application. This makes it easy to swap between different data sources (remote HTTP/CSV, local database, mock data, etc.) without changing the application code.
+The catalog data source abstraction enables clean separation between data retrieval and application logic, making it easy to swap between remote HTTP/CSV, local database, or mock data sources.
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────┐
-│      Application Code                   │
-│   (MainStore, PlatformServices)         │
-└──────────────┬──────────────────────────┘
-               │
-               ↓
-┌─────────────────────────────────────────┐
-│      CatalogFetcher (Facade)            │
-│  - Provides backward-compatible API     │
-│  - Delegates to pluggable data source   │
-└──────────────┬──────────────────────────┘
-               │
-               ↓
-┌─────────────────────────────────────────┐
-│   CatalogDataSource (Interface)         │
-│  - load(forceRefresh, log): Catalog?    │
-└──────────────┬──────────────────────────┘
-               │
-       ┌───────┴───────┐
-       ↓               ↓
-┌─────────────┐  ┌──────────────┐
-│  Remote     │  │  Database    │
-│  DataSource │  │  DataSource  │
-│  (Current)  │  │  (Future)    │
-└─────────────┘  └──────────────┘
+Application Code (MainStore, PlatformServices)
+              ↓
+CatalogFetcher (Facade - backward-compatible API)
+              ↓
+CatalogDataSource (Interface)
+    - load(forceRefresh, log): Catalog?
+              ↓
+    ┌─────────┴─────────┐
+    ↓                   ↓
+RemoteDataSource    DatabaseDataSource
+  (Current)            (Future)
 ```
 
 ## Current Implementation
 
-### RemoteCatalogDataSource
-
-The current implementation fetches catalog data from remote HTTP endpoints:
-
-- **Primary Source**: CSV endpoint (`single-card-list.csv`)
+**RemoteCatalogDataSource** fetches from remote endpoints:
+- **Primary**: CSV endpoint (`single-card-list.csv`)
 - **Fallback**: HTML page with embedded data
-- **Caching**: Local JSON cache to reduce network requests
-- **Price Normalization**: Fills in missing prices with defaults
+- **Caching**: Local JSON cache
+- **Price Normalization**: Fills missing prices with defaults
 
 ## Usage
 
-### Default Usage (No Changes Required)
+### Default Usage
 
-The existing code continues to work without modification:
+Existing code works without modification:
 
 ```kotlin
-// In DesktopPlatformServices or anywhere else
 val catalog = CatalogFetcher.load(forceRefresh = true) { msg ->
     println(msg)
 }
 ```
 
-### Using a Custom Data Source
+### Custom Data Source
 
-To swap in a different data source (e.g., database):
+Swap implementations easily:
 
 ```kotlin
-// 1. Create your data source implementation
+// 1. Create implementation
 class DatabaseCatalogDataSource : CatalogDataSource {
     override suspend fun load(forceRefresh: Boolean, log: (String) -> Unit): Catalog? {
-        // Load from database
         return dbConnection.loadCatalog()
     }
 }
 
-// 2. Configure CatalogFetcher to use it
+// 2. Configure
 CatalogFetcher.setDataSource(DatabaseCatalogDataSource())
 
 // 3. Use normally
 val catalog = CatalogFetcher.load()
 ```
 
-## Implementing a Database Data Source
+## Custom Data Sources
 
-Here's a template for implementing a database-backed catalog data source:
+### Database Implementation Template
 
 ```kotlin
-package catalog
-
-import model.Catalog
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-
-/**
- * Database-backed catalog data source.
- * Replace with your actual database implementation.
- */
 class DatabaseCatalogDataSource(
     private val databaseUrl: String,
     private val credentials: DatabaseCredentials
@@ -102,20 +84,14 @@ class DatabaseCatalogDataSource(
         withContext(Dispatchers.IO) {
             try {
                 log("Loading catalog from database...")
-                
-                // Connect to database
                 val connection = connectToDatabase(databaseUrl, credentials)
                 
-                // Query card variants
                 val variants = connection.query("""
                     SELECT name_original, name_normalized, set_code, 
-                           sku, variant_type, price_cents, collector_number, 
-                           image_url
-                    FROM card_variants
-                    WHERE active = true
+                           sku, variant_type, price_cents
+                    FROM card_variants WHERE active = true
                 """)
                 
-                // Convert to Catalog model
                 val catalog = Catalog(variants = variants.map { row ->
                     CardVariant(
                         nameOriginal = row.getString("name_original"),
@@ -123,30 +99,23 @@ class DatabaseCatalogDataSource(
                         setCode = row.getString("set_code"),
                         sku = row.getString("sku"),
                         variantType = row.getString("variant_type"),
-                        priceInCents = row.getInt("price_cents"),
-                        collectorNumber = row.getStringOrNull("collector_number"),
-                        imageUrl = row.getStringOrNull("image_url")
+                        priceInCents = row.getInt("price_cents")
                     )
                 })
                 
-                log("Loaded ${catalog.variants.size} variants from database")
+                log("Loaded ${catalog.variants.size} variants")
                 catalog
             } catch (e: Exception) {
                 log("Database load failed: ${e.message}")
                 null
             }
         }
-    
-    private fun connectToDatabase(url: String, creds: DatabaseCredentials): DatabaseConnection {
-        // Your database connection logic
-        TODO("Implement database connection")
-    }
 }
 ```
 
-## Testing with Mock Data
+## Testing
 
-For testing, you can create a mock data source:
+Mock data source for tests:
 
 ```kotlin
 class MockCatalogDataSource(private val mockCatalog: Catalog) : CatalogDataSource {
@@ -172,45 +141,45 @@ fun testWithMockCatalog() {
 
 ## Migration Path
 
-To migrate to a database-backed implementation:
+Steps to migrate to database backend:
 
-1. **Create the Database Schema**
-   - Design tables for `card_variants` with appropriate columns
+1. **Create Database Schema**
+   - Design `card_variants` table
    - Add indexes for performance (name, set_code, sku)
-   - Consider caching/materialized views for complex queries
+   - Consider materialized views for complex queries
 
 2. **Implement DatabaseCatalogDataSource**
-   - Create a new class implementing `CatalogDataSource`
-   - Use your preferred database library (JDBC, Exposed, SQLDelight, etc.)
-   - Handle connection pooling, transactions, and error cases
+   - Create class implementing `CatalogDataSource`
+   - Use preferred database library (JDBC, Exposed, SQLDelight)
+   - Handle connection pooling and errors
 
 3. **Data Migration**
-   - Write a one-time migration script to populate the database
-   - Can use `RemoteCatalogDataSource` to fetch initial data
+   - Write migration script to populate database
+   - Can use `RemoteCatalogDataSource` for initial data
    - Set up periodic sync jobs if needed
 
 4. **Switch Implementation**
-   - In `DesktopPlatformServices` or app initialization
+   - In `DesktopPlatformServices` or app init
    - Call `CatalogFetcher.setDataSource(DatabaseCatalogDataSource(...))`
-   - Test thoroughly before deploying
+   - Test thoroughly
 
 5. **Optional: Hybrid Approach**
-   - Create a `HybridCatalogDataSource` that tries database first
-   - Falls back to remote if database is unavailable
-   - Provides best of both worlds during transition
+   - Create `HybridCatalogDataSource`
+   - Try database first, fallback to remote
+   - Best of both worlds during transition
 
-## Benefits of the Abstraction
+## Benefits
 
-- ✅ **Testability**: Easy to inject mock data for unit tests
-- ✅ **Flexibility**: Swap implementations without touching application code
-- ✅ **Separation of Concerns**: Data access logic isolated from business logic
-- ✅ **Backward Compatibility**: Existing code continues to work
-- ✅ **Future-Proof**: Easy to add new sources (API v2, GraphQL, local files, etc.)
+- ✅ **Testability** - Easy to inject mock data
+- ✅ **Flexibility** - Swap implementations without touching app code
+- ✅ **Separation of Concerns** - Data access isolated
+- ✅ **Backward Compatibility** - Existing code works unchanged
+- ✅ **Future-Proof** - Easy to add new sources
 
 ## Notes
 
-- The interface is intentionally simple with just one method
-- Implementations should handle their own caching strategies
-- Error handling should be graceful (return null on failure)
-- Logging callback allows implementations to communicate progress
-- All implementations should be thread-safe and use appropriate coroutine dispatchers
+- Simple one-method interface
+- Implementations handle own caching
+- Graceful error handling (return null)
+- Logging callback for progress
+- Thread-safe with appropriate dispatchers

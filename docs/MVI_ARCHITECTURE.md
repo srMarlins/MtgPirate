@@ -1,20 +1,32 @@
 # MVI Architecture Documentation
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture Components](#architecture-components)
+- [Data Flow](#data-flow)
+- [Platform Services](#platform-services)
+- [State Management](#state-management)
+- [Testing](#testing)
+- [Benefits](#benefits)
+- [Migration Guide](#migration-guide)
+- [Best Practices](#best-practices)
+
 ## Overview
 
-MtgPirate implements the **MVI (Model-View-Intent)** architectural pattern for state management. This provides a unidirectional data flow architecture that is:
+MtgPirate implements **MVI (Model-View-Intent)** for state management, providing:
 
 - ✅ **Reactive** - UI automatically updates when state changes
-- ✅ **Predictable** - All state changes flow through a single point
-- ✅ **Testable** - Business logic is isolated and easy to mock
-- ✅ **Platform-agnostic** - Works across Desktop, iOS, and Android
-- ✅ **Persistent** - Database serves as the single source of truth
+- ✅ **Predictable** - Single source of truth with unidirectional flow
+- ✅ **Testable** - Isolated business logic, easy to mock
+- ✅ **Platform-agnostic** - Works across Desktop, iOS, Android
+- ✅ **Persistent** - Database-backed state
 
 ## Architecture Components
 
 ### 1. ViewState
 
-`ViewState` is an immutable data class representing the entire UI state:
+Immutable data class representing complete UI state:
 
 ```kotlin
 data class ViewState(
@@ -22,81 +34,61 @@ data class ViewState(
     val matches: List<DeckEntryMatch> = emptyList(),
     val catalog: Catalog? = null,
     val preferences: Preferences = Preferences(),
-    val isDarkTheme: Boolean = false,
-    val showSavedImportsWindow: Boolean = false,
+    val isDarkTheme: Boolean = false
     // ... other UI state
 )
 ```
 
-**Key characteristics:**
-- Immutable - new state is created for every change
-- Complete - contains all information needed to render the UI
-- Single source of truth - derived from database + local UI state
+**Characteristics:**
+- Immutable - new state created for every change
+- Complete - contains all UI rendering information
+- Single source of truth - derived from database + local state
 
 ### 2. ViewIntent
 
-`ViewIntent` is a sealed class representing all possible user actions:
+Sealed class representing all user actions:
 
 ```kotlin
 sealed class ViewIntent {
-    // Initialization
     object Init : ViewIntent()
-    
-    // Deck operations
     data class UpdateDeckText(val text: String) : ViewIntent()
     object ParseDeck : ViewIntent()
-    object RunMatch : ViewIntent()
-    
-    // Catalog operations
     object RefreshCatalog : ViewIntent()
-    
-    // Resolution
-    data class OpenResolve(val matchIndex: Int) : ViewIntent()
     data class ResolveCandidate(val matchIndex: Int, val variant: CardVariant) : ViewIntent()
-    object CloseResolve : ViewIntent()
-    
-    // Export
     object ExportCsv : ViewIntent()
-    
-    // Preferences
-    data class ToggleIncludeSideboard(val include: Boolean) : ViewIntent()
-    object ToggleTheme : ViewIntent()
-    
     // ... other intents
 }
 ```
 
-**Key characteristics:**
-- Sealed class - compiler ensures all cases are handled
-- Descriptive names - clearly communicate user intention
-- Complete parameters - contain all data needed for the action
+**Characteristics:**
+- Sealed class - compiler ensures all cases handled
+- Descriptive names - clearly communicate intention
+- Complete parameters - contain all necessary data
 
 ### 3. ViewEffect
 
-`ViewEffect` represents one-time side effects (not part of state):
+One-time side effects (not part of state):
 
 ```kotlin
 sealed class ViewEffect {
     data class ShowToast(val message: String) : ViewEffect()
     data class ShowError(val message: String) : ViewEffect()
     object NavigateToResults : ViewEffect()
-    // ... other effects
 }
 ```
 
-**Key characteristics:**
+**Characteristics:**
 - One-time events - consumed once by UI
-- Not persisted - temporary notifications or navigation
+- Not persisted - temporary notifications
 - Collected separately from state
 
 ### 4. MviViewModel
 
-The `MviViewModel` is the central coordinator that:
-
-1. Receives intents from the UI
+Central coordinator that:
+1. Receives intents from UI
 2. Processes business logic
-3. Updates the database
-4. Emits new state via Flows
+3. Updates database
+4. Emits state via Flows
 5. Produces side effects
 
 ```kotlin
@@ -104,39 +96,24 @@ class MviViewModel(
     private val scope: CoroutineScope,
     private val database: Database,
     private val catalogStore: CatalogStore,
-    private val importsStore: ImportsStore,
     private val platformServices: MviPlatformServices
 ) {
     val viewState: StateFlow<ViewState>
     val viewEffects: SharedFlow<ViewEffect>
     
-    fun processIntent(intent: ViewIntent) {
-        // Process intent and update state
-    }
+    fun processIntent(intent: ViewIntent) { /* ... */ }
 }
 ```
 
 ### 5. Database
 
-The database (SQLDelight) serves as the single source of truth:
+SQLDelight database as single source of truth:
 
-```
-┌─────────────────┐
-│   Database      │
-│  (SQLDelight)   │
-├─────────────────┤
-│ CardVariant     │ ← Catalog data
-│ Preferences     │ ← User settings  
-│ SavedImport     │ ← Import history
-│ LogEntry        │ ← Debug logs
-└─────────────────┘
-```
-
-**Database tables:**
-- `CardVariant` - Card catalog with prices and metadata
-- `Preferences` - User preferences (theme, filters, etc.)
-- `SavedImport` - Historical decklist imports
-- `LogEntry` - Application logs for debugging
+**Tables:**
+- `CardVariant` - Catalog data with prices
+- `Preferences` - User settings
+- `SavedImport` - Import history
+- `LogEntry` - Debug logs
 
 ## Data Flow
 
@@ -211,43 +188,37 @@ interface MviPlatformServices {
 
 This allows the core `MviViewModel` to remain platform-agnostic while delegating platform-specific operations.
 
-## State Management Strategies
+## State Management
 
 ### Combining Database Flows
 
-The ViewModel combines multiple database flows into a single `ViewState`:
+ViewModel combines multiple database flows into single `ViewState`:
 
 ```kotlin
 val viewState: StateFlow<ViewState> = combine(
     database.observeCatalog(),
     database.observePreferences(),
-    database.observeSavedImports(),
     localUiState
-) { catalog, prefs, imports, localState ->
+) { catalog, prefs, localState ->
     ViewState(
         catalog = catalog,
         preferences = prefs,
-        savedImports = imports,
         deckText = localState.deckText,
-        matches = localState.matches,
-        // ...
+        matches = localState.matches
     )
 }.stateIn(scope, SharingStarted.Eagerly, ViewState())
 ```
 
 ### Local UI State
 
-Some state is ephemeral and doesn't need persistence:
-
-- `deckText` - Current text in the decklist input
-- `matches` - Temporary matching results before saving
+Ephemeral state not requiring persistence:
+- `deckText` - Current input text
+- `matches` - Temporary matching results
 - `showResolveDialog` - Dialog visibility flags
-
-This local state is managed in-memory and combined with database state.
 
 ### Intent Processing
 
-Intents are processed sequentially in a coroutine:
+Intents processed sequentially in coroutines:
 
 ```kotlin
 fun processIntent(intent: ViewIntent) {
@@ -257,15 +228,10 @@ fun processIntent(intent: ViewIntent) {
                 _localState.update { it.copy(deckText = intent.text) }
             }
             is ViewIntent.RefreshCatalog -> {
-                val catalog = platformServices.fetchCatalogFromRemote { msg ->
-                    addLog(LogEntry.info(msg))
-                }
-                if (catalog != null) {
-                    catalogStore.insertVariants(catalog.variants)
-                    _effects.emit(ViewEffect.ShowToast("Catalog refreshed"))
-                }
+                val catalog = platformServices.fetchCatalogFromRemote()
+                catalogStore.insertVariants(catalog.variants)
+                _effects.emit(ViewEffect.ShowToast("Catalog refreshed"))
             }
-            // ... other intents
         }
     }
 }
@@ -273,28 +239,17 @@ fun processIntent(intent: ViewIntent) {
 
 ## Testing
 
-The MVI architecture makes testing straightforward:
-
 ### Unit Testing ViewModels
 
 ```kotlin
 @Test
-fun `test catalog refresh updates state`() = runTest {
-    // Given
+fun `catalog refresh updates state`() = runTest {
     val mockServices = MockPlatformServices()
-    val viewModel = MviViewModel(
-        scope = this,
-        database = testDatabase,
-        catalogStore = catalogStore,
-        importsStore = importsStore,
-        platformServices = mockServices
-    )
+    val viewModel = MviViewModel(this, testDatabase, catalogStore, mockServices)
     
-    // When
     viewModel.processIntent(ViewIntent.RefreshCatalog)
     advanceUntilIdle()
     
-    // Then
     val state = viewModel.viewState.value
     assertNotNull(state.catalog)
     assertEquals(100, state.catalog?.variants?.size)
@@ -308,73 +263,56 @@ class MockPlatformServices : MviPlatformServices {
     override suspend fun fetchCatalogFromRemote(log: (String) -> Unit): Catalog {
         return Catalog(variants = listOf(/* test data */))
     }
-    
-    override suspend fun exportCsv(matches: List<DeckEntryMatch>, onComplete: (String) -> Unit) {
-        onComplete("Test export successful")
-    }
-    
     // ... other methods
 }
 ```
 
-## Benefits of MVI Architecture
+## Benefits
 
-### 1. Predictable State Management
-
+### Predictable State Management
 - Single source of truth (database)
 - Unidirectional data flow
-- No race conditions or inconsistent state
+- No race conditions
 
-### 2. Reactive UI
+### Reactive UI
+- Automatic updates via Compose
+- No manual refresh needed
+- Efficient recomposition
 
-- Compose UI automatically updates when state changes
-- No manual refresh logic needed
-- Efficient recomposition (only changed parts re-render)
+### Persistence
+- State survives restarts
+- No manual save/load
+- Type-safe queries
 
-### 3. Persistence by Default
+### Platform Independence
+- Core ViewModel works everywhere
+- Platform-specific code isolated
+- Easy to add platforms
 
-- State survives app restarts
-- No need for manual save/load logic
-- SQLDelight provides type-safe queries
-
-### 4. Platform Independence
-
-- Core ViewModel works on all platforms
-- Platform-specific code isolated to services
-- Easy to add new platforms (Android, Web)
-
-### 5. Testability
-
-- Business logic isolated in ViewModel
+### Testability & Debugging
+- Isolated business logic
 - Easy to mock dependencies
-- Deterministic behavior
-
-### 6. Debugging
-
-- All state changes logged in database
-- Easy to trace intent → state transitions
+- All state changes logged
 - Time-travel debugging possible
 
-## Migration from Legacy MainStore
-
-The project includes both **MVI** (new) and **MainStore** (legacy) architectures:
+## Migration Guide
 
 | Aspect | MainStore (Legacy) | MviViewModel (New) |
 |--------|-------------------|-------------------|
 | State Storage | In-memory | Database (SQLDelight) |
-| Persistence | Manual JSON files | Automatic via database |
+| Persistence | Manual JSON files | Automatic |
 | Reactivity | Manual updates | Kotlin Flows |
 | Platform Support | Desktop only | Desktop + iOS + Android |
-| Testing | Harder to mock | Easy to mock services |
+| Testing | Harder to mock | Easy to mock |
 
 **Migration path:**
-1. New features should use MVI architecture
-2. Legacy code can gradually migrate to MVI
-3. Both can coexist during transition
+1. New features use MVI architecture
+2. Legacy code migrates gradually
+3. Both architectures can coexist
 
 ## Best Practices
 
-### 1. Keep ViewState Immutable
+### Keep ViewState Immutable
 
 ```kotlin
 // ✅ Good - creates new state
@@ -384,7 +322,7 @@ _localState.update { it.copy(deckText = newText) }
 state.deckText = newText
 ```
 
-### 2. Process All Intents in ViewModel
+### Process All Intents in ViewModel
 
 ```kotlin
 // ✅ Good - business logic in ViewModel
@@ -398,17 +336,17 @@ val entries = decklistParser.parse(state.deckText)
 viewModel.updateParsedEntries(entries)
 ```
 
-### 3. Use Effects for One-Time Events
+### Use Effects for One-Time Events
 
 ```kotlin
 // ✅ Good - effect for toast
 _effects.emit(ViewEffect.ShowToast("Import saved!"))
 
-// ❌ Bad - state for toast (gets re-emitted on every state collection)
+// ❌ Bad - state for toast
 _state.update { it.copy(toastMessage = "Import saved!") }
 ```
 
-### 4. Combine Database Flows Efficiently
+### Combine Database Flows Efficiently
 
 ```kotlin
 // ✅ Good - combine at source
@@ -424,40 +362,24 @@ database.observePreferences().collect { prefs = it }
 
 ## Platform-Specific Considerations
 
-### Desktop
-
-- Full platform services implementation
+**Desktop**
+- Full platform services
 - File system access for CSV export
 - HTTP client for catalog fetching
 
-### iOS
-
+**iOS**
 - Simplified platform services
-- Relies on cached catalog data
-- CSV export copies to clipboard
-- Network fetching not implemented (uses cached DB)
+- Cached catalog data (no live fetching)
+- Clipboard export only
 
-### Android (Future)
-
-- Will use Android-specific services
+**Android** (Future)
+- Android-specific services
 - File picker for export
 - Android networking APIs
 
-## Conclusion
-
-The MVI architecture provides a robust, scalable foundation for MtgPirate:
-
-- **Reliable** - Database as single source of truth
-- **Reactive** - UI updates automatically
-- **Cross-platform** - Works on Desktop, iOS, Android
-- **Maintainable** - Clear separation of concerns
-- **Testable** - Easy to mock and test
-
-For new features, always use the MVI architecture. The legacy MainStore will be gradually phased out.
-
 ## Resources
 
-- [Kotlin Flows Documentation](https://kotlinlang.org/docs/flow.html)
-- [SQLDelight Documentation](https://cashapp.github.io/sqldelight/)
+- [Kotlin Flows](https://kotlinlang.org/docs/flow.html)
+- [SQLDelight](https://cashapp.github.io/sqldelight/)
 - [Compose Multiplatform](https://www.jetbrains.com/compose-multiplatform/)
-- [MVI Pattern Explained](https://hannesdorfmann.com/android/model-view-intent/)
+- [MVI Pattern](https://hannesdorfmann.com/android/model-view-intent/)
