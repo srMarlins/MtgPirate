@@ -25,6 +25,7 @@ import state.MviPlatformServices
  * - Preferences management via SQLDelight database
  * - Logging operations
  * - CSV export (copies to clipboard for sharing)
+ * - Live Activity integration for Dynamic Island support
  */
 class IosMviPlatformServices(
     private val database: Database
@@ -33,6 +34,9 @@ class IosMviPlatformServices(
     private val httpClient = HttpClient(Darwin) {
         install(Logging) { level = LogLevel.INFO }
     }
+    
+    // Live Activity service for Dynamic Island integration
+    val liveActivityService = LiveActivityService()
 
     override suspend fun fetchCatalogFromRemote(log: (String) -> Unit): Catalog? {
         return withContext(Dispatchers.Default) {

@@ -58,6 +58,74 @@ fun IosApp() {
     LaunchedEffect(Unit) {
         viewModel.processIntent(ViewIntent.Init)
     }
+    
+    // Live Activity integration - track card matching progress in Dynamic Island
+    val liveActivityService = remember { platformServices.liveActivityService }
+    
+    // Start Live Activity when parsing begins
+    LaunchedEffect(state.deckEntries) {
+        if (state.deckEntries.isNotEmpty() && liveActivityService.isSupported()) {
+            if (!liveActivityService.isActivityRunning()) {
+                val sessionId = "session_${platform.currentTimeMillis()}"
+                liveActivityService.startActivity(sessionId, state.deckEntries.size)
+                liveActivityService.startParsing(state.deckEntries.size)
+            }
+        }
+    }
+    
+    // Update Live Activity when matches are updated
+    LaunchedEffect(state.matches) {
+        if (state.matches.isNotEmpty() && liveActivityService.isActivityRunning()) {
+            val totalCards = state.matches.size
+            val resolvedCount = state.matches.count { it.selectedVariant != null }
+            val ambiguousCount = state.matches.count { it.status == model.MatchStatus.AMBIGUOUS && it.selectedVariant == null }
+            val totalPrice = state.matches.mapNotNull { it.selectedVariant }
+                .sumOf { it.priceInCents * (state.matches.find { m -> m.selectedVariant == it }?.deckEntry?.qty ?: 0) } / 100.0
+            
+            liveActivityService.updateActivity(
+                phase = when {
+                    ambiguousCount > 0 && resolvedCount < totalCards -> "Resolving"
+                    resolvedCount == totalCards -> "Complete"
+                    else -> "Matching"
+                },
+                currentCardName = state.matches.lastOrNull()?.deckEntry?.cardName,
+                currentIndex = resolvedCount,
+                totalCards = totalCards,
+                ambiguousCount = ambiguousCount,
+                totalPrice = totalPrice
+            )
+        }
+    }
+    
+    // Handle wizard step completion for phase updates
+    LaunchedEffect(state.wizardCompletedSteps) {
+        if (liveActivityService.isActivityRunning()) {
+            when {
+                state.wizardCompletedSteps.contains(1) && !state.wizardCompletedSteps.contains(2) -> {
+                    liveActivityService.startParsing(state.deckEntries.size)
+                }
+                state.wizardCompletedSteps.contains(2) && !state.wizardCompletedSteps.contains(3) -> {
+                    liveActivityService.startMatching()
+                }
+                state.wizardCompletedSteps.contains(3) && !state.wizardCompletedSteps.contains(4) -> {
+                    val ambiguousCount = state.matches.count { it.status == model.MatchStatus.AMBIGUOUS && it.selectedVariant == null }
+                    if (ambiguousCount > 0) {
+                        liveActivityService.startResolving(ambiguousCount)
+                    } else {
+                        liveActivityService.startExporting()
+                    }
+                }
+                state.wizardCompletedSteps.contains(4) -> {
+                    val totalPrice = state.matches.mapNotNull { it.selectedVariant }
+                        .sumOf { it.priceInCents * (state.matches.find { m -> m.selectedVariant == it }?.deckEntry?.qty ?: 0) } / 100.0
+                    liveActivityService.completeActivity(
+                        success = true,
+                        finalMessage = "$${platform.formatDecimal(totalPrice, 2)} - ${state.matches.size} cards"
+                    )
+                }
+            }
+        }
+    }
 
     // Apply pixel theme
     AppTheme(darkTheme = state.isDarkTheme) {
