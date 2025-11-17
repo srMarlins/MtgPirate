@@ -105,6 +105,7 @@ class MviViewModel(
             ViewIntent.CloseResolve -> closeResolve()
             is ViewIntent.ResolveCandidate -> resolveCandidate(intent.index, intent.variant)
             ViewIntent.ExportCsv -> exportCsv()
+            ViewIntent.ExportWizardResults -> exportWizardResults()
             is ViewIntent.SetShowPreferences -> setShowPreferences(intent.show)
             is ViewIntent.SetShowCatalogWindow -> setShowCatalogWindow(intent.show)
             is ViewIntent.SetShowMatchesWindow -> setShowMatchesWindow(intent.show)
@@ -322,6 +323,20 @@ class MviViewModel(
                     scope.launch {
                         _viewEffects.emit(ViewEffect.ShowMessage("CSV exported to: $path"))
                     }
+                }
+            } else {
+                log("No matches to export", "WARNING")
+            }
+        }
+    }
+
+    private fun exportWizardResults() {
+        scope.launch {
+            val matches = _localState.value.matches
+            if (matches.isNotEmpty()) {
+                platformServices.exportWizardResults(matches) { foundPath, unfoundPath ->
+                    foundPath?.let { log("Found cards exported to: $it", "INFO") }
+                    unfoundPath?.let { log("Unfound cards exported to: $it", "INFO") }
                 }
             } else {
                 log("No matches to export", "WARNING")
@@ -550,6 +565,7 @@ sealed class ViewIntent {
     data object CloseResolve : ViewIntent()
     data class ResolveCandidate(val index: Int, val variant: CardVariant) : ViewIntent()
     data object ExportCsv : ViewIntent()
+    data object ExportWizardResults : ViewIntent()
     data class SetShowPreferences(val show: Boolean) : ViewIntent()
     data class SetShowCatalogWindow(val show: Boolean) : ViewIntent()
     data class SetShowMatchesWindow(val show: Boolean) : ViewIntent()
@@ -588,6 +604,10 @@ interface MviPlatformServices {
     suspend fun updatePreferences(update: (Preferences) -> Preferences)
     suspend fun addLog(log: LogEntry)
     suspend fun exportCsv(matches: List<DeckEntryMatch>, onComplete: (String) -> Unit)
+    suspend fun exportWizardResults(
+        matches: List<DeckEntryMatch>,
+        onComplete: (foundPath: String?, unfoundPath: String?) -> Unit
+    )
     
     /**
      * Copy text to clipboard. Used for mobile platforms where file opening is not supported.

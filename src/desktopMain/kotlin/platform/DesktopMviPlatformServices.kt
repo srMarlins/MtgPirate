@@ -68,6 +68,34 @@ class DesktopMviPlatformServices(
         }
     }
 
+    override suspend fun exportWizardResults(
+        matches: List<DeckEntryMatch>,
+        onComplete: (foundPath: String?, unfoundPath: String?) -> Unit
+    ) {
+        withContext(Dispatchers.IO) {
+            val result = CsvExporter.exportWizardResults(matches)
+            onComplete(
+                result.foundCardsPath?.toString(),
+                result.unfoundCardsPath?.toString()
+            )
+
+            // Open both files with the default application
+            try {
+                if (Desktop.isDesktopSupported()) {
+                    val desktop = Desktop.getDesktop()
+                    result.foundCardsPath?.let { path ->
+                        desktop.open(path.toFile())
+                    }
+                    result.unfoundCardsPath?.let { path ->
+                        desktop.open(path.toFile())
+                    }
+                }
+            } catch (e: Exception) {
+                // Log handled by caller
+            }
+        }
+    }
+
     override suspend fun copyToClipboard(text: String) {
         withContext(Dispatchers.IO) {
             // On desktop, we can use AWT Toolkit

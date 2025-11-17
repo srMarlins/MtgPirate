@@ -33,11 +33,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import database.CatalogStore
+import database.Database
+import database.DatabaseDriverFactory
+import database.ImportsStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.onEach
-import platform.DesktopPlatformServices
-import state.MainStore
-import state.MainIntent
-import state.MainState
+import platform.DesktopMviPlatformServices
+import state.MviViewModel
+import state.ViewIntent
+import state.ViewState
 import ui.*
 import util.Logging
 import java.awt.Cursor
@@ -272,11 +279,31 @@ fun WindowControlButton(
 
 fun main() = application {
     val scope = rememberCoroutineScope()
-    val platformServices = remember { DesktopPlatformServices() }
-    val store = remember { MainStore(scope, platformServices) }
-    val state by store.state.collectAsState()
-
-    LaunchedEffect(Unit) { store.dispatch(MainIntent.Init) }
+    
+    // Initialize database and stores (like iOS does)
+    val database = remember { Database(DatabaseDriverFactory()) }
+    val catalogStore = remember { CatalogStore(database) }
+    val importsStore = remember { ImportsStore(database) }
+    val platformServices = remember { DesktopMviPlatformServices(database) }
+    
+    // Create MVI ViewModel
+    val viewModel = remember {
+        MviViewModel(
+            scope = scope,
+            database = database,
+            catalogStore = catalogStore,
+            importsStore = importsStore,
+            platformServices = platformServices
+        )
+    }
+    
+    // Collect view state
+    val state by viewModel.viewState.collectAsState()
+    
+    // Initialize on first launch
+    LaunchedEffect(Unit) {
+        viewModel.processIntent(ViewIntent.Init)
+    }
 
     // Load scimitar logo as window icon
     val windowIcon = remember {
@@ -292,7 +319,7 @@ fun main() = application {
 
     // Define wizard steps based on state
     val wizardSteps =
-        remember(state.wizardCompletedSteps, state.app.deckEntries.isNotEmpty(), state.app.matches.isNotEmpty()) {
+        remember(state.wizardCompletedSteps, state.deckEntries.isNotEmpty(), state.matches.isNotEmpty()) {
             listOf(
                 Step(
                     number = 1,
@@ -353,23 +380,23 @@ fun main() = application {
                     windowState = windowState,
                     onClose = ::exitApplication,
                     isDarkTheme = state.isDarkTheme,
-                    onToggleTheme = { store.dispatch(MainIntent.ToggleTheme) },
+                    onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
                     loadingCatalog = state.loadingCatalog,
-                    hasCatalog = state.app.catalog != null,
-                    hasMatches = state.app.matches.any { it.selectedVariant != null },
+                    hasCatalog = state.catalog != null,
+                    hasMatches = state.matches.any { it.selectedVariant != null },
                     resultsEnabled = state.wizardCompletedSteps.contains(2),
                     onCatalogClick = {
-                        if (state.app.catalog != null) {
+                        if (state.catalog != null) {
                             if (navController.currentDestination?.route != "catalog") {
                                 navController.navigate("catalog") {
                                     launchSingleTop = true
                                 }
                             }
                         } else {
-                            store.dispatch(MainIntent.LoadCatalog(true))
+                            viewModel.processIntent(ViewIntent.LoadCatalog(true))
                         }
                     },
-                    onExportClick = { store.dispatch(MainIntent.ExportCsv) },
+                    onExportClick = { viewModel.processIntent(ViewIntent.ExportCsv) },
                     onMatchesClick = {
                         if (navController.currentDestination?.route != "matches") {
                             navController.navigate("matches") {
@@ -381,7 +408,7 @@ fun main() = application {
                         when (navController.currentDestination?.route) {
                             "resolve" -> {
                                 // Auto-close Resolve and return to the existing Results on the back stack
-                                store.dispatch(MainIntent.CloseResolve)
+                                viewModel.processIntent(ViewIntent.CloseResolve)
                                 navController.popBackStack()
                             }
                             "results" -> { /* Already on Results, no-op */ }
@@ -526,7 +553,7 @@ fun main() = application {
                                             PixelCard(glowing = state.deckText.isBlank()) {
                                                 PixelTextField(
                                                     value = state.deckText,
-                                                    onValueChange = { store.dispatch(MainIntent.UpdateDeckText(it)) },
+                                                    onValueChange = { viewModel.processIntent(ViewIntent.UpdateDeckText(it)) },
                                                     label = "DECKLIST.TXT",
                                                     placeholder = "4 Lightning Bolt\n2 Brainstorm\n1 Black Lotus",
                                                     modifier = Modifier.fillMaxWidth().height(400.dp)
@@ -542,7 +569,7 @@ fun main() = application {
                                                 PixelButton(
                                                     text = "📚 View Saved Imports",
                                                     onClick = {
-                                                        store.dispatch(MainIntent.SetShowSavedImportsWindow(true))
+                                                        viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(true))
                                                     },
                                                     modifier = Modifier.weight(1f),
                                                     variant = PixelButtonVariant.SURFACE
@@ -554,10 +581,10 @@ fun main() = application {
                                                         // Auto-save the import (dedup happens in saveCurrentImport)
                                                         val autoName =
                                                             "" // Name will be auto-generated from commander or timestamp
-                                                        store.dispatch(MainIntent.SaveCurrentImport(autoName))
+                                                        viewModel.processIntent(ViewIntent.SaveCurrentImport(autoName))
 
-                                                        store.dispatch(MainIntent.ParseDeck)
-                                                        store.dispatch(MainIntent.CompleteWizardStep(1))
+                                                        viewModel.processIntent(ViewIntent.ParseDeck)
+                                                        viewModel.processIntent(ViewIntent.CompleteWizardStep(1))
                                                         navController.navigate("preferences") {
                                                             launchSingleTop = true
                                                         }
@@ -608,21 +635,21 @@ fun main() = application {
                                         includeSideboard = state.includeSideboard,
                                         includeCommanders = state.includeCommanders,
                                         includeTokens = state.includeTokens,
-                                        variantPriority = state.app.preferences.variantPriority,
-                                        onIncludeSideboardChange = { store.dispatch(MainIntent.ToggleIncludeSideboard(it)) },
+                                        variantPriority = state.preferences.variantPriority,
+                                        onIncludeSideboardChange = { viewModel.processIntent(ViewIntent.ToggleIncludeSideboard(it)) },
                                         onIncludeCommandersChange = {
-                                            store.dispatch(
-                                                MainIntent.ToggleIncludeCommanders(
+                                            viewModel.processIntent(
+                                                ViewIntent.ToggleIncludeCommanders(
                                                     it
                                                 )
                                             )
                                         },
-                                        onIncludeTokensChange = { store.dispatch(MainIntent.ToggleIncludeTokens(it)) },
-                                        onVariantPriorityChange = { store.dispatch(MainIntent.UpdateVariantPriority(it)) },
+                                        onIncludeTokensChange = { viewModel.processIntent(ViewIntent.ToggleIncludeTokens(it)) },
+                                        onVariantPriorityChange = { viewModel.processIntent(ViewIntent.UpdateVariantPriority(it)) },
                                         onBack = { navController.navigateUp() },
                                         onNext = {
-                                            store.dispatch(MainIntent.CompleteWizardStep(2))
-                                            store.dispatch(MainIntent.RunMatch)
+                                            viewModel.processIntent(ViewIntent.CompleteWizardStep(2))
+                                            viewModel.processIntent(ViewIntent.RunMatch)
                                             navController.navigate("results") {
                                                 launchSingleTop = true
                                             }
@@ -674,22 +701,22 @@ fun main() = application {
                                 ) {
                                     // Step 3: Results (Wizard End)
                                     ResultsScreen(
-                                        matches = state.app.matches,
+                                        matches = state.matches,
                                         onResolve = { idx ->
-                                            store.dispatch(MainIntent.OpenResolve(idx))
+                                            viewModel.processIntent(ViewIntent.OpenResolve(idx))
                                             navController.navigate("resolve") {
                                                 launchSingleTop = true
                                             }
                                         },
                                         onShowAllCandidates = { idx ->
-                                            store.dispatch(MainIntent.OpenResolve(idx))
+                                            viewModel.processIntent(ViewIntent.OpenResolve(idx))
                                             navController.navigate("resolve") {
                                                 launchSingleTop = true
                                             }
                                         },
                                         onClose = { navController.navigateUp() },
                                         onExport = {
-                                            store.dispatch(MainIntent.CompleteWizardStep(3))
+                                            viewModel.processIntent(ViewIntent.CompleteWizardStep(3))
                                             navController.navigate("export") { launchSingleTop = true }
                                         }
                                     )
@@ -718,11 +745,11 @@ fun main() = application {
                                     }
                                 ) {
                                     ExportScreen(
-                                        matches = state.app.matches,
+                                        matches = state.matches,
                                         onBack = { navController.navigateUp() },
                                         onExport = {
-                                            store.dispatch(MainIntent.ExportWizardResults)
-                                            store.dispatch(MainIntent.CompleteWizardStep(4))
+                                            viewModel.processIntent(ViewIntent.ExportWizardResults)
+                                            viewModel.processIntent(ViewIntent.CompleteWizardStep(4))
                                         }
                                     )
                                 }
@@ -731,7 +758,7 @@ fun main() = application {
                                     enterTransition = { EnterTransition.None },
                                     exitTransition = { ExitTransition.None }
                                 ) {
-                                    val catalog = state.app.catalog
+                                    val catalog = state.catalog
                                     if (catalog != null) {
                                         CatalogScreen(catalog = catalog, onClose = { navController.navigateUp() })
                                     } else {
@@ -743,7 +770,7 @@ fun main() = application {
                                     enterTransition = { EnterTransition.None },
                                     exitTransition = { ExitTransition.None }
                                 ) {
-                                    MatchesScreen(matches = state.app.matches, onClose = { navController.navigateUp() })
+                                    MatchesScreen(matches = state.matches, onClose = { navController.navigateUp() })
                                 }
                                 composable(
                                     "resolve",
@@ -769,17 +796,17 @@ fun main() = application {
                                     }
                                 ) {
                                     val index = state.showCandidatesFor
-                                    val match = index?.let { state.app.matches.getOrNull(it) }
+                                    val match = index?.let { state.matches.getOrNull(it) }
                                     if (index != null && match != null) {
                                         ResolveScreen(
                                             match = match,
                                             onSelect = { variant ->
-                                                store.dispatch(MainIntent.ResolveCandidate(index, variant))
-                                                store.dispatch(MainIntent.CloseResolve)
+                                                viewModel.processIntent(ViewIntent.ResolveCandidate(index, variant))
+                                                viewModel.processIntent(ViewIntent.CloseResolve)
                                                 navController.navigateUp()
                                             },
                                             onBack = {
-                                                store.dispatch(MainIntent.CloseResolve)
+                                                viewModel.processIntent(ViewIntent.CloseResolve)
                                                 navController.navigateUp()
                                             }
                                         )
@@ -798,16 +825,16 @@ fun main() = application {
                             // Show SavedImportsDialog when state indicates it should be shown
                             if (state.showSavedImportsWindow) {
                                 SavedImportsDialog(
-                                    savedImports = state.app.savedImports,
+                                    savedImports = state.savedImports,
                                     onDismiss = {
-                                        store.dispatch(MainIntent.SetShowSavedImportsWindow(false))
+                                        viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(false))
                                     },
                                     onSelectImport = { importId ->
-                                        store.dispatch(MainIntent.LoadSavedImport(importId))
+                                        viewModel.processIntent(ViewIntent.LoadSavedImport(importId))
                                         // After loading, the wizard will open automatically
                                     },
                                     onDeleteImport = { importId ->
-                                        store.dispatch(MainIntent.DeleteSavedImport(importId))
+                                        viewModel.processIntent(ViewIntent.DeleteSavedImport(importId))
                                     }
                                 )
                             }
