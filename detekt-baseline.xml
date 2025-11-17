@@ -22,6 +22,11 @@
     <ID>FunctionNaming:CatalogScreen.kt$@Composable private fun PixelDropdownSelector(label: String, options: List&lt;String&gt;, selected: String, onSelect: (String) -&gt; Unit)</ID>
     <ID>FunctionNaming:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
     <ID>FunctionNaming:ExportScreen.kt$@Composable fun HeaderRow()</ID>
+    <ID>FunctionNaming:IosCompactStepper.kt$@Composable fun CompactStepper( currentStep: Int, totalSteps: Int = 4, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:IosExportHelpers.kt$@Composable fun ExportPricingCard(promo: util.Promotions.Result)</ID>
+    <ID>FunctionNaming:IosExportHelpers.kt$@Composable fun ExportShippingCard( selectedShipping: util.Promotions.ShippingType, onShippingChange: (util.Promotions.ShippingType) -&gt; Unit, normalShippingCost: Int, expressEligible: Boolean )</ID>
+    <ID>FunctionNaming:IosExportHelpers.kt$@Composable fun ExportSummaryCard( resolved: List&lt;model.DeckEntryMatch&gt;, unresolved: List&lt;model.DeckEntryMatch&gt; )</ID>
+    <ID>FunctionNaming:IosExportHelpers.kt$@Composable private fun ShippingOptionRow( isSelected: Boolean, onClick: () -&gt; Unit, title: String, subtitle: String, isEnabled: Boolean, isPrimary: Boolean )</ID>
     <ID>FunctionNaming:IosMobileWrappers.kt$@Composable fun MobilePaddingWrapper( content: @Composable BoxScope.() -&gt; Unit )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosCatalogScreen( catalog: model.Catalog, onBack: () -&gt; Unit, onEnrichVariant: ((model.CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosExportScreen( matches: List&lt;model.DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit )</ID>
@@ -77,6 +82,7 @@
     <ID>LongMethod:CatalogScreen.kt$@Composable fun CatalogScreen( catalog: Catalog, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>LongMethod:DecklistParser.kt$DecklistParser$fun parse(text: String, includeSideboard: Boolean, includeCommanders: Boolean): List&lt;DeckEntry&gt;</ID>
     <ID>LongMethod:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
+    <ID>LongMethod:IosScreens.kt$@Composable fun IosExportScreen( matches: List&lt;model.DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit )</ID>
     <ID>LongMethod:IosScreens.kt$@Composable fun IosImportScreen( deckText: String, onDeckTextChange: (String) -&gt; Unit, onNext: () -&gt; Unit, onShowSavedImports: () -&gt; Unit )</ID>
     <ID>LongMethod:IosScreens.kt$@Composable fun IosPreferencesScreen( includeSideboard: Boolean, includeCommanders: Boolean, includeTokens: Boolean, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
     <ID>LongMethod:Main.kt$@Composable fun FrameWindowScope.CustomTitleBar( windowState: WindowState, onClose: () -&gt; Unit, isDarkTheme: Boolean, onToggleTheme: () -&gt; Unit, loadingCatalog: Boolean, hasCatalog: Boolean, hasMatches: Boolean, resultsEnabled: Boolean, onCatalogClick: () -&gt; Unit, onExportClick: () -&gt; Unit, onMatchesClick: () -&gt; Unit, onResultsClick: () -&gt; Unit )</ID>
@@ -94,6 +100,7 @@
     <ID>LongMethod:StepperComponent.kt$@Composable fun PixelStepNode( step: Step, isActive: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>LongMethod:StepperComponent.kt$@Composable fun RowScope.PixelStepConnector( isCompleted: Boolean, isActive: Boolean, modifier: Modifier = Modifier )</ID>
     <ID>LongParameterList:CatalogCsvParser.kt$CatalogCsvParser$(cells: List&lt;String&gt;, headers: List&lt;String&gt;, idxSku: Int, idxName: Int, idxSet: Int, idxType: Int, idxPrice: Int)</ID>
+    <ID>LongParameterList:IosExportHelpers.kt$( isSelected: Boolean, onClick: () -&gt; Unit, title: String, subtitle: String, isEnabled: Boolean, isPrimary: Boolean )</ID>
     <ID>LongParameterList:IosScreens.kt$( includeSideboard: Boolean, includeCommanders: Boolean, includeTokens: Boolean, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
     <ID>LongParameterList:Main.kt$( windowState: WindowState, onClose: () -&gt; Unit, isDarkTheme: Boolean, onToggleTheme: () -&gt; Unit, loadingCatalog: Boolean, hasCatalog: Boolean, hasMatches: Boolean, resultsEnabled: Boolean, onCatalogClick: () -&gt; Unit, onExportClick: () -&gt; Unit, onMatchesClick: () -&gt; Unit, onResultsClick: () -&gt; Unit )</ID>
     <ID>LongParameterList:PixelComponents.kt$( index: Int, isDragging: Boolean, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, content: @Composable () -&gt; Unit )</ID>

@@ -199,15 +199,6 @@ fun IosNavigationHost(
             )
         }
         
-        // Bottom navigation bar with pixel styling
-        IosBottomNavBar(
-            currentScreen = currentScreen,
-            onNavigate = { navigateTo(it) },
-            hasCatalog = state.catalog != null,
-            hasMatches = state.matches.isNotEmpty(),
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
-        
         // Theme toggle floating action button
         IosThemeToggleFab(
             isDarkTheme = state.isDarkTheme,
