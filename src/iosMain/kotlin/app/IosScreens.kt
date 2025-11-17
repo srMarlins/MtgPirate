@@ -311,7 +311,8 @@ fun IosResultsScreen(
     matches: List<model.DeckEntryMatch>,
     onResolve: (Int) -> Unit,
     onBack: () -> Unit,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ResultsScreen(
@@ -319,7 +320,8 @@ fun IosResultsScreen(
             onResolve = onResolve,
             onShowAllCandidates = onResolve,
             onClose = onBack,
-            onExport = onNext
+            onExport = onNext,
+            onEnrichVariant = onEnrichVariant
         )
     }
 }
@@ -331,13 +333,15 @@ fun IosResultsScreen(
 fun IosResolveScreen(
     match: model.DeckEntryMatch,
     onSelect: (model.CardVariant) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ResolveScreen(
             match = match,
             onSelect = onSelect,
-            onBack = onBack
+            onBack = onBack,
+            onEnrichVariant = onEnrichVariant
         )
     }
 }

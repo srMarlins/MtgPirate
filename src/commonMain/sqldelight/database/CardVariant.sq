@@ -28,3 +28,6 @@ DELETE FROM CardVariantEntity;
 
 countAll:
 SELECT COUNT(*) FROM CardVariantEntity;
+
+updateImageUrl:
+UPDATE CardVariantEntity SET imageUrl = ? WHERE sku = ?;

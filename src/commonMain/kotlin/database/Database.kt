@@ -102,4 +102,8 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
     suspend fun deleteOldLogs(keepCount: Long = 1000L) {
         db.logEntryQueries.deleteOldLogs(keepCount)
     }
+
+    suspend fun updateVariantImageUrl(sku: String, imageUrl: String) {
+        db.cardVariantQueries.updateImageUrl(imageUrl = imageUrl, sku = sku)
+    }
 }

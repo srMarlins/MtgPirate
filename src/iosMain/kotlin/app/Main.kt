@@ -136,6 +136,9 @@ fun IosNavigationHost(
                 onNext = {
                     viewModel.processIntent(ViewIntent.CompleteWizardStep(3))
                     navigateTo(IosScreen.EXPORT)
+                },
+                onEnrichVariant = { variant ->
+                    viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
                 }
             )
             
@@ -153,6 +156,9 @@ fun IosNavigationHost(
                         onBack = {
                             viewModel.processIntent(ViewIntent.CloseResolve)
                             navigateTo(IosScreen.RESULTS)
+                        },
+                        onEnrichVariant = { variant ->
+                            viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
                         }
                     )
                 } else {
