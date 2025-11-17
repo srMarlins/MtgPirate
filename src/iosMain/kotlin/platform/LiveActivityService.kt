@@ -22,7 +22,7 @@ actual class LiveActivityService {
             // Call Swift LiveActivityManager to check support
             // This is a stub - actual implementation will use Swift interop
             false // Default to false for now
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             false
         }
     }
@@ -38,7 +38,7 @@ actual class LiveActivityService {
             // TODO: Call Swift LiveActivityManager.shared.startActivity()
             // LiveActivityManager.shared.startActivity(sessionId, totalCards)
             println("🚀 [LiveActivity] Starting activity: session=$sessionId, total=$totalCards")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             println("❌ [LiveActivity] Failed to start: ${e.message}")
         }
     }
@@ -46,25 +46,14 @@ actual class LiveActivityService {
     /**
      * Update the Live Activity with current progress.
      * 
-     * @param phase Current matching phase (Parsing, Matching, Resolving, Exporting, Complete)
-     * @param currentCardName Optional name of card being processed
-     * @param currentIndex Current card index
-     * @param totalCards Total cards
-     * @param ambiguousCount Number of cards needing manual resolution
-     * @param totalPrice Total price calculated so far
+     * @param state Current Live Activity state
      */
-    actual fun updateActivity(
-        phase: String,
-        currentCardName: String?,
-        currentIndex: Int,
-        totalCards: Int,
-        ambiguousCount: Int,
-        totalPrice: Double
-    ) {
+    actual fun updateActivity(state: LiveActivityState) {
         try {
             // TODO: Call Swift LiveActivityManager.shared.updateActivity()
-            println("🔄 [LiveActivity] Update: phase=$phase, card=$currentCardName, $currentIndex/$totalCards")
-        } catch (e: Exception) {
+            println("🔄 [LiveActivity] Update: phase=${state.phase}, card=${state.currentCardName}, " +
+                    "${state.currentIndex}/${state.totalCards}")
+        } catch (e: Throwable) {
             println("❌ [LiveActivity] Failed to update: ${e.message}")
         }
     }
@@ -76,7 +65,7 @@ actual class LiveActivityService {
         try {
             // TODO: Call Swift LiveActivityManager.shared.updatePhase()
             println("🔄 [LiveActivity] Phase update: $phase")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             println("❌ [LiveActivity] Failed to update phase: ${e.message}")
         }
     }
@@ -88,7 +77,7 @@ actual class LiveActivityService {
         try {
             // TODO: Call Swift LiveActivityManager.shared.updateProgress()
             println("🔄 [LiveActivity] Progress: $currentIndex - $cardName")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             println("❌ [LiveActivity] Failed to update progress: ${e.message}")
         }
     }
@@ -100,7 +89,7 @@ actual class LiveActivityService {
         try {
             // TODO: Call Swift LiveActivityManager.shared.updateAmbiguousCount()
             println("🔄 [LiveActivity] Ambiguous count: $count")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             println("❌ [LiveActivity] Failed to update ambiguous count: ${e.message}")
         }
     }
@@ -112,7 +101,7 @@ actual class LiveActivityService {
         try {
             // TODO: Call Swift LiveActivityManager.shared.updatePrice()
             println("🔄 [LiveActivity] Price: $price")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             println("❌ [LiveActivity] Failed to update price: ${e.message}")
         }
     }
@@ -127,7 +116,7 @@ actual class LiveActivityService {
         try {
             // TODO: Call Swift LiveActivityManager.shared.completeActivity()
             println("✅ [LiveActivity] Complete: success=$success, message=$finalMessage")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             println("❌ [LiveActivity] Failed to complete: ${e.message}")
         }
     }
@@ -139,7 +128,7 @@ actual class LiveActivityService {
         try {
             // TODO: Call Swift LiveActivityManager.shared.endActivity()
             println("🛑 [LiveActivity] Ending activity")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             println("❌ [LiveActivity] Failed to end: ${e.message}")
         }
     }
@@ -151,7 +140,7 @@ actual class LiveActivityService {
         return try {
             // TODO: Call Swift LiveActivityManager.shared.isActivityRunning
             false
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             false
         }
     }

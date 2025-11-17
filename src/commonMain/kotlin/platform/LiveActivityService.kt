@@ -21,14 +21,7 @@ expect class LiveActivityService() {
     /**
      * Update the Live Activity with full state.
      */
-    fun updateActivity(
-        phase: String,
-        currentCardName: String?,
-        currentIndex: Int,
-        totalCards: Int,
-        ambiguousCount: Int,
-        totalPrice: Double
-    )
+    fun updateActivity(state: LiveActivityState)
     
     /**
      * Update only the current phase.
@@ -71,3 +64,16 @@ expect class LiveActivityService() {
     fun startResolving(ambiguousCount: Int)
     fun startExporting()
 }
+
+/**
+ * State data for Live Activity updates.
+ * Groups related parameters to avoid long parameter lists.
+ */
+data class LiveActivityState(
+    val phase: String,
+    val currentCardName: String? = null,
+    val currentIndex: Int,
+    val totalCards: Int,
+    val ambiguousCount: Int = 0,
+    val totalPrice: Double = 0.0
+)

@@ -12,14 +12,7 @@ actual class LiveActivityService {
         // No-op on desktop
     }
     
-    actual fun updateActivity(
-        phase: String,
-        currentCardName: String?,
-        currentIndex: Int,
-        totalCards: Int,
-        ambiguousCount: Int,
-        totalPrice: Double
-    ) {
+    actual fun updateActivity(state: LiveActivityState) {
         // No-op on desktop
     }
     

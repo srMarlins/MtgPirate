@@ -8,6 +8,7 @@
     <ID>CyclomaticComplexMethod:CatalogParser.kt$CatalogParser$fun parse(html: String): Catalog</ID>
     <ID>CyclomaticComplexMethod:DecklistParser.kt$DecklistParser$fun parse(text: String, includeSideboard: Boolean, includeCommanders: Boolean): List&lt;DeckEntry&gt;</ID>
     <ID>CyclomaticComplexMethod:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
+    <ID>CyclomaticComplexMethod:Main.kt$@Composable fun IosApp()</ID>
     <ID>CyclomaticComplexMethod:Main.kt$fun main()</ID>
     <ID>CyclomaticComplexMethod:MainStore.kt$MainStore$fun dispatch(intent: MainIntent)</ID>
     <ID>CyclomaticComplexMethod:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
@@ -86,6 +87,7 @@
     <ID>LongMethod:IosScreens.kt$@Composable fun IosImportScreen( deckText: String, onDeckTextChange: (String) -&gt; Unit, onNext: () -&gt; Unit, onShowSavedImports: () -&gt; Unit )</ID>
     <ID>LongMethod:IosScreens.kt$@Composable fun IosPreferencesScreen( includeSideboard: Boolean, includeCommanders: Boolean, includeTokens: Boolean, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
     <ID>LongMethod:Main.kt$@Composable fun FrameWindowScope.CustomTitleBar( windowState: WindowState, onClose: () -&gt; Unit, isDarkTheme: Boolean, onToggleTheme: () -&gt; Unit, loadingCatalog: Boolean, hasCatalog: Boolean, hasMatches: Boolean, resultsEnabled: Boolean, onCatalogClick: () -&gt; Unit, onExportClick: () -&gt; Unit, onMatchesClick: () -&gt; Unit, onResultsClick: () -&gt; Unit )</ID>
+    <ID>LongMethod:Main.kt$@Composable fun IosApp()</ID>
     <ID>LongMethod:Main.kt$@Composable fun IosNavigationHost( viewModel: MviViewModel, state: state.ViewState )</ID>
     <ID>LongMethod:Main.kt$fun main()</ID>
     <ID>LongMethod:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
@@ -211,6 +213,7 @@
     <ID>ReturnCount:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private fun tryCsvThenHtml(log: (String) -&gt; Unit): Catalog?</ID>
     <ID>SwallowedException:DesktopMviPlatformServices.kt$DesktopMviPlatformServices$e: Exception</ID>
     <ID>SwallowedException:DesktopPlatformServices.kt$DesktopPlatformServices$e: Exception</ID>
+    <ID>SwallowedException:LiveActivityService.kt$LiveActivityService$e: Throwable</ID>
     <ID>SwallowedException:PlatformUtils.kt$e: Exception</ID>
     <ID>SwallowedException:SavedImportsScreen.kt$e: Exception</ID>
     <ID>SwallowedException:ScryfallApi.kt$ScryfallApi$e: Exception</ID>
@@ -219,6 +222,7 @@
     <ID>TooGenericExceptionCaught:DesktopPlatformServices.kt$DesktopPlatformServices$e: Exception</ID>
     <ID>TooGenericExceptionCaught:IosMviPlatformServices.kt$IosMviPlatformServices$e: Exception</ID>
     <ID>TooGenericExceptionCaught:KtorRemoteCatalogDataSource.kt$KtorRemoteCatalogDataSource$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:LiveActivityService.kt$LiveActivityService$e: Throwable</ID>
     <ID>TooGenericExceptionCaught:MainStore.kt$MainStore$e: Exception</ID>
     <ID>TooGenericExceptionCaught:MviViewModel.kt$MviViewModel$e: Exception</ID>
     <ID>TooGenericExceptionCaught:PlatformUtils.kt$e: Exception</ID>

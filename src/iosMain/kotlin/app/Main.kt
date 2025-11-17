@@ -78,21 +78,28 @@ fun IosApp() {
         if (state.matches.isNotEmpty() && liveActivityService.isActivityRunning()) {
             val totalCards = state.matches.size
             val resolvedCount = state.matches.count { it.selectedVariant != null }
-            val ambiguousCount = state.matches.count { it.status == model.MatchStatus.AMBIGUOUS && it.selectedVariant == null }
+            val ambiguousCount = state.matches.count { 
+                it.status == model.MatchStatus.AMBIGUOUS && it.selectedVariant == null 
+            }
             val totalPrice = state.matches.mapNotNull { it.selectedVariant }
-                .sumOf { it.priceInCents * (state.matches.find { m -> m.selectedVariant == it }?.deckEntry?.qty ?: 0) } / 100.0
+                .sumOf { variant ->
+                    val match = state.matches.find { m -> m.selectedVariant == variant }
+                    variant.priceInCents * (match?.deckEntry?.qty ?: 0)
+                } / 100.0
             
             liveActivityService.updateActivity(
-                phase = when {
-                    ambiguousCount > 0 && resolvedCount < totalCards -> "Resolving"
-                    resolvedCount == totalCards -> "Complete"
-                    else -> "Matching"
-                },
-                currentCardName = state.matches.lastOrNull()?.deckEntry?.cardName,
-                currentIndex = resolvedCount,
-                totalCards = totalCards,
-                ambiguousCount = ambiguousCount,
-                totalPrice = totalPrice
+                platform.LiveActivityState(
+                    phase = when {
+                        ambiguousCount > 0 && resolvedCount < totalCards -> "Resolving"
+                        resolvedCount == totalCards -> "Complete"
+                        else -> "Matching"
+                    },
+                    currentCardName = state.matches.lastOrNull()?.deckEntry?.cardName,
+                    currentIndex = resolvedCount,
+                    totalCards = totalCards,
+                    ambiguousCount = ambiguousCount,
+                    totalPrice = totalPrice
+                )
             )
         }
     }
@@ -101,14 +108,19 @@ fun IosApp() {
     LaunchedEffect(state.wizardCompletedSteps) {
         if (liveActivityService.isActivityRunning()) {
             when {
-                state.wizardCompletedSteps.contains(1) && !state.wizardCompletedSteps.contains(2) -> {
+                state.wizardCompletedSteps.contains(1) && 
+                    !state.wizardCompletedSteps.contains(2) -> {
                     liveActivityService.startParsing(state.deckEntries.size)
                 }
-                state.wizardCompletedSteps.contains(2) && !state.wizardCompletedSteps.contains(3) -> {
+                state.wizardCompletedSteps.contains(2) && 
+                    !state.wizardCompletedSteps.contains(3) -> {
                     liveActivityService.startMatching()
                 }
-                state.wizardCompletedSteps.contains(3) && !state.wizardCompletedSteps.contains(4) -> {
-                    val ambiguousCount = state.matches.count { it.status == model.MatchStatus.AMBIGUOUS && it.selectedVariant == null }
+                state.wizardCompletedSteps.contains(3) && 
+                    !state.wizardCompletedSteps.contains(4) -> {
+                    val ambiguousCount = state.matches.count { 
+                        it.status == model.MatchStatus.AMBIGUOUS && it.selectedVariant == null 
+                    }
                     if (ambiguousCount > 0) {
                         liveActivityService.startResolving(ambiguousCount)
                     } else {
@@ -117,11 +129,13 @@ fun IosApp() {
                 }
                 state.wizardCompletedSteps.contains(4) -> {
                     val totalPrice = state.matches.mapNotNull { it.selectedVariant }
-                        .sumOf { it.priceInCents * (state.matches.find { m -> m.selectedVariant == it }?.deckEntry?.qty ?: 0) } / 100.0
-                    liveActivityService.completeActivity(
-                        success = true,
-                        finalMessage = "$${platform.formatDecimal(totalPrice, 2)} - ${state.matches.size} cards"
-                    )
+                        .sumOf { variant ->
+                            val match = state.matches.find { m -> m.selectedVariant == variant }
+                            variant.priceInCents * (match?.deckEntry?.qty ?: 0)
+                        } / 100.0
+                    val message = "$${platform.formatDecimal(totalPrice, 2)} - " +
+                            "${state.matches.size} cards"
+                    liveActivityService.completeActivity(success = true, finalMessage = message)
                 }
             }
         }
