@@ -410,8 +410,12 @@ fun IosExportScreen(
     onExport: () -> Unit
 ) {
     val resolved = matches.filter { it.selectedVariant != null }
-    val unresolved = matches.filter { it.selectedVariant == null && it.deckEntry.include }
-    val ambiguousCount = matches.count { it.status == model.MatchStatus.AMBIGUOUS }
+    val unresolved = matches.filter { 
+        it.selectedVariant == null && it.deckEntry.include 
+    }
+    val ambiguousCount = matches.count { 
+        it.status == model.MatchStatus.AMBIGUOUS 
+    }
 
     val promo = util.Promotions.calculate(matches)
 
@@ -423,15 +427,17 @@ fun IosExportScreen(
     
     // Coerce selection if express becomes ineligible
     LaunchedEffect(expressEligible) {
-        if (!expressEligible) selectedShipping = util.Promotions.ShippingType.NORMAL
+        if (!expressEligible) {
+            selectedShipping = util.Promotions.ShippingType.NORMAL
+        }
     }
 
     val normalShippingCost = if (promo.subtotalAfterDiscountCents > 100_00) 0 else 10_00
-    val selectedShippingCost = when (selectedShipping) {
-        util.Promotions.ShippingType.EXPRESS -> if (expressEligible) 0 else normalShippingCost
-        util.Promotions.ShippingType.NORMAL -> normalShippingCost
-        else -> normalShippingCost
-    }
+    val selectedShippingCost = calculateShippingCost(
+        selectedShipping,
+        expressEligible,
+        normalShippingCost
+    )
     val grandTotal = promo.subtotalAfterDiscountCents + selectedShippingCost
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -503,201 +509,22 @@ fun IosExportScreen(
             ) {
                 // Summary Card
                 item {
-                    FantasySectionHeader(text = "Order Summary")
-                    PixelCard(glowing = false) {
-                        Column(
-                            Modifier.fillMaxWidth().padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("Matched Cards:", style = MaterialTheme.typography.body2)
-                                Text(
-                                    "${resolved.size}",
-                                    style = MaterialTheme.typography.body2,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("Unmatched Cards:", style = MaterialTheme.typography.body2)
-                                Text(
-                                    "${unresolved.size}",
-                                    style = MaterialTheme.typography.body2,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (unresolved.isNotEmpty()) 
-                                        Color(0xFFF44336) 
-                                        else MaterialTheme.colors.onSurface
-                                )
-                            }
-                            PixelDivider()
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("Total Cards:", style = MaterialTheme.typography.body2)
-                                Text(
-                                    "${resolved.size + unresolved.size}",
-                                    style = MaterialTheme.typography.body2,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
+                    exportSummaryCard(resolved, unresolved)
                 }
 
                 // Pricing Card
                 item {
-                    FantasySectionHeader(text = "Pricing & Promotions")
-                    PixelCard(glowing = false) {
-                        Column(
-                            Modifier.fillMaxWidth().padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("Order Value:", style = MaterialTheme.typography.body2)
-                                Text(
-                                    util.formatPrice(promo.baseTotalCents),
-                                    style = MaterialTheme.typography.body2,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            if (promo.discountPercent > 0) {
-                                Row(
-                                    Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text("Discount (${promo.discountPercent}%):", 
-                                        style = MaterialTheme.typography.body2)
-                                    Text(
-                                        "-${util.formatPrice(promo.discountAmountCents)}",
-                                        style = MaterialTheme.typography.body2,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF4CAF50)
-                                    )
-                                }
-                            }
-                            PixelDivider()
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("Subtotal:", style = MaterialTheme.typography.body2)
-                                Text(
-                                    util.formatPrice(promo.subtotalAfterDiscountCents),
-                                    style = MaterialTheme.typography.body2,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
+                    exportPricingCard(promo)
                 }
 
                 // Shipping Card
                 item {
-                    FantasySectionHeader(text = "Shipping Options")
-                    PixelCard(glowing = false) {
-                        Column(
-                            Modifier.fillMaxWidth().padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            // Normal Shipping
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .pixelBorder(
-                                        borderWidth = if (selectedShipping == util.Promotions.ShippingType.NORMAL) 2.dp else 1.dp,
-                                        enabled = true,
-                                        glowAlpha = if (selectedShipping == util.Promotions.ShippingType.NORMAL) 0.4f else 0.1f
-                                    )
-                                    .background(
-                                        if (selectedShipping == util.Promotions.ShippingType.NORMAL)
-                                            MaterialTheme.colors.primary.copy(alpha = 0.1f)
-                                        else MaterialTheme.colors.surface,
-                                        shape = PixelShape(cornerSize = 6.dp)
-                                    )
-                                    .clickable { selectedShipping = util.Promotions.ShippingType.NORMAL }
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                RadioButton(
-                                    selected = selectedShipping == util.Promotions.ShippingType.NORMAL,
-                                    onClick = { selectedShipping = util.Promotions.ShippingType.NORMAL }
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        "Normal Shipping",
-                                        style = MaterialTheme.typography.body2,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        "15-40 days • ${if (normalShippingCost == 0) "Free" else util.formatPrice(normalShippingCost)}",
-                                        style = MaterialTheme.typography.caption,
-                                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                                    )
-                                }
-                            }
-
-                            // Express Shipping
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .pixelBorder(
-                                        borderWidth = if (selectedShipping == util.Promotions.ShippingType.EXPRESS) 2.dp else 1.dp,
-                                        enabled = expressEligible,
-                                        glowAlpha = if (selectedShipping == util.Promotions.ShippingType.EXPRESS) 0.4f else 0.1f
-                                    )
-                                    .background(
-                                        if (selectedShipping == util.Promotions.ShippingType.EXPRESS)
-                                            MaterialTheme.colors.secondary.copy(alpha = 0.1f)
-                                        else MaterialTheme.colors.surface.copy(
-                                            alpha = if (expressEligible) 1f else 0.5f
-                                        ),
-                                        shape = PixelShape(cornerSize = 6.dp)
-                                    )
-                                    .clickable(enabled = expressEligible) {
-                                        if (expressEligible) selectedShipping = util.Promotions.ShippingType.EXPRESS
-                                    }
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                RadioButton(
-                                    selected = selectedShipping == util.Promotions.ShippingType.EXPRESS,
-                                    onClick = { if (expressEligible) selectedShipping = util.Promotions.ShippingType.EXPRESS },
-                                    enabled = expressEligible
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        "Express Shipping",
-                                        style = MaterialTheme.typography.body2,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (expressEligible) 
-                                            MaterialTheme.colors.onSurface 
-                                            else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
-                                    )
-                                    Text(
-                                        if (expressEligible) 
-                                            "3-7 days • Free"
-                                        else 
-                                            "Unlocks at ${util.formatPrice(300_00)} subtotal",
-                                        style = MaterialTheme.typography.caption,
-                                        color = MaterialTheme.colors.onSurface.copy(
-                                            alpha = if (expressEligible) 0.7f else 0.5f
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    exportShippingCard(
+                        selectedShipping = selectedShipping,
+                        onShippingChange = { selectedShipping = it },
+                        normalShippingCost = normalShippingCost,
+                        expressEligible = expressEligible
+                    )
                 }
 
                 // Grand Total Card
