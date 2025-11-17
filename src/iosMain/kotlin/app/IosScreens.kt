@@ -1,18 +1,20 @@
 package app
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Checkbox
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ui.*
-// Add import for safeDrawingPadding
-import androidx.compose.foundation.layout.safeDrawingPadding
 
 /**
  * iOS Import Screen - Step 1 of the wizard.
@@ -33,34 +35,43 @@ fun IosImportScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp)
+                .safeDrawingPadding()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
                 .padding(bottom = 80.dp), // Space for bottom nav
             verticalArrangement = Arrangement.Top
         ) {
+            // Animated Stepper for wizard progress
+            AnimatedStepper(
+                steps = listOf(
+                    Step(1, "Import", "Paste decklist", StepState.ACTIVE),
+                    Step(2, "Config", "Set options", StepState.LOCKED),
+                    Step(3, "Results", "Review cards", StepState.LOCKED),
+                    Step(4, "Export", "Generate CSV", StepState.LOCKED)
+                ),
+                currentStep = 1,
+                onStepClick = { },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(16.dp))
+
             // Title with pixel styling - compact for mobile
-            Column(modifier = Modifier.padding(bottom = 6.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        "▸ DECK IMPORT",
-                        style = MaterialTheme.typography.h5,
-                        color = MaterialTheme.colors.primary,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    PixelBadge(
-                        text = "1/4",
-                        color = MaterialTheme.colors.secondary
-                    )
-                }
-                Spacer(Modifier.height(2.dp))
+            Column(modifier = Modifier.padding(bottom = 8.dp)) {
                 Text(
-                    "└─ Paste your decklist",
+                    "▸ DECK IMPORT",
+                    style = MaterialTheme.typography.h5,
+                    color = MaterialTheme.colors.primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "└─ Paste your decklist below",
                     style = MaterialTheme.typography.caption,
                     color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
                 )
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
 
             // Deck text input with pixel card
             PixelCard(
@@ -80,17 +91,17 @@ fun IosImportScreen(
                 )
             }
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
 
             // Action buttons - touch-friendly height
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 PixelButton(
                     text = "📚 Saved",
                     onClick = onShowSavedImports,
-                    modifier = Modifier.weight(1f).height(48.dp),
+                    modifier = Modifier.weight(1f).height(52.dp),
                     variant = PixelButtonVariant.SURFACE
                 )
 
@@ -98,7 +109,7 @@ fun IosImportScreen(
                     text = "Next →",
                     onClick = onNext,
                     enabled = deckText.isNotBlank(),
-                    modifier = Modifier.weight(1f).height(48.dp),
+                    modifier = Modifier.weight(1f).height(52.dp),
                     variant = PixelButtonVariant.SECONDARY
                 )
             }
@@ -129,30 +140,42 @@ fun IosPreferencesScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp)
+                .safeDrawingPadding()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
                 .padding(bottom = 80.dp)
         ) {
+            // Animated Stepper for wizard progress
+            AnimatedStepper(
+                steps = listOf(
+                    Step(1, "Import", "Paste decklist", StepState.COMPLETED),
+                    Step(2, "Config", "Set options", StepState.ACTIVE),
+                    Step(3, "Results", "Review cards", StepState.LOCKED),
+                    Step(4, "Export", "Generate CSV", StepState.LOCKED)
+                ),
+                currentStep = 2,
+                onStepClick = { },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(16.dp))
+
             // Compact mobile header
-            Column(modifier = Modifier.padding(bottom = 6.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        "▸ CONFIGURE",
-                        style = MaterialTheme.typography.h5,
-                        color = MaterialTheme.colors.primary,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    PixelBadge(text = "2/4", color = MaterialTheme.colors.secondary)
-                }
-                Spacer(Modifier.height(2.dp))
+            Column(modifier = Modifier.padding(bottom = 8.dp)) {
                 Text(
-                    "└─ Card matching preferences",
+                    "▸ CONFIGURE",
+                    style = MaterialTheme.typography.h5,
+                    color = MaterialTheme.colors.primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "└─ Set card matching preferences",
                     style = MaterialTheme.typography.caption,
                     color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
                 )
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
 
             // Card Inclusion - Vertical stack for mobile
             PixelCard(glowing = false) {
@@ -280,24 +303,24 @@ fun IosPreferencesScreen(
                 }
             }
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
 
             // Action buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 PixelButton(
                     text = "← Back",
                     onClick = onBack,
-                    modifier = Modifier.weight(1f).height(48.dp),
+                    modifier = Modifier.weight(1f).height(52.dp),
                     variant = PixelButtonVariant.SURFACE
                 )
 
                 PixelButton(
                     text = "Next →",
                     onClick = onNext,
-                    modifier = Modifier.weight(1f).height(48.dp),
+                    modifier = Modifier.weight(1f).height(52.dp),
                     variant = PixelButtonVariant.SECONDARY
                 )
             }
@@ -318,14 +341,41 @@ fun IosResultsScreen(
     onEnrichVariant: ((model.CardVariant) -> Unit)? = null
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        ResultsScreen(
-            matches = matches,
-            onResolve = onResolve,
-            onShowAllCandidates = onResolve,
-            onClose = onBack,
-            onExport = onNext,
-            onEnrichVariant = onEnrichVariant
-        )
+        ScanlineEffect(alpha = 0.03f)
+        
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Add stepper at the top with safe padding
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .safeDrawingPadding()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                AnimatedStepper(
+                    steps = listOf(
+                        Step(1, "Import", "Paste decklist", StepState.COMPLETED),
+                        Step(2, "Config", "Set options", StepState.COMPLETED),
+                        Step(3, "Results", "Review cards", StepState.ACTIVE),
+                        Step(4, "Export", "Generate CSV", StepState.LOCKED)
+                    ),
+                    currentStep = 3,
+                    onStepClick = { },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            
+            // Results screen content - will handle its own padding
+            Box(modifier = Modifier.weight(1f)) {
+                ResultsScreen(
+                    matches = matches,
+                    onResolve = onResolve,
+                    onShowAllCandidates = onResolve,
+                    onClose = onBack,
+                    onExport = onNext,
+                    onEnrichVariant = onEnrichVariant
+                )
+            }
+        }
     }
 }
 
@@ -351,6 +401,7 @@ fun IosResolveScreen(
 
 /**
  * iOS Export Screen - Step 4 of the wizard.
+ * Mobile-optimized single-column layout for portrait screens.
  */
 @Composable
 fun IosExportScreen(
@@ -358,12 +409,348 @@ fun IosExportScreen(
     onBack: () -> Unit,
     onExport: () -> Unit
 ) {
+    val resolved = matches.filter { it.selectedVariant != null }
+    val unresolved = matches.filter { it.selectedVariant == null && it.deckEntry.include }
+    val ambiguousCount = matches.count { it.status == model.MatchStatus.AMBIGUOUS }
+
+    val promo = util.Promotions.calculate(matches)
+
+    // Shipping selection state
+    var selectedShipping by remember { 
+        mutableStateOf(promo.shippingType) 
+    }
+    val expressEligible = promo.subtotalAfterDiscountCents > 300_00
+    
+    // Coerce selection if express becomes ineligible
+    LaunchedEffect(expressEligible) {
+        if (!expressEligible) selectedShipping = util.Promotions.ShippingType.NORMAL
+    }
+
+    val normalShippingCost = if (promo.subtotalAfterDiscountCents > 100_00) 0 else 10_00
+    val selectedShippingCost = when (selectedShipping) {
+        util.Promotions.ShippingType.EXPRESS -> if (expressEligible) 0 else normalShippingCost
+        util.Promotions.ShippingType.NORMAL -> normalShippingCost
+        else -> normalShippingCost
+    }
+    val grandTotal = promo.subtotalAfterDiscountCents + selectedShippingCost
+
     Box(modifier = Modifier.fillMaxSize()) {
-        ExportScreen(
-            matches = matches,
-            onBack = onBack,
-            onExport = onExport
-        )
+        ScanlineEffect(alpha = 0.03f)
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .safeDrawingPadding()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(bottom = 80.dp)
+        ) {
+            // Animated Stepper for wizard progress
+            AnimatedStepper(
+                steps = listOf(
+                    Step(1, "Import", "Paste decklist", StepState.COMPLETED),
+                    Step(2, "Config", "Set options", StepState.COMPLETED),
+                    Step(3, "Results", "Review cards", StepState.COMPLETED),
+                    Step(4, "Export", "Generate CSV", StepState.ACTIVE)
+                ),
+                currentStep = 4,
+                onStepClick = { },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            // Header
+            Column(modifier = Modifier.padding(bottom = 8.dp)) {
+                Text(
+                    "▸ EXPORT",
+                    style = MaterialTheme.typography.h5,
+                    color = MaterialTheme.colors.primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "└─ Review totals and export CSV",
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Ambiguous guard
+            if (ambiguousCount > 0) {
+                PixelCard(glowing = true) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        PixelBadge(text = "⚠", color = Color(0xFFFF9800))
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "$ambiguousCount ambiguous cards - please resolve them first",
+                            style = MaterialTheme.typography.body2,
+                            color = MaterialTheme.colors.onSurface
+                        )
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+            }
+
+            // Scrollable content area
+            LazyColumn(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Summary Card
+                item {
+                    FantasySectionHeader(text = "Order Summary")
+                    PixelCard(glowing = false) {
+                        Column(
+                            Modifier.fillMaxWidth().padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Matched Cards:", style = MaterialTheme.typography.body2)
+                                Text(
+                                    "${resolved.size}",
+                                    style = MaterialTheme.typography.body2,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Unmatched Cards:", style = MaterialTheme.typography.body2)
+                                Text(
+                                    "${unresolved.size}",
+                                    style = MaterialTheme.typography.body2,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (unresolved.isNotEmpty()) 
+                                        Color(0xFFF44336) 
+                                        else MaterialTheme.colors.onSurface
+                                )
+                            }
+                            PixelDivider()
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Total Cards:", style = MaterialTheme.typography.body2)
+                                Text(
+                                    "${resolved.size + unresolved.size}",
+                                    style = MaterialTheme.typography.body2,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Pricing Card
+                item {
+                    FantasySectionHeader(text = "Pricing & Promotions")
+                    PixelCard(glowing = false) {
+                        Column(
+                            Modifier.fillMaxWidth().padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Order Value:", style = MaterialTheme.typography.body2)
+                                Text(
+                                    util.formatPrice(promo.baseTotalCents),
+                                    style = MaterialTheme.typography.body2,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            if (promo.discountPercent > 0) {
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("Discount (${promo.discountPercent}%):", 
+                                        style = MaterialTheme.typography.body2)
+                                    Text(
+                                        "-${util.formatPrice(promo.discountAmountCents)}",
+                                        style = MaterialTheme.typography.body2,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF4CAF50)
+                                    )
+                                }
+                            }
+                            PixelDivider()
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Subtotal:", style = MaterialTheme.typography.body2)
+                                Text(
+                                    util.formatPrice(promo.subtotalAfterDiscountCents),
+                                    style = MaterialTheme.typography.body2,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Shipping Card
+                item {
+                    FantasySectionHeader(text = "Shipping Options")
+                    PixelCard(glowing = false) {
+                        Column(
+                            Modifier.fillMaxWidth().padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Normal Shipping
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .pixelBorder(
+                                        borderWidth = if (selectedShipping == util.Promotions.ShippingType.NORMAL) 2.dp else 1.dp,
+                                        enabled = true,
+                                        glowAlpha = if (selectedShipping == util.Promotions.ShippingType.NORMAL) 0.4f else 0.1f
+                                    )
+                                    .background(
+                                        if (selectedShipping == util.Promotions.ShippingType.NORMAL)
+                                            MaterialTheme.colors.primary.copy(alpha = 0.1f)
+                                        else MaterialTheme.colors.surface,
+                                        shape = PixelShape(cornerSize = 6.dp)
+                                    )
+                                    .clickable { selectedShipping = util.Promotions.ShippingType.NORMAL }
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = selectedShipping == util.Promotions.ShippingType.NORMAL,
+                                    onClick = { selectedShipping = util.Promotions.ShippingType.NORMAL }
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        "Normal Shipping",
+                                        style = MaterialTheme.typography.body2,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        "15-40 days • ${if (normalShippingCost == 0) "Free" else util.formatPrice(normalShippingCost)}",
+                                        style = MaterialTheme.typography.caption,
+                                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                                    )
+                                }
+                            }
+
+                            // Express Shipping
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .pixelBorder(
+                                        borderWidth = if (selectedShipping == util.Promotions.ShippingType.EXPRESS) 2.dp else 1.dp,
+                                        enabled = expressEligible,
+                                        glowAlpha = if (selectedShipping == util.Promotions.ShippingType.EXPRESS) 0.4f else 0.1f
+                                    )
+                                    .background(
+                                        if (selectedShipping == util.Promotions.ShippingType.EXPRESS)
+                                            MaterialTheme.colors.secondary.copy(alpha = 0.1f)
+                                        else MaterialTheme.colors.surface.copy(
+                                            alpha = if (expressEligible) 1f else 0.5f
+                                        ),
+                                        shape = PixelShape(cornerSize = 6.dp)
+                                    )
+                                    .clickable(enabled = expressEligible) {
+                                        if (expressEligible) selectedShipping = util.Promotions.ShippingType.EXPRESS
+                                    }
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = selectedShipping == util.Promotions.ShippingType.EXPRESS,
+                                    onClick = { if (expressEligible) selectedShipping = util.Promotions.ShippingType.EXPRESS },
+                                    enabled = expressEligible
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        "Express Shipping",
+                                        style = MaterialTheme.typography.body2,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (expressEligible) 
+                                            MaterialTheme.colors.onSurface 
+                                            else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                                    )
+                                    Text(
+                                        if (expressEligible) 
+                                            "3-7 days • Free"
+                                        else 
+                                            "Unlocks at ${util.formatPrice(300_00)} subtotal",
+                                        style = MaterialTheme.typography.caption,
+                                        color = MaterialTheme.colors.onSurface.copy(
+                                            alpha = if (expressEligible) 0.7f else 0.5f
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Grand Total Card
+                item {
+                    PixelCard(
+                        glowing = true,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            Modifier.fillMaxWidth().padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "Grand Total:",
+                                style = MaterialTheme.typography.h6,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colors.primary
+                            )
+                            Text(
+                                util.formatPrice(grandTotal),
+                                style = MaterialTheme.typography.h5,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colors.secondary
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Action buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                PixelButton(
+                    text = "← Back",
+                    onClick = onBack,
+                    modifier = Modifier.weight(1f).height(52.dp),
+                    variant = PixelButtonVariant.SURFACE
+                )
+
+                PixelButton(
+                    text = "Export CSV",
+                    onClick = onExport,
+                    enabled = ambiguousCount == 0 && resolved.isNotEmpty(),
+                    modifier = Modifier.weight(1f).height(52.dp),
+                    variant = PixelButtonVariant.SECONDARY
+                )
+            }
+        }
     }
 }
 
