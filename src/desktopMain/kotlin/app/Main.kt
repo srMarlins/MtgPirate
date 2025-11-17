@@ -553,7 +553,9 @@ fun main() = application {
                                             PixelCard(glowing = state.deckText.isBlank()) {
                                                 PixelTextField(
                                                     value = state.deckText,
-                                                    onValueChange = { viewModel.processIntent(ViewIntent.UpdateDeckText(it)) },
+                                                    onValueChange = {
+                                                        viewModel.processIntent(ViewIntent.UpdateDeckText(it))
+                                                    },
                                                     label = "DECKLIST.TXT",
                                                     placeholder = "4 Lightning Bolt\n2 Brainstorm\n1 Black Lotus",
                                                     modifier = Modifier.fillMaxWidth().height(400.dp)
@@ -569,7 +571,9 @@ fun main() = application {
                                                 PixelButton(
                                                     text = "📚 View Saved Imports",
                                                     onClick = {
-                                                        viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(true))
+                                                        viewModel.processIntent(
+                                                            ViewIntent.SetShowSavedImportsWindow(true)
+                                                        )
                                                     },
                                                     modifier = Modifier.weight(1f),
                                                     variant = PixelButtonVariant.SURFACE
@@ -636,7 +640,9 @@ fun main() = application {
                                         includeCommanders = state.includeCommanders,
                                         includeTokens = state.includeTokens,
                                         variantPriority = state.preferences.variantPriority,
-                                        onIncludeSideboardChange = { viewModel.processIntent(ViewIntent.ToggleIncludeSideboard(it)) },
+                                        onIncludeSideboardChange = {
+                                            viewModel.processIntent(ViewIntent.ToggleIncludeSideboard(it))
+                                        },
                                         onIncludeCommandersChange = {
                                             viewModel.processIntent(
                                                 ViewIntent.ToggleIncludeCommanders(
@@ -644,8 +650,12 @@ fun main() = application {
                                                 )
                                             )
                                         },
-                                        onIncludeTokensChange = { viewModel.processIntent(ViewIntent.ToggleIncludeTokens(it)) },
-                                        onVariantPriorityChange = { viewModel.processIntent(ViewIntent.UpdateVariantPriority(it)) },
+                                        onIncludeTokensChange = {
+                                            viewModel.processIntent(ViewIntent.ToggleIncludeTokens(it))
+                                        },
+                                        onVariantPriorityChange = {
+                                            viewModel.processIntent(ViewIntent.UpdateVariantPriority(it))
+                                        },
                                         onBack = { navController.navigateUp() },
                                         onNext = {
                                             viewModel.processIntent(ViewIntent.CompleteWizardStep(2))
