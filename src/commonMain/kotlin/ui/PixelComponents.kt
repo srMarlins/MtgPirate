@@ -7,6 +7,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -17,6 +19,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -106,25 +109,100 @@ fun PixelButton(
         )
     )
 
+    // Interaction source to track press state
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    // Animate press state for physical feeling
+    val pressScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        )
+    )
+
+    val pressTranslationY by animateDpAsState(
+        targetValue = if (isPressed) 2.dp else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        )
+    )
+
+    // Add subtle shadow depth when pressed
+    val shadowAlpha by animateFloatAsState(
+        targetValue = if (isPressed) 0.1f else 0.3f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        )
+    )
+
     Box(
         modifier = modifier
             .height(48.dp)
+            .scale(pressScale)
+            .offset(y = pressTranslationY)
             .pixelBorder(
                 borderWidth = 3.dp,
                 enabled = enabled,
                 glowAlpha = if (enabled) glowAlpha else 0f
             )
-            .background(backgroundColor, shape = PixelShape(cornerSize = 9.dp))
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center
+            .clip(PixelShape(cornerSize = 9.dp))
+            .drawBehind {
+                // Draw shadow for depth effect (lighter when pressed) - AFTER clipping
+                val shadowColor = Color.Black.copy(alpha = shadowAlpha)
+                val cornerSize = 9.dp.toPx()
+                val path = Path().apply {
+                    moveTo(cornerSize, 0f)
+                    lineTo(size.width - cornerSize, 0f)
+                    lineTo(size.width, cornerSize)
+                    lineTo(size.width, size.height - cornerSize)
+                    lineTo(size.width - cornerSize, size.height)
+                    lineTo(cornerSize, size.height)
+                    lineTo(0f, size.height - cornerSize)
+                    lineTo(0f, cornerSize)
+                    close()
+                }
+                drawPath(path, shadowColor)
+            }
+            .background(backgroundColor)
     ) {
-        Text(
-            text = text.uppercase(),
-            color = textColor,
-            style = MaterialTheme.typography.button,
-            fontWeight = FontWeight.Bold
-        )
+        // Press overlay layer - before padding so it covers full background
+        if (isPressed) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        if (variant == PixelButtonVariant.PRIMARY) 
+                            Color.White.copy(alpha = 0.2f)
+                        else 
+                            colors.primary.copy(alpha = 0.15f)
+                    )
+            )
+        }
+        
+        // Content layer with clickable and padding
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    enabled = enabled,
+                    onClick = onClick,
+                    interactionSource = interactionSource,
+                    indication = null
+                )
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text.uppercase(),
+                color = textColor,
+                style = MaterialTheme.typography.button,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
@@ -1063,36 +1141,85 @@ fun PixelIconButton(
         else -> colors.onSurface
     }
 
+    // Interaction source to track press state
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
     // Hover state
     var isHovered by remember { mutableStateOf(false) }
 
-    val scale by animateFloatAsState(
-        targetValue = if (isHovered) 1.1f else 1f,
+    // Animate press state for physical feeling
+    val pressScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        )
+    )
+
+    val pressTranslationY by animateDpAsState(
+        targetValue = if (isPressed) 1.dp else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        )
+    )
+
+    // Combine hover scale with press scale
+    val hoverScale by animateFloatAsState(
+        targetValue = if (isHovered && !isPressed) 1.1f else 1f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
     )
 
     Box(
         modifier = modifier
             .size(32.dp)
-            .scale(scale)
+            .scale(pressScale * hoverScale)
+            .offset(y = pressTranslationY)
             .pixelBorder(
                 borderWidth = 2.dp,
                 enabled = enabled,
                 glowAlpha = if (isHovered) 0.5f else 0.2f
             )
+            .clip(PixelShape(cornerSize = 6.dp))
             .background(
-                if (isHovered) buttonColor.copy(alpha = 0.2f) else Color.Transparent,
-                shape = PixelShape(cornerSize = 6.dp)
+                if (isHovered) buttonColor.copy(alpha = 0.2f) else Color.Transparent
             )
-            .clickable(enabled = enabled, onClick = onClick),
-        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = icon,
-            style = MaterialTheme.typography.body1,
-            color = if (enabled) textColor else textColor.copy(alpha = 0.3f),
-            fontWeight = FontWeight.Bold
-        )
+        // Press overlay layer - before clickable so it covers full background
+        if (isPressed) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        when (variant) {
+                            PixelIconButtonVariant.PRIMARY -> colors.primary.copy(alpha = 0.3f)
+                            PixelIconButtonVariant.SECONDARY -> colors.secondary.copy(alpha = 0.3f)
+                            PixelIconButtonVariant.DANGER -> Color.White.copy(alpha = 0.3f)
+                        }
+                    )
+            )
+        }
+        
+        // Content layer with clickable
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    enabled = enabled,
+                    onClick = onClick,
+                    interactionSource = interactionSource,
+                    indication = null
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = icon,
+                style = MaterialTheme.typography.body1,
+                color = if (enabled) textColor else textColor.copy(alpha = 0.3f),
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
