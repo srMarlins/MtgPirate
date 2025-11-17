@@ -20,6 +20,7 @@
     <ID>CyclomaticComplexMethod:StepperComponent.kt$@Composable fun PixelStepNode( step: Step, isActive: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:CatalogScreen.kt$@Composable fun CatalogScreen( catalog: Catalog, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:CatalogScreen.kt$@Composable private fun PixelDropdownSelector(label: String, options: List&lt;String&gt;, selected: String, onSelect: (String) -&gt; Unit)</ID>
+    <ID>FunctionNaming:DesktopResolveScreen.kt$@Composable fun DesktopResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, )</ID>
     <ID>FunctionNaming:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
     <ID>FunctionNaming:ExportScreen.kt$@Composable fun HeaderRow()</ID>
     <ID>FunctionNaming:IosMobileWrappers.kt$@Composable fun MobilePaddingWrapper( content: @Composable BoxScope.() -&gt; Unit )</ID>
@@ -62,6 +63,8 @@
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun ScrollableCardLazyList( modifier: Modifier = Modifier, state: LazyListState = rememberLazyListState(), indicatorsHeight: Dp = 12.dp, paddingHorizontalIndicators: Dp = 0.dp, content: @Composable () -&gt; Unit )</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable private fun PixelArrowBadge( direction: PixelArrowDirection, badgeSize: Dp, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable private fun PixelDraggableItem( index: Int, isDragging: Boolean, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, content: @Composable () -&gt; Unit )</ID>
+    <ID>FunctionNaming:PixelImageComponents.kt$@Composable fun PixelImageModal( imageUrl: String?, cardName: String, setCode: String, variantType: String, onDismiss: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:PixelImageComponents.kt$@Composable fun PixelImagePreview( imageUrl: String?, cardName: String, modifier: Modifier = Modifier, onClick: () -&gt; Unit )</ID>
     <ID>FunctionNaming:PreferencesWizardScreen.kt$@Composable fun DraggableVariantItem( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
     <ID>FunctionNaming:PreferencesWizardScreen.kt$@Composable fun PreferencesWizardScreen( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
     <ID>FunctionNaming:ResolveScreen.kt$@Composable fun ResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, )</ID>
@@ -76,6 +79,7 @@
     <ID>LongMethod:CatalogParser.kt$CatalogParser$fun parse(html: String): Catalog</ID>
     <ID>LongMethod:CatalogScreen.kt$@Composable fun CatalogScreen( catalog: Catalog, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>LongMethod:DecklistParser.kt$DecklistParser$fun parse(text: String, includeSideboard: Boolean, includeCommanders: Boolean): List&lt;DeckEntry&gt;</ID>
+    <ID>LongMethod:DesktopResolveScreen.kt$@Composable fun DesktopResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, )</ID>
     <ID>LongMethod:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
     <ID>LongMethod:IosScreens.kt$@Composable fun IosImportScreen( deckText: String, onDeckTextChange: (String) -&gt; Unit, onNext: () -&gt; Unit, onShowSavedImports: () -&gt; Unit )</ID>
     <ID>LongMethod:IosScreens.kt$@Composable fun IosPreferencesScreen( includeSideboard: Boolean, includeCommanders: Boolean, includeTokens: Boolean, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
@@ -85,6 +89,8 @@
     <ID>LongMethod:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>LongMethod:PixelComponents.kt$@Composable fun FantasyStarIcon( modifier: Modifier = Modifier, color: Color = Color(0xFFFBD38D), animated: Boolean = true )</ID>
     <ID>LongMethod:PixelComponents.kt$@Composable private fun PixelDraggableItem( index: Int, isDragging: Boolean, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, content: @Composable () -&gt; Unit )</ID>
+    <ID>LongMethod:PixelImageComponents.kt$@Composable fun PixelImageModal( imageUrl: String?, cardName: String, setCode: String, variantType: String, onDismiss: () -&gt; Unit )</ID>
+    <ID>LongMethod:PixelImageComponents.kt$@Composable fun PixelImagePreview( imageUrl: String?, cardName: String, modifier: Modifier = Modifier, onClick: () -&gt; Unit )</ID>
     <ID>LongMethod:PreferencesWizardScreen.kt$@Composable fun DraggableVariantItem( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
     <ID>LongMethod:PreferencesWizardScreen.kt$@Composable fun PreferencesWizardScreen( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
     <ID>LongMethod:ResolveScreen.kt$@Composable fun ResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, )</ID>
@@ -113,6 +119,14 @@
     <ID>MaxLineLength:CatalogScreen.kt$Text("TYPE", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:DecklistParser.kt$DecklistParser$// Heuristic: if we saw a blank line after sideboard marker and now a new card line, treat as commander section</ID>
     <ID>MaxLineLength:DecklistParser.kt$DecklistParser$// If remainder still contains an embedded " Set " fragment (without colon) at end due to partial copy, attempt to remove</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt$.</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt$Text("ACTION", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt$Text("CARD NAME", Modifier.weight(0.3f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt$Text("IMAGE", Modifier.width(70.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt$Text("MATCH INFO", Modifier.weight(0.3f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt$Text("PRICE", Modifier.width(80.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt$Text("SET", Modifier.width(70.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt$Text("VARIANT", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:ExportScreen.kt$"Normal (15-40 days) — " + if (normalShippingCost == 0) "Free" else formatPrice(normalShippingCost)</ID>
     <ID>MaxLineLength:ExportScreen.kt$Modifier.fillMaxWidth().background(MaterialTheme.colors.surface.copy(alpha = 0.6f)).padding(horizontal = 12.dp, vertical = 8.dp)</ID>
     <ID>MaxLineLength:ExportScreen.kt$Promotions.ShippingType.EXPRESS -&gt; if (selectedShippingCost == 0) "Express Free Shipping (3-7 days)" else "Express Shipping"</ID>
@@ -172,6 +186,7 @@
     <ID>MaxLineLength:MviViewModel.kt$MviViewModel$is ViewIntent.SavePreferences -&gt; savePreferences(intent.variantPriority, intent.setPriority, intent.fuzzyEnabled)</ID>
     <ID>MaxLineLength:MviViewModel.kt$MviViewModel$log("Parsed: ${e.qty} ${e.cardName} (${e.setCodeHint}${e.collectorNumberHint?.let { " #$it" } ?: ""})", "DEBUG")</ID>
     <ID>MaxLineLength:PixelComponents.kt$val lastFullyVisible = lastVisible.offset + lastVisible.size &lt;= info.viewportEndOffset - info.afterContentPadding</ID>
+    <ID>MaxLineLength:PixelImageComponents.kt$var loadState by remember { mutableStateOf&lt;AsyncImagePainter.State&gt;(AsyncImagePainter.State.Empty) }</ID>
     <ID>MaxLineLength:PreferencesWizardScreen.kt$.</ID>
     <ID>MaxLineLength:PreferencesWizardScreen.kt$Text("VARIANT PREFERENCES", style = MaterialTheme.typography.h6, fontWeight = FontWeight.Bold, color = MaterialTheme.colors.primary)</ID>
     <ID>MaxLineLength:PreferencesWizardScreen.kt$draggedCurrentIndex &lt; targetIndex &amp;&amp; index &gt; draggedCurrentIndex &amp;&amp; index &lt;= targetIndex -&gt; -64f</ID>

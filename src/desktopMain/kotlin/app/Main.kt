@@ -771,7 +771,7 @@ fun main() = application {
                                     val index = state.showCandidatesFor
                                     val match = index?.let { state.app.matches.getOrNull(it) }
                                     if (index != null && match != null) {
-                                        ResolveScreen(
+                                        DesktopResolveScreen(
                                             match = match,
                                             onSelect = { variant ->
                                                 store.dispatch(MainIntent.ResolveCandidate(index, variant))
