@@ -370,12 +370,14 @@ fun IosExportScreen(
 @Composable
 fun IosCatalogScreen(
     catalog: model.Catalog,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         CatalogScreen(
             catalog = catalog,
-            onClose = onBack
+            onClose = onBack,
+            onEnrichVariant = onEnrichVariant
         )
     }
 }
@@ -386,12 +388,14 @@ fun IosCatalogScreen(
 @Composable
 fun IosMatchesScreen(
     matches: List<model.DeckEntryMatch>,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         MatchesScreen(
             matches = matches,
-            onClose = onBack
+            onClose = onBack,
+            onEnrichVariant = onEnrichVariant
         )
     }
 }

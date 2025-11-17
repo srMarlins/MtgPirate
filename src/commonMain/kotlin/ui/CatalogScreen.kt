@@ -12,11 +12,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import model.CardVariant
 import model.Catalog
 import util.formatPrice
 
 @Composable
-fun CatalogScreen(catalog: Catalog, onClose: () -> Unit) {
+fun CatalogScreen(
+    catalog: Catalog,
+    onClose: () -> Unit,
+    onEnrichVariant: ((CardVariant) -> Unit)? = null
+) {
     var query by remember { mutableStateOf("") }
     var variantFilter by remember { mutableStateOf("All") }
     val variants = catalog.variants
@@ -105,6 +110,13 @@ fun CatalogScreen(catalog: Catalog, onClose: () -> Unit) {
                 Box(Modifier.fillMaxSize()) {
                     LazyColumn(Modifier.fillMaxSize(), state = listState) {
                         items(filtered) { v ->
+                            // Trigger image enrichment when variant comes into view
+                            androidx.compose.runtime.LaunchedEffect(v.sku) {
+                                if (v.imageUrl == null) {
+                                    onEnrichVariant?.invoke(v)
+                                }
+                            }
+                            
                             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
                                 Row(Modifier.weight(0.40f), verticalAlignment = Alignment.CenterVertically) {
                                     Text(v.nameOriginal, style = MaterialTheme.typography.body2)
