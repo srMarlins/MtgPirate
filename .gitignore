@@ -70,3 +70,5 @@ DerivedData/
 # Compose Multiplatform
 .compose/
 
+pirate.db
+
