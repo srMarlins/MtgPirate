@@ -9,8 +9,8 @@
     <ID>CyclomaticComplexMethod:DecklistParser.kt$DecklistParser$fun parse(text: String, includeSideboard: Boolean, includeCommanders: Boolean): List&lt;DeckEntry&gt;</ID>
     <ID>CyclomaticComplexMethod:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
     <ID>CyclomaticComplexMethod:Main.kt$fun main()</ID>
-    <ID>CyclomaticComplexMethod:MainStore.kt$MainStore$fun dispatch(intent: MainIntent)</ID>
     <ID>CyclomaticComplexMethod:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
+    <ID>CyclomaticComplexMethod:MobileResultsScreen.kt$@Composable fun MobileResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>CyclomaticComplexMethod:MviViewModel.kt$MviViewModel$fun processIntent(intent: ViewIntent)</ID>
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt$@Composable fun DraggableVariantItem( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt$@Composable fun PreferencesWizardScreen( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
@@ -47,6 +47,7 @@
     <ID>FunctionNaming:Main.kt$fun MainViewController()</ID>
     <ID>FunctionNaming:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:MatchesScreen.kt$@Composable private fun PixelStatusDropdown(label: String, options: List&lt;String&gt;, selected: String, onSelect: (String) -&gt; Unit)</ID>
+    <ID>FunctionNaming:MobileResultsScreen.kt$@Composable fun MobileResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun &lt;T&gt; PixelDraggableList( items: List&lt;T&gt;, onReorder: (List&lt;T&gt;) -&gt; Unit, modifier: Modifier = Modifier, itemContent: @Composable (item: T, index: Int, isDragging: Boolean) -&gt; Unit )</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun BlinkingCursor( modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun EnchantedDivider( modifier: Modifier = Modifier, thickness: Dp = 2.dp )</ID>
@@ -93,6 +94,7 @@
     <ID>LongMethod:Main.kt$@Composable fun IosNavigationHost( viewModel: MviViewModel, state: state.ViewState )</ID>
     <ID>LongMethod:Main.kt$fun main()</ID>
     <ID>LongMethod:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
+    <ID>LongMethod:MobileResultsScreen.kt$@Composable fun MobileResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>LongMethod:PixelComponents.kt$@Composable fun FantasyStarIcon( modifier: Modifier = Modifier, color: Color = Color(0xFFFBD38D), animated: Boolean = true )</ID>
     <ID>LongMethod:PixelComponents.kt$@Composable private fun PixelDraggableItem( index: Int, isDragging: Boolean, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, content: @Composable () -&gt; Unit )</ID>
     <ID>LongMethod:PixelImageComponents.kt$@Composable fun PixelImageModal( imageUrl: String?, cardName: String, setCode: String, variantType: String, onDismiss: () -&gt; Unit )</ID>
@@ -109,6 +111,7 @@
     <ID>LongParameterList:IosExportHelpers.kt$( isSelected: Boolean, onClick: () -&gt; Unit, title: String, subtitle: String, isEnabled: Boolean, isPrimary: Boolean )</ID>
     <ID>LongParameterList:IosScreens.kt$( includeSideboard: Boolean, includeCommanders: Boolean, includeTokens: Boolean, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
     <ID>LongParameterList:Main.kt$( windowState: WindowState, onClose: () -&gt; Unit, isDarkTheme: Boolean, onToggleTheme: () -&gt; Unit, loadingCatalog: Boolean, hasCatalog: Boolean, hasMatches: Boolean, resultsEnabled: Boolean, onCatalogClick: () -&gt; Unit, onExportClick: () -&gt; Unit, onMatchesClick: () -&gt; Unit, onResultsClick: () -&gt; Unit )</ID>
+    <ID>LongParameterList:MobileResultsScreen.kt$( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>LongParameterList:PixelComponents.kt$( index: Int, isDragging: Boolean, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, content: @Composable () -&gt; Unit )</ID>
     <ID>LongParameterList:PixelComponents.kt$( value: String, onValueChange: (String) -&gt; Unit, modifier: Modifier = Modifier, label: String = "", placeholder: String = "", singleLine: Boolean = false, maxLines: Int = Int.MAX_VALUE )</ID>
     <ID>LongParameterList:PixelComponents.kt$( width: Float, height: Float, cornerSize: Float, strokeWidth: Float, color: Color, inner: Boolean = false )</ID>
@@ -158,17 +161,7 @@
     <ID>MaxLineLength:Logging.kt$Logging$return "${ldt.date} ${ldt.hour.toString().padStart(2,'0')}:${ldt.minute.toString().padStart(2,'0')}:${ldt.second.toString().padStart(2,'0')}"</ID>
     <ID>MaxLineLength:Main.kt$// Coming from results -&gt; resolve: slide up from bottom and fade in (vertical twin of stepper)</ID>
     <ID>MaxLineLength:Main.kt$// Going back to results: slide down to bottom and fade out (vertical twin of stepper)</ID>
-    <ID>MaxLineLength:Main.kt$// Name will be auto-generated from commander or timestamp</ID>
-    <ID>MaxLineLength:Main.kt$onIncludeSideboardChange = { store.dispatch(MainIntent.ToggleIncludeSideboard(it)) }</ID>
-    <ID>MaxLineLength:Main.kt$onVariantPriorityChange = { store.dispatch(MainIntent.UpdateVariantPriority(it)) }</ID>
     <ID>MaxLineLength:Main.kt$val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry)</ID>
-    <ID>MaxLineLength:MainStore.kt$MainStore$is MainIntent.SavePreferences -&gt; savePreferences(intent.variantPriority, intent.setPriority, intent.fuzzyEnabled)</ID>
-    <ID>MaxLineLength:MainStore.kt$MainStore$logs = Logging.log(s.app.logs, "INFO", "Catalog auto-loaded (remote): ${catalog.variants.size} variants")</ID>
-    <ID>MaxLineLength:MainStore.kt$MainStore$private</ID>
-    <ID>MaxLineLength:MainStore.kt$MainStore$private suspend</ID>
-    <ID>MaxLineLength:MainStore.kt$MainStore$update = { it.copy(variantPriority = variantPriority, setPriority = setPriority, fuzzyEnabled = fuzzyEnabled) }</ID>
-    <ID>MaxLineLength:MainStore.kt$MainStore$updateAppLogs("DEBUG", "Parsed entry: ${e.qty} ${e.cardName} (set=${e.setCodeHint}${e.collectorNumberHint?.let { ", #$it" } ?: ""})")</ID>
-    <ID>MaxLineLength:MainStore.kt$MainStore$val timestamp = "${localDateTime.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${localDateTime.day}, ${localDateTime.year} ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"</ID>
     <ID>MaxLineLength:Matcher.kt$Matcher$DeckEntryMatch(entry, MatchStatus.AUTO_MATCHED, selected, exactNameMatches.map { MatchCandidate(it, 0, "exact") })</ID>
     <ID>MaxLineLength:Matcher.kt$Matcher$return</ID>
     <ID>MaxLineLength:Matcher.kt$Matcher$val filtered = entry.setCodeHint?.let { code -&gt; list.filter { it.setCode.equals(code, true) } }.orEmpty().ifEmpty { list }</ID>
@@ -190,8 +183,11 @@
     <ID>MaxLineLength:MatchesScreen.kt$color = if (price != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)</ID>
     <ID>MaxLineLength:MatchesScreen.kt$color = if (rowTotal != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)</ID>
     <ID>MaxLineLength:MatchesScreen.kt$val content = unmatched.joinToString("\n") { "${it.deckEntry.qty} ${it.deckEntry.cardName}" }</ID>
-    <ID>MaxLineLength:MviViewModel.kt$MviViewModel$is ViewIntent.SavePreferences -&gt; savePreferences(intent.variantPriority, intent.setPriority, intent.fuzzyEnabled)</ID>
-    <ID>MaxLineLength:MviViewModel.kt$MviViewModel$log("Parsed: ${e.qty} ${e.cardName} (${e.setCodeHint}${e.collectorNumberHint?.let { " #$it" } ?: ""})", "DEBUG")</ID>
+    <ID>MaxLineLength:MobileResultsScreen.kt$Text("${m.deckEntry.qty}", Modifier.width(40.dp), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:MobileResultsScreen.kt$color = if (ambiguous &gt; 0) Color(0xFFFF9800) else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)</ID>
+    <ID>MaxLineLength:MobileResultsScreen.kt$color = if (missed &gt; 0) Color(0xFFF44336) else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)</ID>
+    <ID>MaxLineLength:MobileResultsScreen.kt$if (filterMode == 0) MaterialTheme.colors.primary.copy(alpha = 0.2f) else MaterialTheme.colors.surface</ID>
+    <ID>MaxLineLength:MviViewModel.kt$MviViewModel$log</ID>
     <ID>MaxLineLength:PixelComponents.kt$val lastFullyVisible = lastVisible.offset + lastVisible.size &lt;= info.viewportEndOffset - info.afterContentPadding</ID>
     <ID>MaxLineLength:PixelImageComponents.kt$var loadState by remember { mutableStateOf&lt;AsyncImagePainter.State&gt;(AsyncImagePainter.State.Empty) }</ID>
     <ID>MaxLineLength:PreferencesWizardScreen.kt$.</ID>
@@ -225,16 +221,13 @@
     <ID>ReturnCount:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private fun loadWithCacheAge(maxAge: Duration, forceRefresh: Boolean = false, log: (String) -&gt; Unit = {}): Catalog?</ID>
     <ID>ReturnCount:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private fun tryCsvThenHtml(log: (String) -&gt; Unit): Catalog?</ID>
     <ID>SwallowedException:DesktopMviPlatformServices.kt$DesktopMviPlatformServices$e: Exception</ID>
-    <ID>SwallowedException:DesktopPlatformServices.kt$DesktopPlatformServices$e: Exception</ID>
     <ID>SwallowedException:PlatformUtils.kt$e: Exception</ID>
     <ID>SwallowedException:SavedImportsScreen.kt$e: Exception</ID>
     <ID>SwallowedException:ScryfallApi.kt$ScryfallApi$e: Exception</ID>
     <ID>TooGenericExceptionCaught:DatabaseCatalogDataSource.kt$DatabaseCatalogDataSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:DesktopMviPlatformServices.kt$DesktopMviPlatformServices$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:DesktopPlatformServices.kt$DesktopPlatformServices$e: Exception</ID>
     <ID>TooGenericExceptionCaught:IosMviPlatformServices.kt$IosMviPlatformServices$e: Exception</ID>
     <ID>TooGenericExceptionCaught:KtorRemoteCatalogDataSource.kt$KtorRemoteCatalogDataSource$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:MainStore.kt$MainStore$e: Exception</ID>
     <ID>TooGenericExceptionCaught:MviViewModel.kt$MviViewModel$e: Exception</ID>
     <ID>TooGenericExceptionCaught:PlatformUtils.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$e: Exception</ID>
@@ -243,8 +236,8 @@
     <ID>TooGenericExceptionCaught:ScryfallApi.kt$ScryfallApi$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScryfallImageEnricher.kt$ScryfallImageEnricher$e: Exception</ID>
     <ID>TooGenericExceptionThrown:ScryfallApi.kt$ScryfallApi$throw Exception("HTTP ${response.status.value}: ${response.status.description}")</ID>
-    <ID>TooManyFunctions:MainStore.kt$MainStore</ID>
     <ID>TooManyFunctions:MviViewModel.kt$MviViewModel</ID>
     <ID>TooManyFunctions:PixelComponents.kt$ui.PixelComponents.kt</ID>
+    <ID>UnusedPrivateProperty:MobileResultsScreen.kt$val totalCents = totalMatched.sumOf { it.selectedVariant!!.priceInCents * it.deckEntry.qty }</ID>
   </CurrentIssues>
 </SmellBaseline>
