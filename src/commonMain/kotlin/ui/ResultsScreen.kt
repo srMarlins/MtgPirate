@@ -499,7 +499,7 @@ fun ResultsScreen(
                 )
                 if (matches.isNotEmpty()) {
                     PixelButton(
-                        text = "Export Results →",
+                        text = "Continue to Export →",
                         onClick = onExport,
                         variant = PixelButtonVariant.SECONDARY,
                         modifier = Modifier.width(220.dp)
