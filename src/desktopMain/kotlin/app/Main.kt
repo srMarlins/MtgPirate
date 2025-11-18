@@ -815,6 +815,9 @@ fun main() = application {
                                             onBack = {
                                                 viewModel.processIntent(ViewIntent.CloseResolve)
                                                 navController.navigateUp()
+                                            },
+                                            onEnrichVariant = { variant ->
+                                                viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
                                             }
                                         )
                                     } else {
