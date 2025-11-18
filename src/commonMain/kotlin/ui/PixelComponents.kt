@@ -108,12 +108,12 @@ fun PixelButton(
     Box(
         modifier = modifier
             .height(48.dp)
-            .clip(PixelShape(cornerSize = 9.dp))
             .pixelBorder(
                 borderWidth = 3.dp,
                 enabled = enabled,
                 glowAlpha = if (enabled) glowAlpha else 0f
             )
+            .clip(PixelShape(cornerSize = 9.dp))
             .background(backgroundColor, shape = PixelShape(cornerSize = 9.dp))
             .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -177,8 +177,8 @@ fun PixelTextField(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(PixelShape(cornerSize = 6.dp))
                 .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
+                .clip(PixelShape(cornerSize = 6.dp))
                 .background(colors.surface, shape = PixelShape(cornerSize = 6.dp))
                 .padding(12.dp)
         ) {
@@ -231,12 +231,12 @@ fun PixelCard(
 
     Column(
         modifier = modifier
-            .clip(PixelShape(cornerSize = 9.dp))
             .pixelBorder(
                 borderWidth = 3.dp,
                 enabled = true,
                 glowAlpha = if (glowing) glowAlpha else 0.1f
             )
+            .clip(PixelShape(cornerSize = 9.dp))
             .background(colors.surface, shape = PixelShape(cornerSize = 9.dp))
             .padding(16.dp)
     ) {
@@ -316,8 +316,8 @@ fun PixelProgressBar(
         modifier = modifier
             .height(height)
             .fillMaxWidth()
-            .clip(PixelShape(cornerSize = 6.dp))
             .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
+            .clip(PixelShape(cornerSize = 6.dp))
             .background(colors.surface, shape = PixelShape(cornerSize = 6.dp))
     ) {
         // Progress fill - Mystical gradient
@@ -325,7 +325,6 @@ fun PixelProgressBar(
             modifier = Modifier
                 .fillMaxHeight()
                 .fillMaxWidth(animatedProgress)
-                .clip(PixelShape(cornerSize = 6.dp))
                 .background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
@@ -515,8 +514,8 @@ fun PixelBadge(
     val colors = MaterialTheme.colors
     Box(
         modifier = modifier
-            .clip(PixelShape(cornerSize = 6.dp))
             .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
+            .clip(PixelShape(cornerSize = 6.dp))
             .background(color, shape = PixelShape(cornerSize = 6.dp))
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
@@ -981,12 +980,12 @@ private fun PixelDraggableItem(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(PixelShape(cornerSize = 6.dp))
                 .pixelBorder(
                     borderWidth = borderWidth,
                     enabled = true,
                     glowAlpha = glowAlpha
                 )
+                .clip(PixelShape(cornerSize = 6.dp))
                 .background(backgroundColor, shape = PixelShape(cornerSize = 6.dp))
                 .padding(horizontal = 12.dp, vertical = 12.dp)
         ) {
@@ -1100,12 +1099,12 @@ fun PixelIconButton(
         modifier = modifier
             .size(32.dp)
             .scale(scale)
-            .clip(PixelShape(cornerSize = 6.dp))
             .pixelBorder(
                 borderWidth = 2.dp,
                 enabled = enabled,
                 glowAlpha = if (isHovered) 0.5f else 0.2f
             )
+            .clip(PixelShape(cornerSize = 6.dp))
             .background(
                 if (isHovered) buttonColor.copy(alpha = 0.2f) else Color.Transparent,
                 shape = PixelShape(cornerSize = 6.dp)
@@ -1155,8 +1154,8 @@ private fun PixelArrowBadge(
         modifier = modifier
             .size(badgeSize)
             .offset(y = yOffset)
-            .clip(PixelShape(cornerSize = 4.dp))
             .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.5f)
+            .clip(PixelShape(cornerSize = 4.dp))
             .background(MaterialTheme.colors.surface.copy(alpha = 0.8f), shape = PixelShape(cornerSize = 4.dp)),
         contentAlignment = Alignment.Center
     ) {
@@ -1342,12 +1341,12 @@ fun PixelToggle(
         modifier = modifier
             .width(trackWidth)
             .height(trackHeight)
-            .clip(PixelShape(cornerSize = 6.dp))
             .pixelBorder(
                 borderWidth = 2.dp,
                 enabled = enabled,
                 glowAlpha = if (checked && enabled) glowAlpha else 0f
             )
+            .clip(PixelShape(cornerSize = 6.dp))
             .background(backgroundColor, shape = PixelShape(cornerSize = 6.dp))
             .clickable(enabled = enabled) { onCheckedChange(!checked) }
             .padding(thumbPadding)
@@ -1359,12 +1358,12 @@ fun PixelToggle(
             modifier = Modifier
                 .size(thumbSize)
                 .offset(x = thumbOffset)
-                .clip(PixelShape(cornerSize = 4.dp))
                 .pixelBorder(
                     borderWidth = 2.dp,
                     enabled = true,
                     glowAlpha = if (checked && enabled) 0.3f else 0f
                 )
+                .clip(PixelShape(cornerSize = 4.dp))
                 .background(
                     if (enabled) colors.primary else Color.Gray,
                     shape = PixelShape(cornerSize = 4.dp)
