@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -25,11 +26,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -146,6 +149,22 @@ fun PixelTextField(
     maxLines: Int = Int.MAX_VALUE
 ) {
     val colors = MaterialTheme.colors
+    
+    // Use TextFieldValue to maintain selection state across recompositions on iOS
+    // This prevents cursor jumping when typing spaces, backspaces, etc.
+    var textFieldValue by remember { mutableStateOf(TextFieldValue(value)) }
+    
+    // Sync external value changes while preserving selection
+    LaunchedEffect(value) {
+        if (textFieldValue.text != value) {
+            val newSelection = if (value.length >= textFieldValue.selection.start) {
+                textFieldValue.selection
+            } else {
+                androidx.compose.ui.text.TextRange(value.length)
+            }
+            textFieldValue = TextFieldValue(text = value, selection = newSelection)
+        }
+    }
 
     Column(modifier = modifier) {
         if (label.isNotEmpty()) {
@@ -165,25 +184,28 @@ fun PixelTextField(
                 .background(colors.surface, shape = PixelShape(cornerSize = 6.dp))
                 .padding(12.dp)
         ) {
-            TextField(
-                value = value,
-                onValueChange = onValueChange,
-                placeholder = {
-                    Text(
-                        text = placeholder,
-                        color = colors.onSurface.copy(alpha = 0.4f)
-                    )
+            // Show placeholder when empty
+            if (textFieldValue.text.isEmpty() && placeholder.isNotEmpty()) {
+                Text(
+                    text = placeholder,
+                    color = colors.onSurface.copy(alpha = 0.4f),
+                    style = MaterialTheme.typography.body1,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            
+            // Use BasicTextField with TextFieldValue to maintain cursor position
+            BasicTextField(
+                value = textFieldValue,
+                onValueChange = { newValue ->
+                    textFieldValue = newValue
+                    onValueChange(newValue.text)
                 },
-                colors = TextFieldDefaults.textFieldColors(
-                    textColor = colors.onSurface,
-                    backgroundColor = Color.Transparent,
-                    cursorColor = colors.primary,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
+                textStyle = MaterialTheme.typography.body1.copy(color = colors.onSurface),
+                cursorBrush = SolidColor(colors.primary),
+                modifier = Modifier.fillMaxWidth(),
                 singleLine = singleLine,
-                maxLines = maxLines,
-                modifier = Modifier.fillMaxWidth()
+                maxLines = if (singleLine) 1 else maxLines
             )
         }
     }
