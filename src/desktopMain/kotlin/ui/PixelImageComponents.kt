@@ -11,6 +11,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +39,7 @@ fun PixelImagePreview(
         modifier = modifier
             .width(60.dp)
             .height(84.dp)
+            .clip(PixelShape(cornerSize = 4.dp))
             .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
             .background(colors.surface.copy(alpha = 0.5f), shape = PixelShape(cornerSize = 4.dp))
             .clickable(onClick = onClick),
@@ -167,6 +169,7 @@ fun PixelImageModal(
             modifier = Modifier
                 .width(520.dp)
                 .wrapContentHeight()
+                .clip(PixelShape(cornerSize = 12.dp))
                 .pixelBorder(borderWidth = 4.dp, enabled = true, glowAlpha = 0.6f)
                 .background(colors.surface, shape = PixelShape(cornerSize = 12.dp))
                 .padding(16.dp)
@@ -217,6 +220,7 @@ fun PixelImageModal(
                     modifier = Modifier
                         .width(488.dp)
                         .height(680.dp)
+                        .clip(PixelShape(cornerSize = 8.dp))
                         .pixelBorder(borderWidth = 3.dp, enabled = true, glowAlpha = 0.4f)
                         .background(colors.surface.copy(alpha = 0.5f), shape = PixelShape(cornerSize = 8.dp)),
                     contentAlignment = Alignment.Center
