@@ -2,6 +2,7 @@
 
 package state
 
+import catalog.ScryfallImageEnricher
 import database.CatalogStore
 import database.Database
 import database.ImportsStore
@@ -501,7 +502,7 @@ class MviViewModel(
                 log("Fetching image for ${variant.nameOriginal} (${variant.setCode})...", "DEBUG")
 
                 // Use ScryfallImageEnricher to fetch the image URL
-                val enrichedVariant = catalog.ScryfallImageEnricher.enrichVariant(
+                val enrichedVariant = ScryfallImageEnricher.enrichVariant(
                     variant = variant,
                     imageSize = "normal",
                     log = { msg -> log(msg, "DEBUG") }
