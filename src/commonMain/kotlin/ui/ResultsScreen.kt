@@ -41,7 +41,8 @@ fun ResultsScreen(
     onShowAllCandidates: (Int) -> Unit,
     onClose: () -> Unit,
     onExport: () -> Unit = {},
-    onEnrichVariant: ((CardVariant) -> Unit)? = null
+    onEnrichVariant: ((CardVariant) -> Unit)? = null,
+    isMobile: Boolean = false
 ) {
     val totalMatched = matches.filter { it.selectedVariant != null }
     val totalCents = totalMatched.sumOf { it.selectedVariant!!.priceInCents * it.deckEntry.qty }
@@ -56,7 +57,7 @@ fun ResultsScreen(
         // Scanline effect
         ScanlineEffect(alpha = 0.03f)
 
-        Column(Modifier.fillMaxSize().padding(24.dp)) {
+        Column(Modifier.fillMaxSize().padding(if (isMobile) 12.dp else 24.dp)) {
             // Header with pixel styling - compact layout
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -212,28 +213,30 @@ fun ResultsScreen(
                     }
                 }
 
-                // Total Price (not clickable)
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.1f)
-                        .background(MaterialTheme.colors.surface, shape = PixelShape(cornerSize = 9.dp))
-                        .padding(12.dp)
-                ) {
-                    Column {
-                        Text(
-                            "TOTAL",
-                            style = MaterialTheme.typography.caption,
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            formatPrice(totalCents),
-                            style = MaterialTheme.typography.h5,
-                            color = MaterialTheme.colors.secondary,
-                            fontWeight = FontWeight.Bold
-                        )
+                // Total Price (not clickable) - hidden on mobile
+                if (!isMobile) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.1f)
+                            .background(MaterialTheme.colors.surface, shape = PixelShape(cornerSize = 9.dp))
+                            .padding(12.dp)
+                    ) {
+                        Column {
+                            Text(
+                                "TOTAL",
+                                style = MaterialTheme.typography.caption,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                formatPrice(totalCents),
+                                style = MaterialTheme.typography.h5,
+                                color = MaterialTheme.colors.secondary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
@@ -249,105 +252,173 @@ fun ResultsScreen(
                     .padding(12.dp)
             ) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    // Sortable Qty header
-                    Row(
-                        Modifier.width(50.dp).clickable {
-                            sortOption = when (sortOption) {
-                                SortOption.QTY_ASC -> SortOption.QTY_DESC
-                                SortOption.QTY_DESC -> SortOption.DEFAULT
-                                else -> SortOption.QTY_ASC
-                            }
-                        },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    if (isMobile) {
+                        // Mobile-optimized header: QTY, CARD NAME, PRICE, ACTIONS
+                        Row(
+                            Modifier.width(40.dp).clickable {
+                                sortOption = when (sortOption) {
+                                    SortOption.QTY_ASC -> SortOption.QTY_DESC
+                                    SortOption.QTY_DESC -> SortOption.DEFAULT
+                                    else -> SortOption.QTY_ASC
+                                }
+                            },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "QTY",
+                                style = MaterialTheme.typography.caption,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (sortOption == SortOption.QTY_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
+                            if (sortOption == SortOption.QTY_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
+                        }
+
+                        Row(
+                            Modifier.weight(1f).clickable {
+                                sortOption = when (sortOption) {
+                                    SortOption.NAME_ASC -> SortOption.NAME_DESC
+                                    SortOption.NAME_DESC -> SortOption.DEFAULT
+                                    else -> SortOption.NAME_ASC
+                                }
+                            },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "CARD",
+                                style = MaterialTheme.typography.caption,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (sortOption == SortOption.NAME_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
+                            if (sortOption == SortOption.NAME_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
+                        }
+
+                        Row(
+                            Modifier.width(60.dp).clickable {
+                                sortOption = when (sortOption) {
+                                    SortOption.PRICE_ASC -> SortOption.PRICE_DESC
+                                    SortOption.PRICE_DESC -> SortOption.DEFAULT
+                                    else -> SortOption.PRICE_ASC
+                                }
+                            },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "PRICE",
+                                style = MaterialTheme.typography.caption,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (sortOption == SortOption.PRICE_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
+                            if (sortOption == SortOption.PRICE_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
+                        }
+
                         Text(
-                            "QTY",
+                            "ACTION",
+                            Modifier.width(80.dp),
+                            style = MaterialTheme.typography.caption,
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        // Desktop header: Full columns
+                        // Sortable Qty header
+                        Row(
+                            Modifier.width(50.dp).clickable {
+                                sortOption = when (sortOption) {
+                                    SortOption.QTY_ASC -> SortOption.QTY_DESC
+                                    SortOption.QTY_DESC -> SortOption.DEFAULT
+                                    else -> SortOption.QTY_ASC
+                                }
+                            },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "QTY",
+                                style = MaterialTheme.typography.subtitle2,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (sortOption == SortOption.QTY_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
+                            if (sortOption == SortOption.QTY_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
+                        }
+
+                        // Sortable Card Name header
+                        Row(
+                            Modifier.weight(0.35f).clickable {
+                                sortOption = when (sortOption) {
+                                    SortOption.NAME_ASC -> SortOption.NAME_DESC
+                                    SortOption.NAME_DESC -> SortOption.DEFAULT
+                                    else -> SortOption.NAME_ASC
+                                }
+                            },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "CARD NAME",
+                                style = MaterialTheme.typography.subtitle2,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (sortOption == SortOption.NAME_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
+                            if (sortOption == SortOption.NAME_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
+                        }
+
+                        // Sortable Status header
+                        Row(
+                            Modifier.weight(0.15f).clickable {
+                                sortOption = when (sortOption) {
+                                    SortOption.STATUS_ASC -> SortOption.STATUS_DESC
+                                    SortOption.STATUS_DESC -> SortOption.DEFAULT
+                                    else -> SortOption.STATUS_ASC
+                                }
+                            },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "STATUS",
+                                style = MaterialTheme.typography.subtitle2,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (sortOption == SortOption.STATUS_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
+                            if (sortOption == SortOption.STATUS_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
+                        }
+
+                        Text(
+                            "VARIANT",
+                            Modifier.weight(0.15f),
                             style = MaterialTheme.typography.subtitle2,
                             fontWeight = FontWeight.Bold
                         )
-                        if (sortOption == SortOption.QTY_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
-                        if (sortOption == SortOption.QTY_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
-                    }
 
-                    // Sortable Card Name header
-                    Row(
-                        Modifier.weight(0.35f).clickable {
-                            sortOption = when (sortOption) {
-                                SortOption.NAME_ASC -> SortOption.NAME_DESC
-                                SortOption.NAME_DESC -> SortOption.DEFAULT
-                                else -> SortOption.NAME_ASC
-                            }
-                        },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                        // Sortable Unit Price header
+                        Row(
+                            Modifier.width(70.dp).clickable {
+                                sortOption = when (sortOption) {
+                                    SortOption.PRICE_ASC -> SortOption.PRICE_DESC
+                                    SortOption.PRICE_DESC -> SortOption.DEFAULT
+                                    else -> SortOption.PRICE_ASC
+                                }
+                            },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "UNIT",
+                                style = MaterialTheme.typography.subtitle2,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (sortOption == SortOption.PRICE_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
+                            if (sortOption == SortOption.PRICE_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
+                        }
+
                         Text(
-                            "CARD NAME",
+                            "TOTAL",
+                            Modifier.width(80.dp),
                             style = MaterialTheme.typography.subtitle2,
                             fontWeight = FontWeight.Bold
                         )
-                        if (sortOption == SortOption.NAME_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
-                        if (sortOption == SortOption.NAME_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
-                    }
-
-                    // Sortable Status header
-                    Row(
-                        Modifier.weight(0.15f).clickable {
-                            sortOption = when (sortOption) {
-                                SortOption.STATUS_ASC -> SortOption.STATUS_DESC
-                                SortOption.STATUS_DESC -> SortOption.DEFAULT
-                                else -> SortOption.STATUS_ASC
-                            }
-                        },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
                         Text(
-                            "STATUS",
+                            "ACTIONS",
+                            Modifier.width(180.dp),
                             style = MaterialTheme.typography.subtitle2,
                             fontWeight = FontWeight.Bold
                         )
-                        if (sortOption == SortOption.STATUS_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
-                        if (sortOption == SortOption.STATUS_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
                     }
-
-                    Text(
-                        "VARIANT",
-                        Modifier.weight(0.15f),
-                        style = MaterialTheme.typography.subtitle2,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    // Sortable Unit Price header
-                    Row(
-                        Modifier.width(70.dp).clickable {
-                            sortOption = when (sortOption) {
-                                SortOption.PRICE_ASC -> SortOption.PRICE_DESC
-                                SortOption.PRICE_DESC -> SortOption.DEFAULT
-                                else -> SortOption.PRICE_ASC
-                            }
-                        },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "UNIT",
-                            style = MaterialTheme.typography.subtitle2,
-                            fontWeight = FontWeight.Bold
-                        )
-                        if (sortOption == SortOption.PRICE_ASC) Text(" ▲", style = MaterialTheme.typography.caption)
-                        if (sortOption == SortOption.PRICE_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
-                    }
-
-                    Text(
-                        "TOTAL",
-                        Modifier.width(80.dp),
-                        style = MaterialTheme.typography.subtitle2,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "ACTIONS",
-                        Modifier.width(180.dp),
-                        style = MaterialTheme.typography.subtitle2,
-                        fontWeight = FontWeight.Bold
-                    )
                 }
             }
 
@@ -398,62 +469,124 @@ fun ResultsScreen(
                                 Modifier.fillMaxWidth().padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("${m.deckEntry.qty}", Modifier.width(50.dp), style = MaterialTheme.typography.body1)
-                                Row(Modifier.weight(0.35f), verticalAlignment = Alignment.CenterVertically) {
-                                    Text(m.deckEntry.cardName, style = MaterialTheme.typography.body1)
-                                    val collectorNumber = m.selectedVariant?.collectorNumber
-                                    if (!collectorNumber.isNullOrBlank()) {
-                                        Spacer(Modifier.width(8.dp))
-                                        PixelBadge(
-                                            text = collectorNumber,
-                                            color = MaterialTheme.colors.onSurface
+                                if (isMobile) {
+                                    // Mobile layout: QTY, CARD (with status badge), PRICE, ACTIONS
+                                    Text("${m.deckEntry.qty}", Modifier.width(40.dp), style = MaterialTheme.typography.body2)
+                                    
+                                    Column(Modifier.weight(1f).padding(end = 8.dp)) {
+                                        Text(
+                                            m.deckEntry.cardName,
+                                            style = MaterialTheme.typography.body2,
+                                            maxLines = 2
                                         )
+                                        Spacer(Modifier.height(4.dp))
+                                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            // Status badge
+                                            val (statusText, statusColor) = when (m.status) {
+                                                MatchStatus.AUTO_MATCHED -> "Auto" to Color(0xFF4CAF50)
+                                                MatchStatus.MANUAL_SELECTED -> "Manual" to Color(0xFF2196F3)
+                                                MatchStatus.AMBIGUOUS -> "Ambiguous" to Color(0xFFFF9800)
+                                                MatchStatus.NOT_FOUND -> "Not Found" to Color(0xFFF44336)
+                                                MatchStatus.UNRESOLVED -> "Pending" to Color(0xFF9E9E9E)
+                                            }
+                                            PixelBadge(
+                                                text = statusText,
+                                                color = statusColor
+                                            )
+                                            
+                                            // Collector number badge if available
+                                            val collectorNumber = m.selectedVariant?.collectorNumber
+                                            if (!collectorNumber.isNullOrBlank()) {
+                                                PixelBadge(
+                                                    text = collectorNumber,
+                                                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                                                )
+                                            }
+                                        }
                                     }
-                                }
-
-                                // Status badge with pixel styling
-                                val (statusText, statusColor) = when (m.status) {
-                                    MatchStatus.AUTO_MATCHED -> "Auto" to Color(0xFF4CAF50)
-                                    MatchStatus.MANUAL_SELECTED -> "Manual" to Color(0xFF2196F3)
-                                    MatchStatus.AMBIGUOUS -> "Ambiguous" to Color(0xFFFF9800)
-                                    MatchStatus.NOT_FOUND -> "Not Found" to Color(0xFFF44336)
-                                    MatchStatus.UNRESOLVED -> "Pending" to Color(0xFF9E9E9E)
-                                }
-                                Box(Modifier.weight(0.15f).padding(end = 8.dp)) {
-                                    PixelBadge(
-                                        text = statusText,
-                                        color = statusColor
+                                    
+                                    Text(
+                                        rowTotal?.let { formatPrice(it) } ?: "-",
+                                        Modifier.width(60.dp),
+                                        style = MaterialTheme.typography.body2
                                     )
-                                }
 
-                                Text(
-                                    variant?.variantType ?: "-",
-                                    Modifier.weight(0.15f),
-                                    style = MaterialTheme.typography.body2
-                                )
-                                Text(variant?.let { formatPrice(it.priceInCents) } ?: "-",
-                                    Modifier.width(70.dp),
-                                    style = MaterialTheme.typography.body2)
-                                Text(rowTotal?.let { formatPrice(it) } ?: "-",
-                                    Modifier.width(80.dp),
-                                    style = MaterialTheme.typography.body2)
+                                    Row(Modifier.width(80.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        if (m.status == MatchStatus.AMBIGUOUS || m.status == MatchStatus.NOT_FOUND) {
+                                            PixelButton(
+                                                text = "Fix",
+                                                onClick = { onResolve(globalIndex) },
+                                                variant = PixelButtonVariant.SECONDARY,
+                                                modifier = Modifier.height(32.dp).width(75.dp)
+                                            )
+                                        } else if (m.candidates.isNotEmpty()) {
+                                            PixelButton(
+                                                text = "View",
+                                                onClick = { onShowAllCandidates(globalIndex) },
+                                                variant = PixelButtonVariant.SURFACE,
+                                                modifier = Modifier.height(32.dp).width(75.dp)
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    // Desktop layout: Full columns
+                                    Text("${m.deckEntry.qty}", Modifier.width(50.dp), style = MaterialTheme.typography.body1)
+                                    Row(Modifier.weight(0.35f), verticalAlignment = Alignment.CenterVertically) {
+                                        Text(m.deckEntry.cardName, style = MaterialTheme.typography.body1)
+                                        val collectorNumber = m.selectedVariant?.collectorNumber
+                                        if (!collectorNumber.isNullOrBlank()) {
+                                            Spacer(Modifier.width(8.dp))
+                                            PixelBadge(
+                                                text = collectorNumber,
+                                                color = MaterialTheme.colors.onSurface
+                                            )
+                                        }
+                                    }
 
-                                Row(Modifier.width(180.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    if (m.status == MatchStatus.AMBIGUOUS || m.status == MatchStatus.NOT_FOUND) {
-                                        PixelButton(
-                                            text = "Resolve",
-                                            onClick = { onResolve(globalIndex) },
-                                            variant = PixelButtonVariant.SECONDARY,
-                                            modifier = Modifier.height(36.dp)
+                                    // Status badge with pixel styling
+                                    val (statusText, statusColor) = when (m.status) {
+                                        MatchStatus.AUTO_MATCHED -> "Auto" to Color(0xFF4CAF50)
+                                        MatchStatus.MANUAL_SELECTED -> "Manual" to Color(0xFF2196F3)
+                                        MatchStatus.AMBIGUOUS -> "Ambiguous" to Color(0xFFFF9800)
+                                        MatchStatus.NOT_FOUND -> "Not Found" to Color(0xFFF44336)
+                                        MatchStatus.UNRESOLVED -> "Pending" to Color(0xFF9E9E9E)
+                                    }
+                                    Box(Modifier.weight(0.15f).padding(end = 8.dp)) {
+                                        PixelBadge(
+                                            text = statusText,
+                                            color = statusColor
                                         )
                                     }
-                                    if (m.candidates.isNotEmpty()) {
-                                        PixelButton(
-                                            text = "View",
-                                            onClick = { onShowAllCandidates(globalIndex) },
-                                            variant = PixelButtonVariant.SURFACE,
-                                            modifier = Modifier.height(36.dp)
-                                        )
+
+                                    Text(
+                                        variant?.variantType ?: "-",
+                                        Modifier.weight(0.15f),
+                                        style = MaterialTheme.typography.body2
+                                    )
+                                    Text(variant?.let { formatPrice(it.priceInCents) } ?: "-",
+                                        Modifier.width(70.dp),
+                                        style = MaterialTheme.typography.body2)
+                                    Text(rowTotal?.let { formatPrice(it) } ?: "-",
+                                        Modifier.width(80.dp),
+                                        style = MaterialTheme.typography.body2)
+
+                                    Row(Modifier.width(180.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        if (m.status == MatchStatus.AMBIGUOUS || m.status == MatchStatus.NOT_FOUND) {
+                                            PixelButton(
+                                                text = "Resolve",
+                                                onClick = { onResolve(globalIndex) },
+                                                variant = PixelButtonVariant.SECONDARY,
+                                                modifier = Modifier.height(36.dp)
+                                            )
+                                        }
+                                        if (m.candidates.isNotEmpty()) {
+                                            PixelButton(
+                                                text = "View",
+                                                onClick = { onShowAllCandidates(globalIndex) },
+                                                variant = PixelButtonVariant.SURFACE,
+                                                modifier = Modifier.height(36.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }

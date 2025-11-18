@@ -430,7 +430,8 @@ fun IosResultsScreen(
                     onShowAllCandidates = onResolve,
                     onClose = onBack,
                     onExport = onNext,
-                    onEnrichVariant = onEnrichVariant
+                    onEnrichVariant = onEnrichVariant,
+                    isMobile = true
                 )
             }
         }
