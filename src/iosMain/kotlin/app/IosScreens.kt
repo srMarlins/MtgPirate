@@ -161,8 +161,11 @@ fun IosPreferencesScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // Card Inclusion - Vertical stack for mobile
-            PixelCard(glowing = false) {
+            // Card Inclusion - Compact row layout for mobile portrait
+            PixelCard(
+                glowing = false,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text(
                     "CARD INCLUSION:",
                     style = MaterialTheme.typography.body2,
@@ -171,30 +174,44 @@ fun IosPreferencesScreen(
                     modifier = Modifier.padding(bottom = 6.dp)
                 )
 
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                // Use Row to fit all checkboxes horizontally on mobile
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { onIncludeSideboardChange(!includeSideboard) }
+                    ) {
                         Checkbox(checked = includeSideboard, onCheckedChange = onIncludeSideboardChange)
-                        Spacer(Modifier.width(4.dp))
-                        Text("Sideboard", style = MaterialTheme.typography.body2)
+                        Spacer(Modifier.width(2.dp))
+                        Text("SB", style = MaterialTheme.typography.caption)
                     }
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { onIncludeCommandersChange(!includeCommanders) }
+                    ) {
                         Checkbox(checked = includeCommanders, onCheckedChange = onIncludeCommandersChange)
-                        Spacer(Modifier.width(4.dp))
-                        Text("Commanders", style = MaterialTheme.typography.body2)
+                        Spacer(Modifier.width(2.dp))
+                        Text("CMD", style = MaterialTheme.typography.caption)
                     }
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { onIncludeTokensChange(!includeTokens) }
+                    ) {
                         Checkbox(checked = includeTokens, onCheckedChange = onIncludeTokensChange)
-                        Spacer(Modifier.width(4.dp))
-                        Text("Tokens", style = MaterialTheme.typography.body2)
+                        Spacer(Modifier.width(2.dp))
+                        Text("TOK", style = MaterialTheme.typography.caption)
                     }
                 }
             }
 
             Spacer(Modifier.height(8.dp))
 
-            // Variant Priority
+            // Variant Priority - Scrollable with improved button states
             PixelCard(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 glowing = false
@@ -207,14 +224,14 @@ fun IosPreferencesScreen(
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    "└─ Tap arrows to reorder priority",
+                    "└─ Drag items or use arrows to reorder",
                     style = MaterialTheme.typography.caption,
                     color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
                 )
                 Spacer(Modifier.height(8.dp))
 
-                // Simple list with reorder buttons for mobile
-                Column(
+                // Draggable list with improved visual states for mobile
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
@@ -223,64 +240,109 @@ fun IosPreferencesScreen(
                             MaterialTheme.colors.surface.copy(alpha = 0.5f),
                             shape = PixelShape(cornerSize = 6.dp)
                         )
-                        .padding(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                        .padding(8.dp)
                 ) {
-                    variantPriority.ifEmpty { listOf("Regular", "Foil", "Holo") }.forEachIndexed { index, variant ->
+                    val variants = variantPriority.ifEmpty { listOf("Regular", "Foil", "Holo") }
+                    
+                    PixelDraggableList(
+                        items = variants,
+                        onReorder = onVariantPriorityChange,
+                        modifier = Modifier.fillMaxSize()
+                    ) { variant, index, isDragging ->
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .pixelBorder(borderWidth = 1.dp, enabled = true, glowAlpha = 0.1f)
-                                .background(MaterialTheme.colors.surface, shape = PixelShape(cornerSize = 4.dp))
-                                .padding(8.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                // Drag handle
+                                PixelDragHandle(
+                                    isDragging = isDragging,
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
+                                
                                 Text(
                                     "${index + 1}.",
                                     style = MaterialTheme.typography.caption,
                                     color = MaterialTheme.colors.primary,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.width(24.dp)
+                                    modifier = Modifier.width(20.dp)
                                 )
-                                Text(variant, style = MaterialTheme.typography.body2)
+                                Text(
+                                    variant,
+                                    style = MaterialTheme.typography.body2,
+                                    modifier = Modifier.weight(1f)
+                                )
                             }
 
-                            Row {
-                                // Up button
-                                PixelButton(
-                                    text = "▲",
-                                    onClick = {
-                                        if (index > 0) {
-                                            val newList = variantPriority.toMutableList()
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                // Up button - only show glow when enabled
+                                Box(
+                                    modifier = Modifier
+                                        .width(36.dp)
+                                        .height(32.dp)
+                                        .pixelBorder(
+                                            borderWidth = 2.dp,
+                                            enabled = index > 0,
+                                            glowAlpha = 0f
+                                        )
+                                        .background(
+                                            if (index > 0) MaterialTheme.colors.surface 
+                                            else Color.Gray.copy(alpha = 0.2f),
+                                            shape = PixelShape(cornerSize = 6.dp)
+                                        )
+                                        .clickable(enabled = index > 0) {
+                                            val newList = variants.toMutableList()
                                             val temp = newList[index]
                                             newList[index] = newList[index - 1]
                                             newList[index - 1] = temp
                                             onVariantPriorityChange(newList)
-                                        }
-                                    },
-                                    enabled = index > 0,
-                                    modifier = Modifier.width(40.dp).height(32.dp),
-                                    variant = PixelButtonVariant.SURFACE
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                // Down button
-                                PixelButton(
-                                    text = "▼",
-                                    onClick = {
-                                        if (index < variantPriority.size - 1) {
-                                            val newList = variantPriority.toMutableList()
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        "▲",
+                                        style = MaterialTheme.typography.body2,
+                                        color = if (index > 0) MaterialTheme.colors.onSurface else Color.Gray,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                
+                                // Down button - only show glow when enabled
+                                Box(
+                                    modifier = Modifier
+                                        .width(36.dp)
+                                        .height(32.dp)
+                                        .pixelBorder(
+                                            borderWidth = 2.dp,
+                                            enabled = index < variants.size - 1,
+                                            glowAlpha = 0f
+                                        )
+                                        .background(
+                                            if (index < variants.size - 1) MaterialTheme.colors.surface 
+                                            else Color.Gray.copy(alpha = 0.2f),
+                                            shape = PixelShape(cornerSize = 6.dp)
+                                        )
+                                        .clickable(enabled = index < variants.size - 1) {
+                                            val newList = variants.toMutableList()
                                             val temp = newList[index]
                                             newList[index] = newList[index + 1]
                                             newList[index + 1] = temp
                                             onVariantPriorityChange(newList)
-                                        }
-                                    },
-                                    enabled = index < variantPriority.size - 1,
-                                    modifier = Modifier.width(40.dp).height(32.dp),
-                                    variant = PixelButtonVariant.SURFACE
-                                )
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        "▼",
+                                        style = MaterialTheme.typography.body2,
+                                        color = if (index < variants.size - 1) MaterialTheme.colors.onSurface 
+                                               else Color.Gray,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                         }
                     }
