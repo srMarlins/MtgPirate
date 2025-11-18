@@ -237,7 +237,7 @@ fun MobileResultsScreen(
 
                     // Sortable Card Name header
                     Row(
-                        Modifier.weight(1f).clickable {
+                        Modifier.weight(1f).padding(end = 8.dp).clickable {
                             sortOption = when (sortOption) {
                                 SortOption.NAME_ASC -> SortOption.NAME_DESC
                                 SortOption.NAME_DESC -> SortOption.DEFAULT
@@ -275,12 +275,16 @@ fun MobileResultsScreen(
                         if (sortOption == SortOption.PRICE_DESC) Text(" ▼", style = MaterialTheme.typography.caption)
                     }
 
-                    Text(
-                        "ACTION",
+                    Box(
                         Modifier.width(80.dp),
-                        style = MaterialTheme.typography.caption,
-                        fontWeight = FontWeight.Bold
-                    )
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            "ACTION",
+                            style = MaterialTheme.typography.caption,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
 
