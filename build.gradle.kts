@@ -110,6 +110,17 @@ compose.desktop {
             )
             packageName = "MtgPirate"
             packageVersion = appVersionCore
+            
+            // Configure app icons for all platforms
+            macOS {
+                iconFile.set(project.file("src/desktopMain/resources/icons/icon_512.png"))
+            }
+            windows {
+                iconFile.set(project.file("src/desktopMain/resources/icons/icon_256.png"))
+            }
+            linux {
+                iconFile.set(project.file("src/desktopMain/resources/icons/icon_512.png"))
+            }
         }
     }
 }
