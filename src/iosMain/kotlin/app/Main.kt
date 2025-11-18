@@ -100,6 +100,7 @@ fun IosNavigationHost(
                 deckText = state.deckText,
                 onDeckTextChange = { viewModel.processIntent(ViewIntent.UpdateDeckText(it)) },
                 onNext = {
+                    viewModel.processIntent(ViewIntent.SaveCurrentImport)
                     viewModel.processIntent(ViewIntent.ParseDeck)
                     viewModel.processIntent(ViewIntent.CompleteWizardStep(1))
                     navigateTo(IosScreen.PREFERENCES)
