@@ -19,6 +19,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -1337,6 +1338,7 @@ fun PixelToggle(
         modifier = modifier
             .width(trackWidth)
             .height(trackHeight)
+            .clip(PixelShape(cornerSize = 6.dp))
             .pixelBorder(
                 borderWidth = 2.dp,
                 enabled = enabled,

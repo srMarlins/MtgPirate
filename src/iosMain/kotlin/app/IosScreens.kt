@@ -170,42 +170,56 @@ fun IosPreferencesScreen(
                     style = MaterialTheme.typography.body2,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colors.primary,
-                    modifier = Modifier.padding(bottom = 6.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                // Use Row to fit all toggles horizontally on mobile
-                Row(
+                // Vertical stack with full text labels
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("SB", style = MaterialTheme.typography.caption)
-                        PixelToggle(
-                            checked = includeSideboard,
-                            onCheckedChange = onIncludeSideboardChange
+                        Text(
+                            "COMMANDER",
+                            style = MaterialTheme.typography.body2,
+                            modifier = Modifier.weight(1f)
                         )
-                    }
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text("CMD", style = MaterialTheme.typography.caption)
                         PixelToggle(
                             checked = includeCommanders,
                             onCheckedChange = onIncludeCommandersChange
                         )
                     }
 
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("TOK", style = MaterialTheme.typography.caption)
+                        Text(
+                            "SIDEBOARD",
+                            style = MaterialTheme.typography.body2,
+                            modifier = Modifier.weight(1f)
+                        )
+                        PixelToggle(
+                            checked = includeSideboard,
+                            onCheckedChange = onIncludeSideboardChange
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "TOKEN",
+                            style = MaterialTheme.typography.body2,
+                            modifier = Modifier.weight(1f)
+                        )
                         PixelToggle(
                             checked = includeTokens,
                             onCheckedChange = onIncludeTokensChange
