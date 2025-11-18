@@ -106,7 +106,8 @@ fun IosNavigationHost(
                 },
                 onShowSavedImports = {
                     viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(true))
-                }
+                },
+                isLoadingCatalog = state.loadingCatalog
             )
             
             IosScreen.PREFERENCES -> IosPreferencesScreen(
@@ -139,7 +140,9 @@ fun IosNavigationHost(
                 },
                 onEnrichVariant = { variant ->
                     viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
-                }
+                },
+                isLoadingCatalog = state.loadingCatalog,
+                isMatching = state.isMatching
             )
             
             IosScreen.RESOLVE -> {

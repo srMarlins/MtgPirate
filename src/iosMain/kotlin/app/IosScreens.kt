@@ -25,7 +25,8 @@ fun IosImportScreen(
     deckText: String,
     onDeckTextChange: (String) -> Unit,
     onNext: () -> Unit,
-    onShowSavedImports: () -> Unit
+    onShowSavedImports: () -> Unit,
+    isLoadingCatalog: Boolean = false
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         // Scanline effect overlay
@@ -105,6 +106,12 @@ fun IosImportScreen(
                 )
             }
         }
+        
+        // Show loading overlay when catalog is loading
+        PixelLoadingOverlay(
+            message = "Loading catalog...",
+            visible = isLoadingCatalog
+        )
     }
 }
 
@@ -403,7 +410,9 @@ fun IosResultsScreen(
     onResolve: (Int) -> Unit,
     onBack: () -> Unit,
     onNext: () -> Unit,
-    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
+    onEnrichVariant: ((model.CardVariant) -> Unit)? = null,
+    isLoadingCatalog: Boolean = false,
+    isMatching: Boolean = false
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
@@ -434,6 +443,16 @@ fun IosResultsScreen(
                 )
             }
         }
+        
+        // Show loading overlay when catalog is loading or matching is in progress
+        PixelLoadingOverlay(
+            message = when {
+                isLoadingCatalog -> "Loading catalog..."
+                isMatching -> "Matching cards..."
+                else -> ""
+            },
+            visible = isLoadingCatalog || isMatching
+        )
     }
 }
 

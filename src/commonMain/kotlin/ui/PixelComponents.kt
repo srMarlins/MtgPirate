@@ -1367,3 +1367,179 @@ fun PixelToggle(
         )
     }
 }
+
+// ========================================
+// PIXEL PROGRESS ANIMATION
+// ========================================
+
+/**
+ * Pixel-styled progress animation with rotating blocks.
+ * Perfect for retro/pixel art themed loading screens.
+ */
+@Composable
+fun PixelProgressAnimation(
+    modifier: Modifier = Modifier,
+    size: Dp = 48.dp,
+    color: Color = MaterialTheme.colors.primary
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+
+    // Rotation animation
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+
+    // Pulse animation for glow effect
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Box(
+        modifier = modifier.size(size),
+        contentAlignment = Alignment.Center
+    ) {
+        // Outer glow effect
+        Box(
+            modifier = Modifier
+                .size(size * 1.2f)
+                .drawBehind {
+                    val blockSize = this.size.width / 3f
+                    drawRect(
+                        color = color.copy(alpha = glowAlpha * 0.3f),
+                        size = this.size
+                    )
+                }
+        )
+
+        // Rotating pixel blocks
+        Box(
+            modifier = Modifier
+                .size(size)
+                .drawBehind {
+                    val centerX = this.size.width / 2f
+                    val centerY = this.size.height / 2f
+                    val blockSize = this.size.width / 4f
+                    val radius = this.size.width / 3f
+
+                    // Draw 4 pixel blocks arranged in a circle
+                    for (i in 0 until 4) {
+                        val angle = kotlin.math.PI * (rotation + i * 90) / 180.0
+                        val x = centerX + radius * kotlin.math.cos(angle).toFloat() - blockSize / 2f
+                        val y = centerY + radius * kotlin.math.sin(angle).toFloat() - blockSize / 2f
+
+                        // Draw pixel block with border
+                        drawRect(
+                            color = color.copy(alpha = 0.8f),
+                            topLeft = Offset(x, y),
+                            size = Size(blockSize, blockSize)
+                        )
+
+                        // Draw pixel border
+                        drawRect(
+                            color = color,
+                            topLeft = Offset(x - 1.dp.toPx(), y - 1.dp.toPx()),
+                            size = Size(blockSize + 2.dp.toPx(), blockSize + 2.dp.toPx()),
+                            style = Stroke(width = 2.dp.toPx())
+                        )
+                    }
+
+                    // Center pixel dot
+                    val dotSize = blockSize / 2f
+                    drawRect(
+                        color = color,
+                        topLeft = Offset(centerX - dotSize / 2f, centerY - dotSize / 2f),
+                        size = Size(dotSize, dotSize)
+                    )
+                }
+        )
+    }
+}
+
+/**
+ * Full-screen pixel loading overlay with message.
+ */
+@Composable
+fun PixelLoadingOverlay(
+    message: String,
+    modifier: Modifier = Modifier,
+    visible: Boolean = true
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colors.background.copy(alpha = 0.9f))
+                .zIndex(1000f),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                PixelProgressAnimation(
+                    size = 64.dp,
+                    color = MaterialTheme.colors.primary
+                )
+
+                Spacer(Modifier.height(24.dp))
+
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.h6,
+                    color = MaterialTheme.colors.onBackground,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                // Animated dots
+                AnimatedLoadingDots()
+            }
+        }
+    }
+}
+
+/**
+ * Animated loading dots (... effect).
+ * Public so it can be used in various screens for loading indication.
+ */
+@Composable
+fun AnimatedLoadingDots() {
+    val infiniteTransition = rememberInfiniteTransition()
+
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (i in 0 until 3) {
+            val alpha by infiniteTransition.animateFloat(
+                initialValue = 0.3f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(600, delayMillis = i * 200, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                )
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(
+                        MaterialTheme.colors.primary.copy(alpha = alpha),
+                        shape = PixelShape(cornerSize = 2.dp)
+                    )
+            )
+        }
+    }
+}

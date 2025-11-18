@@ -67,7 +67,8 @@ class MviViewModel(
                     showResultsWindow = localState.showResultsWindow,
                     showSavedImportsWindow = localState.showSavedImportsWindow,
                     wizardCompletedSteps = localState.wizardCompletedSteps,
-                    isDarkTheme = localState.isDarkTheme
+                    isDarkTheme = localState.isDarkTheme,
+                    isMatching = localState.isMatching
                 )
             }.onEach { newState ->
                 _viewState.update { newState }
@@ -223,6 +224,9 @@ class MviViewModel(
     }
 
     private suspend fun runMatchInternal(entries: List<DeckEntry>, catalog: Catalog) {
+        // Set matching flag to show loading animation
+        _localState.update { it.copy(isMatching = true) }
+        
         val preferences = _viewState.value.preferences
 
         val matches = withContext(Dispatchers.Default) {
@@ -237,7 +241,7 @@ class MviViewModel(
             )
         }
 
-        _localState.update { it.copy(matches = matches, showResultsWindow = true) }
+        _localState.update { it.copy(matches = matches, showResultsWindow = true, isMatching = false) }
         log("Matched ${matches.size} entries", "INFO")
     }
 
@@ -535,7 +539,8 @@ data class ViewState(
     val showResultsWindow: Boolean = false,
     val showSavedImportsWindow: Boolean = false,
     val wizardCompletedSteps: Set<Int> = emptySet(),
-    val isDarkTheme: Boolean = true
+    val isDarkTheme: Boolean = true,
+    val isMatching: Boolean = false
 )
 
 /**
@@ -554,7 +559,8 @@ private data class LocalUiState(
     val showResultsWindow: Boolean = false,
     val showSavedImportsWindow: Boolean = false,
     val wizardCompletedSteps: Set<Int> = emptySet(),
-    val isDarkTheme: Boolean = true
+    val isDarkTheme: Boolean = true,
+    val isMatching: Boolean = false
 )
 
 /**
