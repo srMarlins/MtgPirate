@@ -194,7 +194,7 @@ actual fun SavedImportsDialog(
 
 /**
  * Mobile-optimized saved import card for iOS.
- * Compact layout with larger touch targets.
+ * Compact layout with larger touch targets and clear Load button.
  */
 @Composable
 fun MobileSavedImportCard(
@@ -221,23 +221,74 @@ fun MobileSavedImportCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onSelect() }
                 .padding(12.dp)
         ) {
-            // Top row - Name and delete button
+            // Deck name
+            Text(
+                import.name,
+                style = MaterialTheme.typography.body1,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colors.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            // Info row - aligned
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    import.name,
-                    style = MaterialTheme.typography.body1,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colors.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
+                    "📅 $formattedDate",
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                )
+                Text(
+                    "🃏 ${import.cardCount}",
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                )
+            }
+
+            // Badges row if any options are enabled
+            if (import.includeSideboard || import.includeCommanders || import.includeTokens) {
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (import.includeSideboard) {
+                        PixelBadge(text = "SB", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
+                    }
+                    if (import.includeCommanders) {
+                        PixelBadge(text = "CMD", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
+                    }
+                    if (import.includeTokens) {
+                        PixelBadge(text = "TOK", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Action buttons row - Load and Delete
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Load button
+                PixelButton(
+                    text = "Load",
+                    onClick = onSelect,
+                    variant = PixelButtonVariant.PRIMARY,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(44.dp)
                 )
 
                 // Animated trash/checkmark button
@@ -255,7 +306,7 @@ fun MobileSavedImportCard(
 
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(44.dp)
                         .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
                         .background(buttonColor, shape = PixelShape(cornerSize = 4.dp))
                         .clickable {
@@ -277,41 +328,6 @@ fun MobileSavedImportCard(
                         else
                             MaterialTheme.colors.error
                     )
-                }
-            }
-
-            Spacer(Modifier.height(8.dp))
-
-            // Info row
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    "📅 $formattedDate",
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                )
-                Text(
-                    "🃏 ${import.cardCount}",
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                )
-            }
-
-            // Badges row if any options are enabled
-            if (import.includeSideboard || import.includeCommanders || import.includeTokens) {
-                Spacer(Modifier.height(6.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    if (import.includeSideboard) {
-                        PixelBadge(text = "SB", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
-                    }
-                    if (import.includeCommanders) {
-                        PixelBadge(text = "CMD", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
-                    }
-                    if (import.includeTokens) {
-                        PixelBadge(text = "TOK", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
-                    }
                 }
             }
         }
