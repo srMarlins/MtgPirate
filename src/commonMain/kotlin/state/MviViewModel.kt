@@ -67,7 +67,8 @@ class MviViewModel(
                     showResultsWindow = localState.showResultsWindow,
                     showSavedImportsWindow = localState.showSavedImportsWindow,
                     wizardCompletedSteps = localState.wizardCompletedSteps,
-                    isDarkTheme = localState.isDarkTheme
+                    isDarkTheme = localState.isDarkTheme,
+                    isMatching = localState.isMatching
                 )
             }.onEach { newState ->
                 _viewState.update { newState }
@@ -123,8 +124,17 @@ class MviViewModel(
     private fun init() {
         scope.launch(Dispatchers.IO) {
             log("Initializing MVI ViewModel...", "INFO")
-            // Load catalog from remote API and store in database
-            loadCatalog()
+            
+            // Check if catalog exists in database
+            val variantCount = catalogStore.getVariantCount()
+            
+            if (variantCount == 0L) {
+                // Catalog is empty, load from remote API
+                log("Catalog is empty, loading from remote...", "INFO")
+                loadCatalog()
+            } else {
+                log("Catalog already loaded: $variantCount variants", "INFO")
+            }
         }
     }
 
@@ -192,8 +202,8 @@ class MviViewModel(
 
             entries.forEach { e ->
                 if (e.setCodeHint != null) {
-                    log("Parsed: ${e.qty} ${e.cardName} (${e.setCodeHint}${e.collectorNumberHint?.let { " #$it" } ?: ""})",
-                        "DEBUG")
+                    val collectorSuffix = e.collectorNumberHint?.let { " #$it" } ?: ""
+                    log("Parsed: ${e.qty} ${e.cardName} (${e.setCodeHint}$collectorSuffix)", "DEBUG")
                 } else {
                     log("Parsed: ${e.qty} ${e.cardName}", "DEBUG")
                 }
@@ -223,6 +233,9 @@ class MviViewModel(
     }
 
     private suspend fun runMatchInternal(entries: List<DeckEntry>, catalog: Catalog) {
+        // Set matching flag to show loading animation
+        _localState.update { it.copy(isMatching = true) }
+        
         val preferences = _viewState.value.preferences
 
         val matches = withContext(Dispatchers.Default) {
@@ -237,7 +250,7 @@ class MviViewModel(
             )
         }
 
-        _localState.update { it.copy(matches = matches, showResultsWindow = true) }
+        _localState.update { it.copy(matches = matches, showResultsWindow = true, isMatching = false) }
         log("Matched ${matches.size} entries", "INFO")
     }
 
@@ -262,8 +275,8 @@ class MviViewModel(
 
             entries.forEach { e ->
                 if (e.setCodeHint != null) {
-                    log("Parsed: ${e.qty} ${e.cardName} (${e.setCodeHint}${e.collectorNumberHint?.let { " #$it" } ?: ""})",
-                        "DEBUG")
+                    val collectorSuffix = e.collectorNumberHint?.let { " #$it" } ?: ""
+                    log("Parsed: ${e.qty} ${e.cardName} (${e.setCodeHint}$collectorSuffix)", "DEBUG")
                 } else {
                     log("Parsed: ${e.qty} ${e.cardName}", "DEBUG")
                 }
@@ -535,7 +548,8 @@ data class ViewState(
     val showResultsWindow: Boolean = false,
     val showSavedImportsWindow: Boolean = false,
     val wizardCompletedSteps: Set<Int> = emptySet(),
-    val isDarkTheme: Boolean = true
+    val isDarkTheme: Boolean = true,
+    val isMatching: Boolean = false
 )
 
 /**
@@ -554,7 +568,8 @@ private data class LocalUiState(
     val showResultsWindow: Boolean = false,
     val showSavedImportsWindow: Boolean = false,
     val wizardCompletedSteps: Set<Int> = emptySet(),
-    val isDarkTheme: Boolean = true
+    val isDarkTheme: Boolean = true,
+    val isMatching: Boolean = false
 )
 
 /**

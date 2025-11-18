@@ -41,7 +41,8 @@ fun ResultsScreen(
     onShowAllCandidates: (Int) -> Unit,
     onClose: () -> Unit,
     onExport: () -> Unit = {},
-    onEnrichVariant: ((CardVariant) -> Unit)? = null
+    onEnrichVariant: ((CardVariant) -> Unit)? = null,
+    isLoading: Boolean = false
 ) {
     val totalMatched = matches.filter { it.selectedVariant != null }
     val totalCents = totalMatched.sumOf { it.selectedVariant!!.priceInCents * it.deckEntry.qty }
@@ -239,6 +240,20 @@ fun ResultsScreen(
             }
 
             Spacer(Modifier.height(16.dp))
+            
+            // Loading indicator below badge counts
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AnimatedLoadingDots()
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+            
+            // Hide table and list when loading
+            if (!isLoading) {
 
             // Table Header with pixel styling and sorting
             Box(
@@ -487,6 +502,7 @@ fun ResultsScreen(
                     )
                 }
             }
+            } // End of if (!isLoading)
         }
     }
 }

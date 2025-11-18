@@ -1,8 +1,8 @@
 package ui
 
-import androidx.compose.animation.core.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -14,8 +14,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,11 +22,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
@@ -151,11 +145,11 @@ fun PixelTextField(
     maxLines: Int = Int.MAX_VALUE
 ) {
     val colors = MaterialTheme.colors
-    
+
     // Use TextFieldValue to maintain selection state across recompositions on iOS
     // This prevents cursor jumping when typing spaces, backspaces, etc.
     var textFieldValue by remember { mutableStateOf(TextFieldValue(value)) }
-    
+
     // Sync external value changes while preserving selection
     LaunchedEffect(value) {
         if (textFieldValue.text != value) {
@@ -195,7 +189,7 @@ fun PixelTextField(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-            
+
             // Use BasicTextField with TextFieldValue to maintain cursor position
             BasicTextField(
                 value = textFieldValue,
@@ -1225,7 +1219,8 @@ fun LazyListScrollIndicators(
             val info = state.layoutInfo
             if (info.totalItemsCount == 0) return@derivedStateOf false
             val lastVisible = info.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf false
-            val lastFullyVisible = lastVisible.offset + lastVisible.size <= info.viewportEndOffset - info.afterContentPadding
+            val lastFullyVisible =
+                lastVisible.offset + lastVisible.size <= info.viewportEndOffset - info.afterContentPadding
             lastVisible.index < info.totalItemsCount - 1 || !lastFullyVisible
         }
     }
@@ -1298,7 +1293,7 @@ fun PixelToggle(
     enabled: Boolean = true
 ) {
     val colors = MaterialTheme.colors
-    
+
     // Animate the toggle position
     val toggleOffset by animateFloatAsState(
         targetValue = if (checked) 1f else 0f,
@@ -1307,7 +1302,7 @@ fun PixelToggle(
             stiffness = Spring.StiffnessMedium
         )
     )
-    
+
     // Animate background color
     val backgroundColor by animateColorAsState(
         targetValue = when {
@@ -1317,7 +1312,7 @@ fun PixelToggle(
         },
         animationSpec = tween(300)
     )
-    
+
     // Glow effect when checked
     val infiniteTransition = rememberInfiniteTransition()
     val glowAlpha by infiniteTransition.animateFloat(
@@ -1328,12 +1323,12 @@ fun PixelToggle(
             repeatMode = RepeatMode.Reverse
         )
     )
-    
+
     val trackWidth = 44.dp
     val trackHeight = 24.dp
     val thumbSize = 18.dp
     val thumbPadding = 3.dp
-    
+
     Box(
         modifier = modifier
             .width(trackWidth)
@@ -1350,7 +1345,7 @@ fun PixelToggle(
     ) {
         // Thumb (the sliding part)
         val thumbOffset = (trackWidth - thumbSize - thumbPadding * 2) * toggleOffset
-        
+
         Box(
             modifier = Modifier
                 .size(thumbSize)
@@ -1365,5 +1360,233 @@ fun PixelToggle(
                     shape = PixelShape(cornerSize = 4.dp)
                 )
         )
+    }
+}
+
+// ========================================
+// PIXEL PROGRESS ANIMATION
+// ========================================
+
+/**
+ * Pixel-styled progress animation with rotating blocks.
+ * Perfect for retro/pixel art themed loading screens.
+ */
+@Composable
+fun PixelProgressAnimation(
+    modifier: Modifier = Modifier,
+    size: Dp = 48.dp,
+    color: Color = MaterialTheme.colors.primary
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+
+    // Rotation animation
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+
+    // Pulse animation for glow effect
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Box(
+        modifier = modifier.size(size),
+        contentAlignment = Alignment.Center
+    ) {
+        // Outer glow effect
+        Box(
+            modifier = Modifier
+                .size(size * 1.2f)
+                .drawBehind {
+                    val blockSize = this.size.width / 3f
+                    drawRect(
+                        color = color.copy(alpha = glowAlpha * 0.3f),
+                        size = this.size
+                    )
+                }
+        )
+
+        // Rotating pixel blocks
+        Box(
+            modifier = Modifier
+                .size(size)
+                .drawBehind {
+                    val centerX = this.size.width / 2f
+                    val centerY = this.size.height / 2f
+                    val blockSize = this.size.width / 4f
+                    val radius = this.size.width / 3f
+
+                    // Draw 4 pixel blocks arranged in a circle
+                    for (i in 0 until 4) {
+                        val angle = kotlin.math.PI * (rotation + i * 90) / 180.0
+                        val x = centerX + radius * kotlin.math.cos(angle).toFloat() - blockSize / 2f
+                        val y = centerY + radius * kotlin.math.sin(angle).toFloat() - blockSize / 2f
+
+                        // Draw pixel block with border
+                        drawRect(
+                            color = color.copy(alpha = 0.8f),
+                            topLeft = Offset(x, y),
+                            size = Size(blockSize, blockSize)
+                        )
+
+                        // Draw pixel border
+                        drawRect(
+                            color = color,
+                            topLeft = Offset(x - 1.dp.toPx(), y - 1.dp.toPx()),
+                            size = Size(blockSize + 2.dp.toPx(), blockSize + 2.dp.toPx()),
+                            style = Stroke(width = 2.dp.toPx())
+                        )
+                    }
+
+                    // Center pixel dot
+                    val dotSize = blockSize / 2f
+                    drawRect(
+                        color = color,
+                        topLeft = Offset(centerX - dotSize / 2f, centerY - dotSize / 2f),
+                        size = Size(dotSize, dotSize)
+                    )
+                }
+        )
+    }
+}
+
+/**
+ * Full-screen pixel loading overlay with message.
+ */
+@Composable
+fun PixelLoadingOverlay(
+    message: String,
+    modifier: Modifier = Modifier,
+    visible: Boolean = true
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colors.background.copy(alpha = 0.9f))
+                .zIndex(1000f),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                PixelProgressAnimation(
+                    size = 64.dp,
+                    color = MaterialTheme.colors.primary
+                )
+
+                Spacer(Modifier.height(24.dp))
+
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.h6,
+                    color = MaterialTheme.colors.onBackground,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                // Animated dots
+                AnimatedLoadingDots()
+            }
+        }
+    }
+}
+
+/**
+ * Animated loading dots (... effect).
+ * Public so it can be used in various screens for loading indication.
+ */
+@Composable
+fun AnimatedLoadingDots() {
+    val infiniteTransition = rememberInfiniteTransition()
+
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (i in 0 until 3) {
+            val alpha by infiniteTransition.animateFloat(
+                initialValue = 0.3f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(600, delayMillis = i * 200, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                )
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(
+                        MaterialTheme.colors.primary.copy(alpha = alpha),
+                        shape = PixelShape(cornerSize = 2.dp)
+                    )
+            )
+        }
+    }
+}
+
+/**
+ * Inline loading indicator card for modern mobile design.
+ * Shows inline within the content flow instead of as an overlay.
+ */
+@Composable
+fun InlineLoadingCard(
+    message: String,
+    modifier: Modifier = Modifier,
+    visible: Boolean = true
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn() + androidx.compose.animation.expandVertically(),
+        exit = fadeOut() + androidx.compose.animation.shrinkVertically()
+    ) {
+        PixelCard(
+            glowing = true,
+            modifier = modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Compact progress animation
+                PixelProgressAnimation(
+                    size = 32.dp,
+                    color = MaterialTheme.colors.primary
+                )
+
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.body1,
+                        color = MaterialTheme.colors.onSurface,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(Modifier.height(4.dp))
+
+                    // Animated dots
+                    AnimatedLoadingDots()
+                }
+            }
+        }
     }
 }

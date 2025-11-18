@@ -25,7 +25,8 @@ fun IosImportScreen(
     deckText: String,
     onDeckTextChange: (String) -> Unit,
     onNext: () -> Unit,
-    onShowSavedImports: () -> Unit
+    onShowSavedImports: () -> Unit,
+    isLoadingCatalog: Boolean = false
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         // Scanline effect overlay
@@ -63,6 +64,16 @@ fun IosImportScreen(
             }
 
             Spacer(Modifier.height(12.dp))
+            
+            // Inline loading indicator when catalog is loading
+            InlineLoadingCard(
+                message = "Loading catalog...",
+                visible = isLoadingCatalog
+            )
+            
+            if (isLoadingCatalog) {
+                Spacer(Modifier.height(12.dp))
+            }
 
             // Deck text input with pixel card
             PixelCard(
@@ -403,7 +414,9 @@ fun IosResultsScreen(
     onResolve: (Int) -> Unit,
     onBack: () -> Unit,
     onNext: () -> Unit,
-    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
+    onEnrichVariant: ((model.CardVariant) -> Unit)? = null,
+    isLoadingCatalog: Boolean = false,
+    isMatching: Boolean = false,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
@@ -422,7 +435,7 @@ fun IosResultsScreen(
                 )
             }
             
-            // Results screen content - will handle its own padding
+            // Results screen content - will handle its own padding and loading display
             Box(modifier = Modifier.weight(1f)) {
                 MobileResultsScreen(
                     matches = matches,
@@ -430,7 +443,8 @@ fun IosResultsScreen(
                     onShowAllCandidates = onResolve,
                     onClose = onBack,
                     onExport = onNext,
-                    onEnrichVariant = onEnrichVariant
+                    onEnrichVariant = onEnrichVariant,
+                    isLoading = isLoadingCatalog || isMatching
                 )
             }
         }

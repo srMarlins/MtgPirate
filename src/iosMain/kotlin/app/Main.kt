@@ -106,7 +106,8 @@ fun IosNavigationHost(
                 },
                 onShowSavedImports = {
                     viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(true))
-                }
+                },
+                isLoadingCatalog = state.loadingCatalog
             )
             
             IosScreen.PREFERENCES -> IosPreferencesScreen(
@@ -135,11 +136,15 @@ fun IosNavigationHost(
                 onBack = { navigateTo(IosScreen.PREFERENCES) },
                 onNext = {
                     viewModel.processIntent(ViewIntent.CompleteWizardStep(3))
+                    // Auto-save the import when moving to export
+                    viewModel.processIntent(ViewIntent.SaveCurrentImport)
                     navigateTo(IosScreen.EXPORT)
                 },
                 onEnrichVariant = { variant ->
                     viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
-                }
+                },
+                isLoadingCatalog = state.loadingCatalog,
+                isMatching = state.isMatching
             )
             
             IosScreen.RESOLVE -> {

@@ -32,10 +32,10 @@ fun MobileResultsScreen(
     onShowAllCandidates: (Int) -> Unit,
     onClose: () -> Unit,
     onExport: () -> Unit = {},
-    onEnrichVariant: ((CardVariant) -> Unit)? = null
+    onEnrichVariant: ((CardVariant) -> Unit)? = null,
+    isLoading: Boolean = false,
 ) {
     val totalMatched = matches.filter { it.selectedVariant != null }
-    val totalCents = totalMatched.sumOf { it.selectedVariant!!.priceInCents * it.deckEntry.qty }
     val missed = matches.count { it.selectedVariant == null && it.deckEntry.include }
     val ambiguous = matches.count { it.status == MatchStatus.AMBIGUOUS }
 
