@@ -53,6 +53,7 @@
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun EnchantedDivider( modifier: Modifier = Modifier, thickness: Dp = 2.dp )</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun FantasySectionHeader( text: String, modifier: Modifier = Modifier, icon: String = "✦" )</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun FantasyStarIcon( modifier: Modifier = Modifier, color: Color = Color(0xFFFBD38D), animated: Boolean = true )</ID>
+    <ID>FunctionNaming:PixelComponents.kt$@Composable fun InlineLoadingCard( message: String, modifier: Modifier = Modifier, visible: Boolean = true )</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun LazyListScrollIndicators( state: LazyListState, modifier: Modifier = Modifier, height: Dp = 12.dp, paddingHorizontal: Dp = 0.dp )</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun MagicalLoadingSpinner( modifier: Modifier = Modifier, size: Dp = 48.dp )</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun MagicalSparkles( modifier: Modifier = Modifier, count: Int = 5, color: Color = Color(0xFFB794F6) )</ID>

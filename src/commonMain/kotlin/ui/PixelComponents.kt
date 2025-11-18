@@ -151,11 +151,11 @@ fun PixelTextField(
     maxLines: Int = Int.MAX_VALUE
 ) {
     val colors = MaterialTheme.colors
-    
+
     // Use TextFieldValue to maintain selection state across recompositions on iOS
     // This prevents cursor jumping when typing spaces, backspaces, etc.
     var textFieldValue by remember { mutableStateOf(TextFieldValue(value)) }
-    
+
     // Sync external value changes while preserving selection
     LaunchedEffect(value) {
         if (textFieldValue.text != value) {
@@ -195,7 +195,7 @@ fun PixelTextField(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-            
+
             // Use BasicTextField with TextFieldValue to maintain cursor position
             BasicTextField(
                 value = textFieldValue,
@@ -1225,7 +1225,8 @@ fun LazyListScrollIndicators(
             val info = state.layoutInfo
             if (info.totalItemsCount == 0) return@derivedStateOf false
             val lastVisible = info.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf false
-            val lastFullyVisible = lastVisible.offset + lastVisible.size <= info.viewportEndOffset - info.afterContentPadding
+            val lastFullyVisible =
+                lastVisible.offset + lastVisible.size <= info.viewportEndOffset - info.afterContentPadding
             lastVisible.index < info.totalItemsCount - 1 || !lastFullyVisible
         }
     }
@@ -1298,7 +1299,7 @@ fun PixelToggle(
     enabled: Boolean = true
 ) {
     val colors = MaterialTheme.colors
-    
+
     // Animate the toggle position
     val toggleOffset by animateFloatAsState(
         targetValue = if (checked) 1f else 0f,
@@ -1307,7 +1308,7 @@ fun PixelToggle(
             stiffness = Spring.StiffnessMedium
         )
     )
-    
+
     // Animate background color
     val backgroundColor by animateColorAsState(
         targetValue = when {
@@ -1317,7 +1318,7 @@ fun PixelToggle(
         },
         animationSpec = tween(300)
     )
-    
+
     // Glow effect when checked
     val infiniteTransition = rememberInfiniteTransition()
     val glowAlpha by infiniteTransition.animateFloat(
@@ -1328,12 +1329,12 @@ fun PixelToggle(
             repeatMode = RepeatMode.Reverse
         )
     )
-    
+
     val trackWidth = 44.dp
     val trackHeight = 24.dp
     val thumbSize = 18.dp
     val thumbPadding = 3.dp
-    
+
     Box(
         modifier = modifier
             .width(trackWidth)
@@ -1350,7 +1351,7 @@ fun PixelToggle(
     ) {
         // Thumb (the sliding part)
         val thumbOffset = (trackWidth - thumbSize - thumbPadding * 2) * toggleOffset
-        
+
         Box(
             modifier = Modifier
                 .size(thumbSize)
@@ -1540,6 +1541,58 @@ fun AnimatedLoadingDots() {
                         shape = PixelShape(cornerSize = 2.dp)
                     )
             )
+        }
+    }
+}
+
+/**
+ * Inline loading indicator card for modern mobile design.
+ * Shows inline within the content flow instead of as an overlay.
+ */
+@Composable
+fun InlineLoadingCard(
+    message: String,
+    modifier: Modifier = Modifier,
+    visible: Boolean = true
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn() + androidx.compose.animation.expandVertically(),
+        exit = fadeOut() + androidx.compose.animation.shrinkVertically()
+    ) {
+        PixelCard(
+            glowing = true,
+            modifier = modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Compact progress animation
+                PixelProgressAnimation(
+                    size = 32.dp,
+                    color = MaterialTheme.colors.primary
+                )
+
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.body1,
+                        color = MaterialTheme.colors.onSurface,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(Modifier.height(4.dp))
+
+                    // Animated dots
+                    AnimatedLoadingDots()
+                }
+            }
         }
     }
 }

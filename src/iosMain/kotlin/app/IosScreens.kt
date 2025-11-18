@@ -64,6 +64,16 @@ fun IosImportScreen(
             }
 
             Spacer(Modifier.height(12.dp))
+            
+            // Inline loading indicator when catalog is loading
+            InlineLoadingCard(
+                message = "Loading catalog...",
+                visible = isLoadingCatalog
+            )
+            
+            if (isLoadingCatalog) {
+                Spacer(Modifier.height(12.dp))
+            }
 
             // Deck text input with pixel card
             PixelCard(
@@ -106,12 +116,6 @@ fun IosImportScreen(
                 )
             }
         }
-        
-        // Show loading overlay when catalog is loading
-        PixelLoadingOverlay(
-            message = "Loading catalog...",
-            visible = isLoadingCatalog
-        )
     }
 }
 
@@ -431,6 +435,26 @@ fun IosResultsScreen(
                 )
             }
             
+            // Inline loading indicators
+            if (isLoadingCatalog || isMatching) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .safeDrawingPadding()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    InlineLoadingCard(
+                        message = when {
+                            isLoadingCatalog -> "Loading catalog..."
+                            isMatching -> "Matching cards..."
+                            else -> ""
+                        },
+                        visible = isLoadingCatalog || isMatching
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+            
             // Results screen content - will handle its own padding
             Box(modifier = Modifier.weight(1f)) {
                 MobileResultsScreen(
@@ -443,16 +467,6 @@ fun IosResultsScreen(
                 )
             }
         }
-        
-        // Show loading overlay when catalog is loading or matching is in progress
-        PixelLoadingOverlay(
-            message = when {
-                isLoadingCatalog -> "Loading catalog..."
-                isMatching -> "Matching cards..."
-                else -> ""
-            },
-            visible = isLoadingCatalog || isMatching
-        )
     }
 }
 
