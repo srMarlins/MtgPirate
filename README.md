@@ -31,6 +31,7 @@ A Kotlin Multiplatform application for importing Magic: The Gathering decklists,
 - 🎨 **Dark Theme** - Modern Compose UI with dark mode
 - ⚙️ **Flexible Options** - Include/exclude sideboard, commanders, and tokens
 - 📱 **iOS Support** - Full native iOS app with Compose Multiplatform
+- 🏝️ **Dynamic Island** (iOS 16.2+) - Track card matching progress in real-time on iPhone 14 Pro+
 
 ## Platforms
 
@@ -225,10 +226,11 @@ Wizard-style iOS app:
 - ✅ Pixel-style retro UI
 - ✅ Decklist parsing and matching
 - ✅ Clipboard export
+- ✅ **Dynamic Island support** (iOS 16.2+, iPhone 14 Pro+)
 - ⚠️ Uses cached catalog (no live fetching)
 - ⚠️ Limited platform integration
 
-📖 See [iOS Implementation Guide](docs/IOS_IMPLEMENTATION.md).
+📖 See [iOS Implementation Guide](docs/IOS_IMPLEMENTATION.md) and [Dynamic Island Guide](docs/DYNAMIC_ISLAND.md).
 
 ## Data Storage
 
@@ -303,6 +305,7 @@ Configure via settings menu:
 
 - [MVI Architecture](docs/MVI_ARCHITECTURE.md) - State management and reactive design
 - [iOS Implementation](docs/IOS_IMPLEMENTATION.md) - iOS platform guide and limitations
+- [Dynamic Island Integration](docs/DYNAMIC_ISLAND.md) - Live Activity support for iOS 16.2+
 - [Catalog Data Source](docs/CATALOG_DATA_SOURCE.md) - Pluggable catalog architecture
 - [Database Quick Start](docs/QUICK_START_DATABASE.md) - Database integration guide
 

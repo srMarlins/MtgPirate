@@ -6,12 +6,16 @@
 //
 
 import SwiftUI
+import ActivityKit
 
 @main
 struct mtgPirateApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear {
+                    LiveActivityManager.shared.startActivity()
+                }
         }
     }
 }
