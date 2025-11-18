@@ -1,5 +1,6 @@
 package app
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -94,9 +95,13 @@ fun IosNavigationHost(
         // Background scanline effect
         ScanlineEffect(alpha = 0.02f)
         
-        // Render current screen
-        when (currentScreen) {
-            IosScreen.IMPORT -> IosImportScreen(
+        // Render current screen with crossfade animation to prevent jumping
+        Crossfade(
+            targetState = currentScreen,
+            modifier = Modifier.fillMaxSize()
+        ) { screen ->
+            when (screen) {
+                IosScreen.IMPORT -> IosImportScreen(
                 deckText = state.deckText,
                 onDeckTextChange = { viewModel.processIntent(ViewIntent.UpdateDeckText(it)) },
                 onNext = {
@@ -151,31 +156,32 @@ fun IosNavigationHost(
                 ambiguousCount = state.ambiguousCount
             )
             
-            IosScreen.RESOLVE -> {
-                val index = state.showCandidatesFor
-                val match = index?.let { state.matches.getOrNull(it) }
-                if (index != null && match != null) {
-                    IosResolveScreen(
-                        match = match,
-                        onSelect = { variant ->
-                            viewModel.processIntent(ViewIntent.ResolveCandidate(index, variant))
-                            viewModel.processIntent(ViewIntent.CloseResolve)
-                            navigateTo(IosScreen.RESULTS)
-                        },
-                        onBack = {
-                            viewModel.processIntent(ViewIntent.CloseResolve)
-                            navigateTo(IosScreen.RESULTS)
-                        },
-                        onEnrichVariant = { variant ->
-                            viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
-                        }
-                    )
-                } else {
-                    navigateTo(IosScreen.RESULTS)
+                IosScreen.RESOLVE -> {
+                    val index = state.showCandidatesFor
+                    val match = index?.let { state.matches.getOrNull(it) }
+                    if (index != null && match != null) {
+                        IosResolveScreen(
+                            match = match,
+                            onSelect = { variant ->
+                                viewModel.processIntent(ViewIntent.ResolveCandidate(index, variant))
+                                viewModel.processIntent(ViewIntent.CloseResolve)
+                                navigateTo(IosScreen.RESULTS)
+                            },
+                            onBack = {
+                                viewModel.processIntent(ViewIntent.CloseResolve)
+                                navigateTo(IosScreen.RESULTS)
+                            },
+                            onEnrichVariant = { variant ->
+                                viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                            }
+                        )
+                    } else {
+                        // If data is missing, show empty box to prevent flash
+                        Box(modifier = Modifier.fillMaxSize())
+                    }
                 }
-            }
             
-            IosScreen.EXPORT -> IosExportScreen(
+                IosScreen.EXPORT -> IosExportScreen(
                 matches = state.matches,
                 onBack = { navigateTo(IosScreen.RESULTS) },
                 onExport = {
@@ -184,28 +190,30 @@ fun IosNavigationHost(
                 }
             )
             
-            IosScreen.CATALOG -> {
-                val catalog = state.catalog
-                if (catalog != null) {
-                    IosCatalogScreen(
-                        catalog = catalog,
-                        onBack = { navigateTo(IosScreen.IMPORT) },
-                        onEnrichVariant = { variant ->
-                            viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
-                        }
-                    )
-                } else {
-                    navigateTo(IosScreen.IMPORT)
+                IosScreen.CATALOG -> {
+                    val catalog = state.catalog
+                    if (catalog != null) {
+                        IosCatalogScreen(
+                            catalog = catalog,
+                            onBack = { navigateTo(IosScreen.IMPORT) },
+                            onEnrichVariant = { variant ->
+                                viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                            }
+                        )
+                    } else {
+                        // If catalog is missing, show empty box to prevent flash
+                        Box(modifier = Modifier.fillMaxSize())
+                    }
                 }
-            }
             
-            IosScreen.MATCHES -> IosMatchesScreen(
-                matches = state.matches,
-                onBack = { navigateTo(IosScreen.RESULTS) },
-                onEnrichVariant = { variant ->
-                    viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
-                }
-            )
+                IosScreen.MATCHES -> IosMatchesScreen(
+                    matches = state.matches,
+                    onBack = { navigateTo(IosScreen.RESULTS) },
+                    onEnrichVariant = { variant ->
+                        viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                    }
+                )
+            }
         }
         
         // Theme toggle floating action button
