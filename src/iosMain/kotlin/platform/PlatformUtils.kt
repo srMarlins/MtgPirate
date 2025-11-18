@@ -9,9 +9,12 @@ import kotlin.math.abs as kAbs
 actual fun currentTimeMillis(): Long = (NSDate().timeIntervalSince1970 * 1000).toLong()
 
 actual fun formatDecimal(value: Double, decimalPlaces: Int): String {
-    val factor = 10.0.pow(decimalPlaces)
-    val rounded = round(value * factor) / factor
-    return "$$rounded"
+    val formatter = platform.Foundation.NSNumberFormatter()
+    formatter.numberStyle = platform.Foundation.NSNumberFormatterDecimalStyle
+    formatter.minimumFractionDigits = decimalPlaces.toULong()
+    formatter.maximumFractionDigits = decimalPlaces.toULong()
+    val formatted = formatter.stringFromNumber(platform.Foundation.NSNumber(value))
+    return "$$formatted"
 }
 
 actual fun maxOf(a: Int, b: Int): Int = if (a > b) a else b

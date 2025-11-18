@@ -6,7 +6,7 @@ import java.awt.datatransfer.StringSelection
 actual fun currentTimeMillis(): Long = System.currentTimeMillis()
 
 actual fun formatDecimal(value: Double, decimalPlaces: Int): String {
-    return "%.${decimalPlaces}f".format(value)
+    return "$" + "%.${decimalPlaces}f".format(value)
 }
 
 actual fun maxOf(a: Int, b: Int): Int = Math.max(a, b)
