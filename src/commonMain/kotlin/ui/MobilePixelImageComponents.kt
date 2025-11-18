@@ -31,19 +31,20 @@ fun CompactPixelImagePreview(
 ) {
     val colors = MaterialTheme.colors
 
+    // Outer container
     Box(
-        modifier = modifier.size(width = 56.dp, height = 78.dp)
-            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
-            .background(colors.surface.copy(alpha = 0.5f), shape = PixelShape(cornerSize = 4.dp))
-            .clickable(onClick = onClick), 
+        modifier = modifier
+            .size(width = 56.dp, height = 78.dp)
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        // Inner box to clip image content within pixel border bounds
+        // Image layer - inset by border width and clipped
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(3.dp) // Account for border width
-                .clip(PixelShape(cornerSize = 2.dp)),
+                .padding(2.dp) // Inset by border width
+                .clip(PixelShape(cornerSize = 3.dp)) // Clip to prevent overflow
+                .background(colors.surface.copy(alpha = 0.5f)),
             contentAlignment = Alignment.Center
         ) {
             when {
@@ -54,8 +55,7 @@ fun CompactPixelImagePreview(
                         model = imageUrl,
                         contentDescription = cardName,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize(1.05f), // Slightly larger to ensure border clips edges
+                        modifier = Modifier.fillMaxSize(1.2f), // Scale larger for more aggressive crop
                         onState = { loadState = it }
                     )
 
@@ -96,6 +96,13 @@ fun CompactPixelImagePreview(
                 }
             }
         }
+        
+        // Border layer - drawn on top of the image
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
+        )
     }
 }
 
@@ -161,17 +168,18 @@ fun MobilePixelImageModal(
 
                 // Large image preview - mobile aspect ratio
                 Box(
-                    modifier = Modifier.fillMaxWidth().aspectRatio(0.715f) // Standard MTG card aspect ratio
-                        .pixelBorder(borderWidth = 3.dp, enabled = true, glowAlpha = 0.4f)
-                        .background(colors.surface.copy(alpha = 0.5f), shape = PixelShape(cornerSize = 8.dp)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(0.715f), // Standard MTG card aspect ratio
                     contentAlignment = Alignment.Center
                 ) {
-                    // Inner box to clip image content within pixel border bounds
+                    // Image layer - inset by border width and clipped
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(5.dp) // Account for border width
-                            .clip(PixelShape(cornerSize = 4.dp)),
+                            .padding(3.dp) // Inset by border width
+                            .clip(PixelShape(cornerSize = 6.dp)) // Clip to prevent overflow
+                            .background(colors.surface.copy(alpha = 0.5f)),
                         contentAlignment = Alignment.Center
                     ) {
                         when {
@@ -181,8 +189,8 @@ fun MobilePixelImageModal(
                                 AsyncImage(
                                     model = imageUrl,
                                     contentDescription = cardName,
-                                    contentScale = ContentScale.Fit,
-                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize(1.2f), // Scale larger for more aggressive crop
                                     onState = { loadState = it }
                                 )
 
@@ -245,6 +253,13 @@ fun MobilePixelImageModal(
                             }
                         }
                     }
+                    
+                    // Border layer - drawn on top of the image
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .pixelBorder(borderWidth = 3.dp, enabled = true, glowAlpha = 0.4f)
+                    )
                 }
 
                 Spacer(Modifier.height(12.dp))
