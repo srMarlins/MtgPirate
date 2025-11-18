@@ -10,6 +10,7 @@
     <ID>CyclomaticComplexMethod:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
     <ID>CyclomaticComplexMethod:Main.kt$fun main()</ID>
     <ID>CyclomaticComplexMethod:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
+    <ID>CyclomaticComplexMethod:MobileResultsScreen.kt$@Composable fun MobileResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, isLoading: Boolean = false, )</ID>
     <ID>CyclomaticComplexMethod:MobileResultsScreen.kt$@Composable fun MobileResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, isLoading: Boolean = false, matchedCount: Int = 0, unmatchedCount: Int = 0, ambiguousCount: Int = 0, )</ID>
     <ID>CyclomaticComplexMethod:MviViewModel.kt$MviViewModel$fun processIntent(intent: ViewIntent)</ID>
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt$@Composable fun DraggableVariantItem( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
@@ -21,6 +22,8 @@
     <ID>FunctionNaming:CatalogScreen.kt$@Composable fun CatalogScreen( catalog: Catalog, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:CatalogScreen.kt$@Composable private fun PixelDropdownSelector(label: String, options: List&lt;String&gt;, selected: String, onSelect: (String) -&gt; Unit)</ID>
     <ID>FunctionNaming:DesktopResolveScreen.kt$@Composable fun DesktopResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, )</ID>
+    <ID>FunctionNaming:DesktopSavedImportsDialog.kt$@Composable actual fun SavedImportsDialog( savedImports: List&lt;SavedImport&gt;, onDismiss: () -&gt; Unit, onSelectImport: (String) -&gt; Unit, onDeleteImport: (String) -&gt; Unit )</ID>
+    <ID>FunctionNaming:DesktopSavedImportsDialog.kt$@Composable fun SavedImportCard( import: SavedImport, onSelect: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>FunctionNaming:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
     <ID>FunctionNaming:ExportScreen.kt$@Composable fun HeaderRow()</ID>
     <ID>FunctionNaming:IosCompactStepper.kt$@Composable fun CompactStepper( currentStep: Int, totalSteps: Int = 4, modifier: Modifier = Modifier )</ID>
@@ -29,12 +32,15 @@
     <ID>FunctionNaming:IosExportHelpers.kt$@Composable fun ExportSummaryCard( resolved: List&lt;model.DeckEntryMatch&gt;, unresolved: List&lt;model.DeckEntryMatch&gt; )</ID>
     <ID>FunctionNaming:IosExportHelpers.kt$@Composable private fun ShippingOptionRow( isSelected: Boolean, onClick: () -&gt; Unit, title: String, subtitle: String, isEnabled: Boolean, isPrimary: Boolean )</ID>
     <ID>FunctionNaming:IosMobileWrappers.kt$@Composable fun MobilePaddingWrapper( content: @Composable BoxScope.() -&gt; Unit )</ID>
+    <ID>FunctionNaming:IosSavedImportsDialog.kt$@Composable actual fun SavedImportsDialog( savedImports: List&lt;SavedImport&gt;, onDismiss: () -&gt; Unit, onSelectImport: (String) -&gt; Unit, onDeleteImport: (String) -&gt; Unit )</ID>
+    <ID>FunctionNaming:IosSavedImportsDialog.kt$@Composable fun MobileSavedImportCard( import: SavedImport, onSelect: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosCatalogScreen( catalog: model.Catalog, onBack: () -&gt; Unit, onEnrichVariant: ((model.CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosExportScreen( matches: List&lt;model.DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosImportScreen( deckText: String, onDeckTextChange: (String) -&gt; Unit, onNext: () -&gt; Unit, onShowSavedImports: () -&gt; Unit, isLoadingCatalog: Boolean = false )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosMatchesScreen( matches: List&lt;model.DeckEntryMatch&gt;, onBack: () -&gt; Unit, onEnrichVariant: ((model.CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosPreferencesScreen( includeSideboard: Boolean, includeCommanders: Boolean, includeTokens: Boolean, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosResolveScreen( match: model.DeckEntryMatch, onSelect: (model.CardVariant) -&gt; Unit, onBack: () -&gt; Unit, onEnrichVariant: ((model.CardVariant) -&gt; Unit)? = null )</ID>
+    <ID>FunctionNaming:IosScreens.kt$@Composable fun IosResultsScreen( matches: List&lt;model.DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit, onEnrichVariant: ((model.CardVariant) -&gt; Unit)? = null, isLoadingCatalog: Boolean = false, isMatching: Boolean = false, )</ID>
     <ID>FunctionNaming:IosScreens.kt$@Composable fun IosResultsScreen( matches: List&lt;model.DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit, onEnrichVariant: ((model.CardVariant) -&gt; Unit)? = null, isLoadingCatalog: Boolean = false, isMatching: Boolean = false, matchedCount: Int = 0, unmatchedCount: Int = 0, ambiguousCount: Int = 0, )</ID>
     <ID>FunctionNaming:Main.kt$@Composable fun CompactPixelButton( text: String, onClick: () -&gt; Unit, enabled: Boolean = true, color: Color )</ID>
     <ID>FunctionNaming:Main.kt$@Composable fun FrameWindowScope.CustomTitleBar( windowState: WindowState, onClose: () -&gt; Unit, isDarkTheme: Boolean, onToggleTheme: () -&gt; Unit, loadingCatalog: Boolean, hasCatalog: Boolean, hasMatches: Boolean, resultsEnabled: Boolean, onCatalogClick: () -&gt; Unit, onExportClick: () -&gt; Unit, onMatchesClick: () -&gt; Unit, onResultsClick: () -&gt; Unit )</ID>
@@ -47,6 +53,7 @@
     <ID>FunctionNaming:Main.kt$fun MainViewController()</ID>
     <ID>FunctionNaming:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:MatchesScreen.kt$@Composable private fun PixelStatusDropdown(label: String, options: List&lt;String&gt;, selected: String, onSelect: (String) -&gt; Unit)</ID>
+    <ID>FunctionNaming:MobileResultsScreen.kt$@Composable fun MobileResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, isLoading: Boolean = false, )</ID>
     <ID>FunctionNaming:MobileResultsScreen.kt$@Composable fun MobileResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, isLoading: Boolean = false, matchedCount: Int = 0, unmatchedCount: Int = 0, ambiguousCount: Int = 0, )</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun &lt;T&gt; PixelDraggableList( items: List&lt;T&gt;, onReorder: (List&lt;T&gt;) -&gt; Unit, modifier: Modifier = Modifier, itemContent: @Composable (item: T, index: Int, isDragging: Boolean) -&gt; Unit )</ID>
     <ID>FunctionNaming:PixelComponents.kt$@Composable fun AnimatedLoadingDots()</ID>
@@ -78,6 +85,8 @@
     <ID>FunctionNaming:PreferencesWizardScreen.kt$@Composable fun DraggableVariantItem( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
     <ID>FunctionNaming:PreferencesWizardScreen.kt$@Composable fun PreferencesWizardScreen( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
     <ID>FunctionNaming:ResolveScreen.kt$@Composable fun ResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, )</ID>
+    <ID>FunctionNaming:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, isLoading: Boolean = false )</ID>
+    <ID>FunctionNaming:SavedImportsScreen.kt$@Composable expect fun SavedImportsDialog( savedImports: List&lt;SavedImport&gt;, onDismiss: () -&gt; Unit, onSelectImport: (String) -&gt; Unit, onDeleteImport: (String) -&gt; Unit )</ID>
     <ID>FunctionNaming:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, isLoading: Boolean = false, matchedCount: Int = 0, unmatchedCount: Int = 0, ambiguousCount: Int = 0, totalPriceCents: Int = 0, )</ID>
     <ID>FunctionNaming:SavedImportsScreen.kt$@Composable fun SavedImportCard( import: SavedImport, onSelect: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>FunctionNaming:SavedImportsScreen.kt$@Composable fun SavedImportsDialog( savedImports: List&lt;SavedImport&gt;, onDismiss: () -&gt; Unit, onSelectImport: (String) -&gt; Unit, onDeleteImport: (String) -&gt; Unit )</ID>
@@ -90,7 +99,11 @@
     <ID>LongMethod:CatalogScreen.kt$@Composable fun CatalogScreen( catalog: Catalog, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
     <ID>LongMethod:DecklistParser.kt$DecklistParser$fun parse(text: String, includeSideboard: Boolean, includeCommanders: Boolean): List&lt;DeckEntry&gt;</ID>
     <ID>LongMethod:DesktopResolveScreen.kt$@Composable fun DesktopResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, )</ID>
+    <ID>LongMethod:DesktopSavedImportsDialog.kt$@Composable actual fun SavedImportsDialog( savedImports: List&lt;SavedImport&gt;, onDismiss: () -&gt; Unit, onSelectImport: (String) -&gt; Unit, onDeleteImport: (String) -&gt; Unit )</ID>
+    <ID>LongMethod:DesktopSavedImportsDialog.kt$@Composable fun SavedImportCard( import: SavedImport, onSelect: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>LongMethod:ExportScreen.kt$@Composable fun ExportScreen( matches: List&lt;DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit, )</ID>
+    <ID>LongMethod:IosSavedImportsDialog.kt$@Composable actual fun SavedImportsDialog( savedImports: List&lt;SavedImport&gt;, onDismiss: () -&gt; Unit, onSelectImport: (String) -&gt; Unit, onDeleteImport: (String) -&gt; Unit )</ID>
+    <ID>LongMethod:IosSavedImportsDialog.kt$@Composable fun MobileSavedImportCard( import: SavedImport, onSelect: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>LongMethod:IosScreens.kt$@Composable fun IosExportScreen( matches: List&lt;model.DeckEntryMatch&gt;, onBack: () -&gt; Unit, onExport: () -&gt; Unit )</ID>
     <ID>LongMethod:IosScreens.kt$@Composable fun IosImportScreen( deckText: String, onDeckTextChange: (String) -&gt; Unit, onNext: () -&gt; Unit, onShowSavedImports: () -&gt; Unit, isLoadingCatalog: Boolean = false )</ID>
     <ID>LongMethod:IosScreens.kt$@Composable fun IosPreferencesScreen( includeSideboard: Boolean, includeCommanders: Boolean, includeTokens: Boolean, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
@@ -98,6 +111,7 @@
     <ID>LongMethod:Main.kt$@Composable fun IosNavigationHost( viewModel: MviViewModel, state: state.ViewState )</ID>
     <ID>LongMethod:Main.kt$fun main()</ID>
     <ID>LongMethod:MatchesScreen.kt$@Composable fun MatchesScreen( matches: List&lt;DeckEntryMatch&gt;, onClose: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null )</ID>
+    <ID>LongMethod:MobileResultsScreen.kt$@Composable fun MobileResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, isLoading: Boolean = false, )</ID>
     <ID>LongMethod:MobileResultsScreen.kt$@Composable fun MobileResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, isLoading: Boolean = false, matchedCount: Int = 0, unmatchedCount: Int = 0, ambiguousCount: Int = 0, )</ID>
     <ID>LongMethod:PixelComponents.kt$@Composable fun FantasyStarIcon( modifier: Modifier = Modifier, color: Color = Color(0xFFFBD38D), animated: Boolean = true )</ID>
     <ID>LongMethod:PixelComponents.kt$@Composable fun PixelProgressAnimation( modifier: Modifier = Modifier, size: Dp = 48.dp, color: Color = MaterialTheme.colors.primary )</ID>
@@ -107,6 +121,7 @@
     <ID>LongMethod:PreferencesWizardScreen.kt$@Composable fun DraggableVariantItem( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
     <ID>LongMethod:PreferencesWizardScreen.kt$@Composable fun PreferencesWizardScreen( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
     <ID>LongMethod:ResolveScreen.kt$@Composable fun ResolveScreen( match: DeckEntryMatch, onSelect: (CardVariant) -&gt; Unit, onBack: () -&gt; Unit, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, )</ID>
+    <ID>LongMethod:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, isLoading: Boolean = false )</ID>
     <ID>LongMethod:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, isLoading: Boolean = false, matchedCount: Int = 0, unmatchedCount: Int = 0, ambiguousCount: Int = 0, totalPriceCents: Int = 0, )</ID>
     <ID>LongMethod:SavedImportsScreen.kt$@Composable fun SavedImportCard( import: SavedImport, onSelect: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>LongMethod:SavedImportsScreen.kt$@Composable fun SavedImportsDialog( savedImports: List&lt;SavedImport&gt;, onDismiss: () -&gt; Unit, onSelectImport: (String) -&gt; Unit, onDeleteImport: (String) -&gt; Unit )</ID>
@@ -115,6 +130,9 @@
     <ID>LongParameterList:CatalogCsvParser.kt$CatalogCsvParser$(cells: List&lt;String&gt;, headers: List&lt;String&gt;, idxSku: Int, idxName: Int, idxSet: Int, idxType: Int, idxPrice: Int)</ID>
     <ID>LongParameterList:IosExportHelpers.kt$( isSelected: Boolean, onClick: () -&gt; Unit, title: String, subtitle: String, isEnabled: Boolean, isPrimary: Boolean )</ID>
     <ID>LongParameterList:IosScreens.kt$( includeSideboard: Boolean, includeCommanders: Boolean, includeTokens: Boolean, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
+    <ID>LongParameterList:IosScreens.kt$( matches: List&lt;model.DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit, onEnrichVariant: ((model.CardVariant) -&gt; Unit)? = null, isLoadingCatalog: Boolean = false, isMatching: Boolean = false, )</ID>
+    <ID>LongParameterList:Main.kt$( windowState: WindowState, onClose: () -&gt; Unit, isDarkTheme: Boolean, onToggleTheme: () -&gt; Unit, loadingCatalog: Boolean, hasCatalog: Boolean, hasMatches: Boolean, resultsEnabled: Boolean, onCatalogClick: () -&gt; Unit, onExportClick: () -&gt; Unit, onMatchesClick: () -&gt; Unit, onResultsClick: () -&gt; Unit )</ID>
+    <ID>LongParameterList:MobileResultsScreen.kt$( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, isLoading: Boolean = false, )</ID>
     <ID>LongParameterList:IosScreens.kt$( matches: List&lt;model.DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit, onEnrichVariant: ((model.CardVariant) -&gt; Unit)? = null, isLoadingCatalog: Boolean = false, isMatching: Boolean = false, matchedCount: Int = 0, unmatchedCount: Int = 0, ambiguousCount: Int = 0, )</ID>
     <ID>LongParameterList:Main.kt$( windowState: WindowState, onClose: () -&gt; Unit, isDarkTheme: Boolean, onToggleTheme: () -&gt; Unit, loadingCatalog: Boolean, hasCatalog: Boolean, hasMatches: Boolean, resultsEnabled: Boolean, onCatalogClick: () -&gt; Unit, onExportClick: () -&gt; Unit, onMatchesClick: () -&gt; Unit, onResultsClick: () -&gt; Unit )</ID>
     <ID>LongParameterList:MobileResultsScreen.kt$( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, isLoading: Boolean = false, matchedCount: Int = 0, unmatchedCount: Int = 0, ambiguousCount: Int = 0, )</ID>
@@ -143,6 +161,7 @@
     <ID>MaxLineLength:DesktopResolveScreen.kt$Text("PRICE", Modifier.width(80.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:DesktopResolveScreen.kt$Text("SET", Modifier.width(70.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:DesktopResolveScreen.kt$Text("VARIANT", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DesktopSavedImportsDialog.kt$"${localDateTime.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${localDateTime.day}, ${localDateTime.year} ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"</ID>
     <ID>MaxLineLength:ExportScreen.kt$"Normal (15-40 days) — " + if (normalShippingCost == 0) "Free" else formatPrice(normalShippingCost)</ID>
     <ID>MaxLineLength:ExportScreen.kt$Modifier.fillMaxWidth().background(MaterialTheme.colors.surface.copy(alpha = 0.6f)).padding(horizontal = 12.dp, vertical = 8.dp)</ID>
     <ID>MaxLineLength:ExportScreen.kt$Promotions.ShippingType.EXPRESS -&gt; if (selectedShippingCost == 0) "Express Free Shipping (3-7 days)" else "Express Shipping"</ID>
@@ -213,8 +232,6 @@
     <ID>MaxLineLength:ResultsScreen.kt$color = if (ambiguous &gt; 0) Color(0xFFFF9800) else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)</ID>
     <ID>MaxLineLength:ResultsScreen.kt$color = if (missed &gt; 0) Color(0xFFF44336) else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)</ID>
     <ID>MaxLineLength:ResultsScreen.kt$if (filterMode == 0) MaterialTheme.colors.primary.copy(alpha = 0.2f) else MaterialTheme.colors.surface</ID>
-    <ID>MaxLineLength:SavedImportsScreen.kt$"${localDateTime.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${localDateTime.day}, ${localDateTime.year} ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"</ID>
-    <ID>MaxLineLength:SavedImportsScreen.kt$.</ID>
     <ID>MaxLineLength:ScryfallImageEnricher.kt$ScryfallImageEnricher$log?.invoke("Fetching image for ${variant.nameOriginal} (${variant.setCode} #${variant.collectorNumber})")</ID>
     <ID>NestedBlockDepth:CatalogCsvParser.kt$CatalogCsvParser$private fun alignRow(cells: List&lt;String&gt;, headers: List&lt;String&gt;, idxSku: Int, idxName: Int, idxSet: Int, idxType: Int, idxPrice: Int): List&lt;String&gt;</ID>
     <ID>NestedBlockDepth:DecklistParser.kt$DecklistParser$fun parse(text: String, includeSideboard: Boolean, includeCommanders: Boolean): List&lt;DeckEntry&gt;</ID>
@@ -226,18 +243,20 @@
     <ID>ReturnCount:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private fun loadWithCacheAge(maxAge: Duration, forceRefresh: Boolean = false, log: (String) -&gt; Unit = {}): Catalog?</ID>
     <ID>ReturnCount:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private fun tryCsvThenHtml(log: (String) -&gt; Unit): Catalog?</ID>
     <ID>SwallowedException:DesktopMviPlatformServices.kt$DesktopMviPlatformServices$e: Exception</ID>
+    <ID>SwallowedException:DesktopSavedImportsDialog.kt$e: Exception</ID>
+    <ID>SwallowedException:IosSavedImportsDialog.kt$e: Exception</ID>
     <ID>SwallowedException:PlatformUtils.kt$e: Exception</ID>
-    <ID>SwallowedException:SavedImportsScreen.kt$e: Exception</ID>
     <ID>SwallowedException:ScryfallApi.kt$ScryfallApi$e: Exception</ID>
     <ID>TooGenericExceptionCaught:DatabaseCatalogDataSource.kt$DatabaseCatalogDataSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:DesktopMviPlatformServices.kt$DesktopMviPlatformServices$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DesktopSavedImportsDialog.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:IosMviPlatformServices.kt$IosMviPlatformServices$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:IosSavedImportsDialog.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:KtorRemoteCatalogDataSource.kt$KtorRemoteCatalogDataSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:MviViewModel.kt$MviViewModel$e: Exception</ID>
     <ID>TooGenericExceptionCaught:PlatformUtils.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$ex: Exception</ID>
-    <ID>TooGenericExceptionCaught:SavedImportsScreen.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScryfallApi.kt$ScryfallApi$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScryfallImageEnricher.kt$ScryfallImageEnricher$e: Exception</ID>
     <ID>TooGenericExceptionThrown:ScryfallApi.kt$ScryfallApi$throw Exception("HTTP ${response.status.value}: ${response.status.description}")</ID>
