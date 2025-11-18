@@ -435,27 +435,7 @@ fun IosResultsScreen(
                 )
             }
             
-            // Inline loading indicators
-            if (isLoadingCatalog || isMatching) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .safeDrawingPadding()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    InlineLoadingCard(
-                        message = when {
-                            isLoadingCatalog -> "Loading catalog..."
-                            isMatching -> "Matching cards..."
-                            else -> ""
-                        },
-                        visible = isLoadingCatalog || isMatching
-                    )
-                }
-                Spacer(Modifier.height(8.dp))
-            }
-            
-            // Results screen content - will handle its own padding
+            // Results screen content - will handle its own padding and loading display
             Box(modifier = Modifier.weight(1f)) {
                 MobileResultsScreen(
                     matches = matches,
@@ -463,7 +443,8 @@ fun IosResultsScreen(
                     onShowAllCandidates = onResolve,
                     onClose = onBack,
                     onExport = onNext,
-                    onEnrichVariant = onEnrichVariant
+                    onEnrichVariant = onEnrichVariant,
+                    isLoading = isLoadingCatalog || isMatching
                 )
             }
         }
