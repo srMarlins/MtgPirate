@@ -192,8 +192,8 @@ class MviViewModel(
 
             entries.forEach { e ->
                 if (e.setCodeHint != null) {
-                    log("Parsed: ${e.qty} ${e.cardName} (${e.setCodeHint}${e.collectorNumberHint?.let { " #$it" } ?: ""})",
-                        "DEBUG")
+                    val collectorSuffix = e.collectorNumberHint?.let { " #$it" } ?: ""
+                    log("Parsed: ${e.qty} ${e.cardName} (${e.setCodeHint}$collectorSuffix)", "DEBUG")
                 } else {
                     log("Parsed: ${e.qty} ${e.cardName}", "DEBUG")
                 }
@@ -262,8 +262,8 @@ class MviViewModel(
 
             entries.forEach { e ->
                 if (e.setCodeHint != null) {
-                    log("Parsed: ${e.qty} ${e.cardName} (${e.setCodeHint}${e.collectorNumberHint?.let { " #$it" } ?: ""})",
-                        "DEBUG")
+                    val collectorSuffix = e.collectorNumberHint?.let { " #$it" } ?: ""
+                    log("Parsed: ${e.qty} ${e.cardName} (${e.setCodeHint}$collectorSuffix)", "DEBUG")
                 } else {
                     log("Parsed: ${e.qty} ${e.cardName}", "DEBUG")
                 }
