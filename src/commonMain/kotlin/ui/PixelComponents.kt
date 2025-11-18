@@ -1590,3 +1590,269 @@ fun InlineLoadingCard(
         }
     }
 }
+
+// ========================================
+// IOS MOBILE DRAGGABLE LIST (Enhanced for iOS)
+// ========================================
+/**
+ * iOS-optimized draggable list with modern iOS paradigms:
+ * - Long-press to initiate drag (iOS standard)
+ * - Haptic feedback for drag start, reorder, and drop
+ * - Enhanced lift animation with shadow/elevation
+ * - Smooth spring-based reorder animations
+ * - iOS-standard touch targets (44x44pt minimum)
+ * - Drop zone indicators
+ */
+@Composable
+fun <T> IosMobileDraggableList(
+    items: List<T>,
+    onReorder: (List<T>) -> Unit,
+    modifier: Modifier = Modifier,
+    itemContent: @Composable (item: T, index: Int, isDragging: Boolean) -> Unit
+) {
+    var draggedIndex by remember { mutableStateOf<Int?>(null) }
+    var targetIndex by remember { mutableStateOf<Int?>(null) }
+    var totalDragOffset by remember { mutableStateOf(0f) }
+    
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val itemHeightDp = 56.dp // Approximate item height with spacing
+    val itemHeightPx = with(density) { itemHeightDp.toPx() }
+
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(12.dp) // Increased spacing for iOS
+    ) {
+        items.forEachIndexed { index, item ->
+            val isDragging = draggedIndex == index
+            val isTargetZone = !isDragging && targetIndex == index
+            
+            // Calculate animation offset for items being displaced
+            val animatedOffset by animateFloatAsState(
+                targetValue = when {
+                    isDragging -> 0f // Dragged item doesn't animate in place
+                    draggedIndex != null && targetIndex != null -> {
+                        val dragIdx = draggedIndex!!
+                        val targetIdx = targetIndex!!
+                        when {
+                            // Item between original and target position
+                            dragIdx < targetIdx && index > dragIdx && index <= targetIdx -> -itemHeightPx
+                            dragIdx > targetIdx && index >= targetIdx && index < dragIdx -> itemHeightPx
+                            else -> 0f
+                        }
+                    }
+                    else -> 0f
+                },
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+
+            IosMobileDraggableItem(
+                index = index,
+                isDragging = isDragging,
+                isTargetZone = isTargetZone,
+                animatedOffset = animatedOffset,
+                onLongPressStart = {
+                    // Trigger haptic feedback on long press start
+                    platform.triggerHapticFeedback(platform.HapticFeedbackStyle.MEDIUM)
+                    draggedIndex = index
+                    targetIndex = index
+                    totalDragOffset = 0f
+                },
+                onDrag = { delta ->
+                    totalDragOffset += delta
+                    // Calculate target index based on cumulative drag
+                    val offsetInItems = (totalDragOffset / itemHeightPx).toInt()
+                    val newTargetIndex = (index + offsetInItems).coerceIn(0, items.size - 1)
+                    
+                    // Trigger selection haptic when crossing to new target
+                    if (newTargetIndex != targetIndex) {
+                        platform.triggerHapticFeedback(platform.HapticFeedbackStyle.SELECTION)
+                        targetIndex = newTargetIndex
+                    }
+                },
+                onDragEnd = {
+                    if (draggedIndex != null && targetIndex != null && 
+                        draggedIndex != targetIndex) {
+                        // Reorder the list
+                        val newList = items.toMutableList()
+                        val draggedItem = newList.removeAt(draggedIndex!!)
+                        newList.add(targetIndex!!, draggedItem)
+                        onReorder(newList)
+                        
+                        // Trigger success haptic on drop
+                        platform.triggerHapticFeedback(platform.HapticFeedbackStyle.LIGHT)
+                    }
+                    
+                    // Reset drag state
+                    draggedIndex = null
+                    targetIndex = null
+                    totalDragOffset = 0f
+                }
+            ) {
+                itemContent(item, index, isDragging)
+            }
+        }
+    }
+}
+
+/**
+ * iOS-optimized draggable item with long-press gesture and enhanced visual feedback
+ */
+@Composable
+private fun IosMobileDraggableItem(
+    index: Int,
+    isDragging: Boolean,
+    isTargetZone: Boolean,
+    animatedOffset: Float,
+    onLongPressStart: () -> Unit,
+    onDrag: (Float) -> Unit,
+    onDragEnd: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    val colors = MaterialTheme.colors
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    
+    var dragOffset by remember { mutableStateOf(0f) }
+    
+    // Enhanced scale animation for iOS lift effect
+    val scale by animateFloatAsState(
+        targetValue = if (isDragging) 1.05f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        )
+    )
+    
+    // Border width animation
+    val borderWidth by animateDpAsState(
+        targetValue = when {
+            isDragging -> 3.dp
+            isTargetZone -> 3.dp
+            else -> 2.dp
+        },
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+    )
+    
+    // Glow animation for active drag
+    val infiniteTransition = rememberInfiniteTransition()
+    val dragGlowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 0.9f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    
+    val glowAlpha = when {
+        isDragging -> dragGlowAlpha
+        isTargetZone -> 0.5f
+        else -> 0.2f
+    }
+    
+    // Background with iOS-style gradient when dragging
+    val backgroundColor = if (isDragging) {
+        Brush.horizontalGradient(
+            colors = listOf(
+                colors.primary.copy(alpha = 0.12f),
+                colors.secondary.copy(alpha = 0.12f),
+                colors.primary.copy(alpha = 0.12f)
+            )
+        )
+    } else {
+        Brush.horizontalGradient(
+            colors = listOf(colors.surface, colors.surface)
+        )
+    }
+    
+    // Calculate final offset
+    val finalOffsetDp = with(density) {
+        if (isDragging) {
+            dragOffset.toDp()
+        } else {
+            animatedOffset.toDp()
+        }
+    }
+    
+    // Long-press gesture state
+    var pressStartTime by remember { mutableStateOf(0L) }
+    var longPressTriggered by remember { mutableStateOf(false) }
+    
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .offset(y = finalOffsetDp)
+            .scale(scale)
+            .zIndex(if (isDragging) 10f else if (isTargetZone) 5f else 0f)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = { offset ->
+                        // Start tracking press time for long-press detection
+                        pressStartTime = System.currentTimeMillis()
+                        longPressTriggered = false
+                    },
+                    onDrag = { change, dragAmount ->
+                        val pressDuration = System.currentTimeMillis() - pressStartTime
+                        
+                        // Require long press (500ms) before enabling drag
+                        if (pressDuration >= 500 && !longPressTriggered) {
+                            longPressTriggered = true
+                            onLongPressStart()
+                        }
+                        
+                        // Only process drag after long press is triggered
+                        if (longPressTriggered) {
+                            change.consume()
+                            dragOffset += dragAmount.y
+                            onDrag(dragAmount.y)
+                        }
+                    },
+                    onDragEnd = {
+                        if (longPressTriggered) {
+                            onDragEnd()
+                        }
+                        dragOffset = 0f
+                        longPressTriggered = false
+                    },
+                    onDragCancel = {
+                        if (longPressTriggered) {
+                            onDragEnd()
+                        }
+                        dragOffset = 0f
+                        longPressTriggered = false
+                    }
+                )
+            }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .pixelBorder(
+                    borderWidth = borderWidth,
+                    enabled = true,
+                    glowAlpha = glowAlpha
+                )
+                .background(backgroundColor, shape = PixelShape(cornerSize = 8.dp))
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            content()
+        }
+        
+        // Drop zone indicator when target
+        if (isTargetZone && !isDragging) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .align(Alignment.BottomCenter)
+                    .offset(y = 2.dp)
+                    .background(
+                        colors.secondary,
+                        shape = PixelShape(cornerSize = 2.dp)
+                    )
+            )
+        }
+    }
+}

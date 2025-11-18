@@ -24,3 +24,8 @@ actual suspend fun copyToClipboard(text: String) {
         // Silently fail - not critical
     }
 }
+
+actual fun triggerHapticFeedback(style: HapticFeedbackStyle) {
+    // Desktop does not support haptic feedback
+    // This is a no-op on desktop
+}

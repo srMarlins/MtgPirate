@@ -23,3 +23,55 @@ actual fun abs(value: Int): Int = kAbs(value)
 actual suspend fun copyToClipboard(text: String) {
     platform.UIKit.UIPasteboard.generalPasteboard.string = text
 }
+
+actual fun triggerHapticFeedback(style: HapticFeedbackStyle) {
+    when (style) {
+        HapticFeedbackStyle.LIGHT -> {
+            val generator = platform.UIKit.UIImpactFeedbackGenerator(
+                platform.UIKit.UIImpactFeedbackStyle.UIImpactFeedbackStyleLight
+            )
+            generator.prepare()
+            generator.impactOccurred()
+        }
+        HapticFeedbackStyle.MEDIUM -> {
+            val generator = platform.UIKit.UIImpactFeedbackGenerator(
+                platform.UIKit.UIImpactFeedbackStyle.UIImpactFeedbackStyleMedium
+            )
+            generator.prepare()
+            generator.impactOccurred()
+        }
+        HapticFeedbackStyle.HEAVY -> {
+            val generator = platform.UIKit.UIImpactFeedbackGenerator(
+                platform.UIKit.UIImpactFeedbackStyle.UIImpactFeedbackStyleHeavy
+            )
+            generator.prepare()
+            generator.impactOccurred()
+        }
+        HapticFeedbackStyle.SELECTION -> {
+            val generator = platform.UIKit.UISelectionFeedbackGenerator()
+            generator.prepare()
+            generator.selectionChanged()
+        }
+        HapticFeedbackStyle.SUCCESS -> {
+            val generator = platform.UIKit.UINotificationFeedbackGenerator()
+            generator.prepare()
+            generator.notificationOccurred(
+                platform.UIKit.UINotificationFeedbackType.UINotificationFeedbackTypeSuccess
+            )
+        }
+        HapticFeedbackStyle.WARNING -> {
+            val generator = platform.UIKit.UINotificationFeedbackGenerator()
+            generator.prepare()
+            generator.notificationOccurred(
+                platform.UIKit.UINotificationFeedbackType.UINotificationFeedbackTypeWarning
+            )
+        }
+        HapticFeedbackStyle.ERROR -> {
+            val generator = platform.UIKit.UINotificationFeedbackGenerator()
+            generator.prepare()
+            generator.notificationOccurred(
+                platform.UIKit.UINotificationFeedbackType.UINotificationFeedbackTypeError
+            )
+        }
+    }
+}

@@ -241,7 +241,7 @@ fun IosPreferencesScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // Variant Priority - Scrollable with improved button states
+            // Variant Priority - iOS-optimized drag and drop with haptic feedback
             PixelCard(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 glowing = false
@@ -254,13 +254,13 @@ fun IosPreferencesScreen(
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    "└─ Drag items or use arrows to reorder",
+                    "└─ Long press and drag to reorder",
                     style = MaterialTheme.typography.caption,
                     color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
                 )
                 Spacer(Modifier.height(8.dp))
 
-                // Draggable list with improved visual states for mobile
+                // iOS-optimized draggable list with enhanced touch targets and haptic feedback
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -274,13 +274,15 @@ fun IosPreferencesScreen(
                 ) {
                     val variants = variantPriority.ifEmpty { listOf("Regular", "Foil", "Holo") }
                     
-                    PixelDraggableList(
+                    IosMobileDraggableList(
                         items = variants,
                         onReorder = onVariantPriorityChange,
                         modifier = Modifier.fillMaxSize()
                     ) { variant, index, isDragging ->
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 44.dp), // iOS minimum touch target
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -288,10 +290,12 @@ fun IosPreferencesScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.weight(1f)
                             ) {
-                                // Drag handle
+                                // Enhanced drag handle with better touch target
                                 PixelDragHandle(
                                     isDragging = isDragging,
-                                    modifier = Modifier.padding(end = 8.dp)
+                                    modifier = Modifier
+                                        .padding(end = 12.dp)
+                                        .size(32.dp) // Larger touch target
                                 )
                                 
                                 Text(
@@ -299,21 +303,21 @@ fun IosPreferencesScreen(
                                     style = MaterialTheme.typography.caption,
                                     color = MaterialTheme.colors.primary,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.width(20.dp)
+                                    modifier = Modifier.width(24.dp)
                                 )
                                 Text(
                                     variant,
-                                    style = MaterialTheme.typography.body2,
+                                    style = MaterialTheme.typography.body1, // Larger text
+                                    fontWeight = if (isDragging) FontWeight.Bold else FontWeight.Normal,
                                     modifier = Modifier.weight(1f)
                                 )
                             }
 
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                // Up button - only show glow when enabled
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                // Up button - iOS-sized touch target (44x44)
                                 Box(
                                     modifier = Modifier
-                                        .width(36.dp)
-                                        .height(32.dp)
+                                        .size(44.dp) // iOS minimum touch target
                                         .pixelBorder(
                                             borderWidth = 2.dp,
                                             enabled = index > 0,
@@ -325,6 +329,9 @@ fun IosPreferencesScreen(
                                             shape = PixelShape(cornerSize = 6.dp)
                                         )
                                         .clickable(enabled = index > 0) {
+                                            platform.triggerHapticFeedback(
+                                                platform.HapticFeedbackStyle.SELECTION
+                                            )
                                             val newList = variants.toMutableList()
                                             val temp = newList[index]
                                             newList[index] = newList[index - 1]
@@ -335,17 +342,17 @@ fun IosPreferencesScreen(
                                 ) {
                                     Text(
                                         "▲",
-                                        style = MaterialTheme.typography.body2,
-                                        color = if (index > 0) MaterialTheme.colors.onSurface else Color.Gray,
+                                        style = MaterialTheme.typography.h6,
+                                        color = if (index > 0) MaterialTheme.colors.onSurface 
+                                               else Color.Gray,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
                                 
-                                // Down button - only show glow when enabled
+                                // Down button - iOS-sized touch target (44x44)
                                 Box(
                                     modifier = Modifier
-                                        .width(36.dp)
-                                        .height(32.dp)
+                                        .size(44.dp) // iOS minimum touch target
                                         .pixelBorder(
                                             borderWidth = 2.dp,
                                             enabled = index < variants.size - 1,
@@ -357,6 +364,9 @@ fun IosPreferencesScreen(
                                             shape = PixelShape(cornerSize = 6.dp)
                                         )
                                         .clickable(enabled = index < variants.size - 1) {
+                                            platform.triggerHapticFeedback(
+                                                platform.HapticFeedbackStyle.SELECTION
+                                            )
                                             val newList = variants.toMutableList()
                                             val temp = newList[index]
                                             newList[index] = newList[index + 1]
@@ -367,8 +377,9 @@ fun IosPreferencesScreen(
                                 ) {
                                     Text(
                                         "▼",
-                                        style = MaterialTheme.typography.body2,
-                                        color = if (index < variants.size - 1) MaterialTheme.colors.onSurface 
+                                        style = MaterialTheme.typography.h6,
+                                        color = if (index < variants.size - 1) 
+                                               MaterialTheme.colors.onSurface 
                                                else Color.Gray,
                                         fontWeight = FontWeight.Bold
                                     )
