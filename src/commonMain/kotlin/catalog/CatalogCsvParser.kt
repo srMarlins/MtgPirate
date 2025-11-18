@@ -97,8 +97,6 @@ object CatalogCsvParser {
                 }
                 setCodeFromName = possibleSet
             }
-            // DEBUG: Print values before skip
-            println("DEBUG: sku='$sku', name='$name', set='$set', setCodeFromName='$setCodeFromName'")
             // Extract collector number from name if present
             var collectorNumberFromName: String? = null
             val match = collectorNumberFromNameRegex.find(name)
@@ -113,8 +111,6 @@ object CatalogCsvParser {
             if (set.isBlank() && !setCodeFromName.isNullOrBlank()) {
                 set = setCodeFromName
             }
-            // DEBUG: Print values before skip
-            println("DEBUG: sku='$sku', name='$name', set='$set', setCodeFromName='$setCodeFromName'")
             // Only skip if SKU or name are blank after all extraction
             if (sku.isBlank() || name.isBlank() || set.isBlank()) return@forEach
             val dollarsFromCell = if (idxPrice >= 0 && idxPrice < aligned.size) parsePriceCell(aligned[idxPrice]) else 0.0

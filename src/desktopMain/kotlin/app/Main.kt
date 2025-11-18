@@ -393,7 +393,7 @@ fun main() = application {
                                 }
                             }
                         } else {
-                            viewModel.processIntent(ViewIntent.LoadCatalog(true))
+                            viewModel.processIntent(ViewIntent.LoadCatalog)
                         }
                     },
                     onExportClick = { viewModel.processIntent(ViewIntent.ExportCsv) },
@@ -582,10 +582,7 @@ fun main() = application {
                                                 PixelButton(
                                                     text = "Next: Configure →",
                                                     onClick = {
-                                                        // Auto-save the import (dedup happens in saveCurrentImport)
-                                                        val autoName =
-                                                            "" // Name will be auto-generated from commander or timestamp
-                                                        viewModel.processIntent(ViewIntent.SaveCurrentImport(autoName))
+                                                        viewModel.processIntent(ViewIntent.SaveCurrentImport)
 
                                                         viewModel.processIntent(ViewIntent.ParseDeck)
                                                         viewModel.processIntent(ViewIntent.CompleteWizardStep(1))
