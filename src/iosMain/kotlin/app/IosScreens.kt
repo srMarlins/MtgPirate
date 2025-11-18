@@ -416,7 +416,7 @@ fun IosResultsScreen(
     onNext: () -> Unit,
     onEnrichVariant: ((model.CardVariant) -> Unit)? = null,
     isLoadingCatalog: Boolean = false,
-    isMatching: Boolean = false
+    isMatching: Boolean = false,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
