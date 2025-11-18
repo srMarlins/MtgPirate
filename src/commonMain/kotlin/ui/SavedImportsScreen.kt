@@ -34,7 +34,7 @@ fun SavedImportsDialog(
             modifier = Modifier
                 .width(800.dp)
                 .height(600.dp)
-                .pixelBorder(borderWidth = 3.dp, enabled = true, glowAlpha = 0.4f)
+                .pixelBorder(borderWidth = 3.dp, cornerSize = 8.dp, enabled = true, glowAlpha = 0.4f)
                 .background(MaterialTheme.colors.surface, shape = PixelShape(cornerSize = 8.dp))
         ) {
             // Scanline effect
@@ -71,7 +71,7 @@ fun SavedImportsDialog(
                     Box(
                         modifier = Modifier
                             .size(32.dp)
-                            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
+                            .pixelBorder(borderWidth = 2.dp, cornerSize = 4.dp, enabled = true, glowAlpha = 0.4f)
                             .background(MaterialTheme.colors.error.copy(alpha = 0.2f), shape = PixelShape(cornerSize = 4.dp))
                             .clickable { onDismiss() }
                             .padding(4.dp),
@@ -97,7 +97,7 @@ fun SavedImportsDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
+                            .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.2f)
                             .background(MaterialTheme.colors.surface.copy(alpha = 0.5f), shape = PixelShape(cornerSize = 6.dp))
                             .padding(32.dp),
                         contentAlignment = Alignment.Center
@@ -122,7 +122,7 @@ fun SavedImportsDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
+                            .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.2f)
                             .background(MaterialTheme.colors.surface.copy(alpha = 0.5f), shape = PixelShape(cornerSize = 6.dp))
                     ) {
                         val listState = rememberLazyListState()
@@ -264,7 +264,7 @@ fun SavedImportCard(
                 Box(
                     modifier = Modifier
                         .size(40.dp)
-                        .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
+                        .pixelBorder(borderWidth = 2.dp, cornerSize = 4.dp, enabled = true, glowAlpha = 0.4f)
                         .background(buttonColor, shape = PixelShape(cornerSize = 4.dp))
                         .clickable {
                             if (showDeleteConfirm) {

@@ -139,6 +139,7 @@ fun PixelStepNode(
                         .size(56.dp)
                         .pixelBorder(
                             borderWidth = 2.dp,
+                            cornerSize = 12.dp,
                             enabled = true,
                             glowAlpha = 0.6f
                         )
@@ -153,6 +154,7 @@ fun PixelStepNode(
                         .size(42.dp)
                     .pixelBorder(
                         borderWidth = 3.dp,
+                        cornerSize = 9.dp,
                         enabled = step.state != StepState.LOCKED,
                         glowAlpha = if (isActive) 0.8f else 0.3f
                     )
@@ -186,6 +188,7 @@ fun PixelStepNode(
             modifier = Modifier
                 .pixelBorder(
                     borderWidth = 2.dp,
+                    cornerSize = 6.dp,
                     enabled = step.state != StepState.LOCKED,
                     glowAlpha = if (isActive) 0.4f else 0.1f
                 )

@@ -325,7 +325,7 @@ fun IosThemeToggleFab(
     Box(
         modifier = modifier
             .size(56.dp)
-            .pixelBorder(borderWidth = 3.dp, enabled = true, glowAlpha = 0.5f)
+            .pixelBorder(borderWidth = 3.dp, cornerSize = 9.dp, enabled = true, glowAlpha = 0.5f)
             .background(MaterialTheme.colors.primary, shape = PixelShape(cornerSize = 9.dp))
             .clickable(
                 indication = null,

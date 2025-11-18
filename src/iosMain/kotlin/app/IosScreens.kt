@@ -265,7 +265,7 @@ fun IosPreferencesScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
+                        .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.2f)
                         .background(
                             MaterialTheme.colors.surface.copy(alpha = 0.5f),
                             shape = PixelShape(cornerSize = 6.dp)
@@ -316,6 +316,7 @@ fun IosPreferencesScreen(
                                         .height(32.dp)
                                         .pixelBorder(
                                             borderWidth = 2.dp,
+                                            cornerSize = 6.dp,
                                             enabled = index > 0,
                                             glowAlpha = 0f
                                         )
@@ -348,6 +349,7 @@ fun IosPreferencesScreen(
                                         .height(32.dp)
                                         .pixelBorder(
                                             borderWidth = 2.dp,
+                                            cornerSize = 6.dp,
                                             enabled = index < variants.size - 1,
                                             glowAlpha = 0f
                                         )

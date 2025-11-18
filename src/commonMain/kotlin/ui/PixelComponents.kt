@@ -110,10 +110,10 @@ fun PixelButton(
             .height(48.dp)
             .pixelBorder(
                 borderWidth = 3.dp,
+                cornerSize = 9.dp,
                 enabled = enabled,
                 glowAlpha = if (enabled) glowAlpha else 0f
             )
-            .clip(PixelShape(cornerSize = 9.dp))
             .background(backgroundColor, shape = PixelShape(cornerSize = 9.dp))
             .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -177,8 +177,7 @@ fun PixelTextField(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
-                .clip(PixelShape(cornerSize = 6.dp))
+                .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.2f)
                 .background(colors.surface, shape = PixelShape(cornerSize = 6.dp))
                 .padding(12.dp)
         ) {
@@ -233,10 +232,10 @@ fun PixelCard(
         modifier = modifier
             .pixelBorder(
                 borderWidth = 3.dp,
+                cornerSize = 9.dp,
                 enabled = true,
                 glowAlpha = if (glowing) glowAlpha else 0.1f
             )
-            .clip(PixelShape(cornerSize = 9.dp))
             .background(colors.surface, shape = PixelShape(cornerSize = 9.dp))
             .padding(16.dp)
     ) {
@@ -316,8 +315,7 @@ fun PixelProgressBar(
         modifier = modifier
             .height(height)
             .fillMaxWidth()
-            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
-            .clip(PixelShape(cornerSize = 6.dp))
+            .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.3f)
             .background(colors.surface, shape = PixelShape(cornerSize = 6.dp))
     ) {
         // Progress fill - Mystical gradient
@@ -389,39 +387,51 @@ private fun DrawScope.drawScanlines(alpha: Float) {
 // ========================================
 // PIXEL BORDER MODIFIER
 // ========================================
+/**
+ * Applies a pixel-art styled border with optional glow effect and automatic clipping.
+ * This modifier handles both the border drawing and content clipping to ensure proper rendering.
+ *
+ * @param borderWidth The width of the border stroke
+ * @param cornerSize The size of the pixel art corners (used for clipping)
+ * @param enabled Whether the border is enabled (affects color)
+ * @param glowAlpha The alpha value for the glow effect (0f = no glow)
+ */
 fun Modifier.pixelBorder(
     borderWidth: Dp = 2.dp,
+    cornerSize: Dp = 6.dp,
     enabled: Boolean = true,
     glowAlpha: Float = 0f
 ): Modifier {
-    return this.drawBehind {
-        val strokeWidth = borderWidth.toPx()
-        val width = size.width
-        val height = size.height
+    return this
+        .drawBehind {
+            val strokeWidth = borderWidth.toPx()
+            val width = size.width
+            val height = size.height
 
-        // Corner size for pixel art effect
-        val cornerSize = strokeWidth * 3
+            // Corner size for pixel art effect (from border drawing)
+            val cornerSizePx = strokeWidth * 3
 
-        // Main border color - Fantasy themed!
-        val borderColor = if (enabled) {
-            Color(0xFFB794F6) // Mystical purple (arcane glow)
-        } else {
-            Color(0xFF6B7280) // Muted grey
+            // Main border color - Fantasy themed!
+            val borderColor = if (enabled) {
+                Color(0xFFB794F6) // Mystical purple (arcane glow)
+            } else {
+                Color(0xFF6B7280) // Muted grey
+            }
+
+            // Draw outer glow if enabled
+            if (glowAlpha > 0f && enabled) {
+                val glowColor = borderColor.copy(alpha = glowAlpha)
+                drawPixelBorder(width, height, cornerSizePx, strokeWidth + 2f, glowColor)
+            }
+
+            // Draw main border
+            drawPixelBorder(width, height, cornerSizePx, strokeWidth, borderColor)
+
+            // Draw inner shadow for depth
+            val shadowColor = Color.Black.copy(alpha = 0.3f)
+            drawPixelBorder(width, height, cornerSizePx, strokeWidth / 2, shadowColor, inner = true)
         }
-
-        // Draw outer glow if enabled
-        if (glowAlpha > 0f && enabled) {
-            val glowColor = borderColor.copy(alpha = glowAlpha)
-            drawPixelBorder(width, height, cornerSize, strokeWidth + 2f, glowColor)
-        }
-
-        // Draw main border
-        drawPixelBorder(width, height, cornerSize, strokeWidth, borderColor)
-
-        // Draw inner shadow for depth
-        val shadowColor = Color.Black.copy(alpha = 0.3f)
-        drawPixelBorder(width, height, cornerSize, strokeWidth / 2, shadowColor, inner = true)
-    }
+        .clip(PixelShape(cornerSize = cornerSize))
 }
 
 private fun DrawScope.drawPixelBorder(
@@ -514,8 +524,7 @@ fun PixelBadge(
     val colors = MaterialTheme.colors
     Box(
         modifier = modifier
-            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
-            .clip(PixelShape(cornerSize = 6.dp))
+            .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.4f)
             .background(color, shape = PixelShape(cornerSize = 6.dp))
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
@@ -982,10 +991,10 @@ private fun PixelDraggableItem(
                 .fillMaxWidth()
                 .pixelBorder(
                     borderWidth = borderWidth,
+                    cornerSize = 6.dp,
                     enabled = true,
                     glowAlpha = glowAlpha
                 )
-                .clip(PixelShape(cornerSize = 6.dp))
                 .background(backgroundColor, shape = PixelShape(cornerSize = 6.dp))
                 .padding(horizontal = 12.dp, vertical = 12.dp)
         ) {
@@ -1101,10 +1110,10 @@ fun PixelIconButton(
             .scale(scale)
             .pixelBorder(
                 borderWidth = 2.dp,
+                cornerSize = 6.dp,
                 enabled = enabled,
                 glowAlpha = if (isHovered) 0.5f else 0.2f
             )
-            .clip(PixelShape(cornerSize = 6.dp))
             .background(
                 if (isHovered) buttonColor.copy(alpha = 0.2f) else Color.Transparent,
                 shape = PixelShape(cornerSize = 6.dp)
@@ -1154,8 +1163,7 @@ private fun PixelArrowBadge(
         modifier = modifier
             .size(badgeSize)
             .offset(y = yOffset)
-            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.5f)
-            .clip(PixelShape(cornerSize = 4.dp))
+            .pixelBorder(borderWidth = 2.dp, cornerSize = 4.dp, enabled = true, glowAlpha = 0.5f)
             .background(MaterialTheme.colors.surface.copy(alpha = 0.8f), shape = PixelShape(cornerSize = 4.dp)),
         contentAlignment = Alignment.Center
     ) {
@@ -1343,10 +1351,10 @@ fun PixelToggle(
             .height(trackHeight)
             .pixelBorder(
                 borderWidth = 2.dp,
+                cornerSize = 6.dp,
                 enabled = enabled,
                 glowAlpha = if (checked && enabled) glowAlpha else 0f
             )
-            .clip(PixelShape(cornerSize = 6.dp))
             .background(backgroundColor, shape = PixelShape(cornerSize = 6.dp))
             .clickable(enabled = enabled) { onCheckedChange(!checked) }
             .padding(thumbPadding)
@@ -1360,10 +1368,10 @@ fun PixelToggle(
                 .offset(x = thumbOffset)
                 .pixelBorder(
                     borderWidth = 2.dp,
+                    cornerSize = 4.dp,
                     enabled = true,
                     glowAlpha = if (checked && enabled) 0.3f else 0f
                 )
-                .clip(PixelShape(cornerSize = 4.dp))
                 .background(
                     if (enabled) colors.primary else Color.Gray,
                     shape = PixelShape(cornerSize = 4.dp)

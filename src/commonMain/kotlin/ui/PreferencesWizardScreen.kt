@@ -117,7 +117,7 @@ fun PreferencesWizardScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f) // Use weight instead of fixed height
-                        .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
+                        .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.2f)
                         .background(MaterialTheme.colors.surface.copy(alpha = 0.5f), shape = PixelShape(cornerSize = 6.dp))
                         .padding(12.dp) // Increased padding
                 ) {
@@ -376,6 +376,7 @@ fun DraggableVariantItem(
                 .fillMaxWidth()
                 .pixelBorder(
                     borderWidth = borderWidth,
+                    cornerSize = 6.dp,
                     enabled = true,
                     glowAlpha = glowAlpha
                 )

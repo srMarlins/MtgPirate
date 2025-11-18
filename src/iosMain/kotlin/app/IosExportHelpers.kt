@@ -218,6 +218,7 @@ private fun ShippingOptionRow(
             .fillMaxWidth()
             .pixelBorder(
                 borderWidth = if (isSelected) 2.dp else 1.dp,
+                cornerSize = 6.dp,
                 enabled = isEnabled,
                 glowAlpha = if (isSelected) 0.4f else 0.1f
             )

@@ -41,6 +41,7 @@ fun CompactStepper(
                     .size(if (isActive) 10.dp else 8.dp)
                     .pixelBorder(
                         borderWidth = 1.dp,
+                        cornerSize = 3.dp,
                         enabled = isActive || isCompleted,
                         glowAlpha = if (isActive) 0.6f else 0.2f
                     )
