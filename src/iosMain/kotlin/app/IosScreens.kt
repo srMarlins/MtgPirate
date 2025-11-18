@@ -28,7 +28,9 @@ fun IosImportScreen(
     onDeckTextChange: (String) -> Unit,
     onNext: () -> Unit,
     onShowSavedImports: () -> Unit,
-    isLoadingCatalog: Boolean = false
+    isLoadingCatalog: Boolean = false,
+    isDarkTheme: Boolean = false,
+    onToggleTheme: () -> Unit = {}
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         // Scanline effect overlay
@@ -37,17 +39,24 @@ fun IosImportScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .safeDrawingPadding()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .safeDrawingPadding(),
             verticalArrangement = Arrangement.Top
         ) {
-            // Compact stepper for mobile
-            CompactStepper(
+            // Inline header with MTG PIRATE branding, stepper, and theme toggle
+            IosInlineHeader(
                 currentStep = 1,
-                modifier = Modifier.fillMaxWidth()
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
+            
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.Top
+            ) {
 
             // Title with pixel styling - compact for mobile
             Column(modifier = Modifier.padding(bottom = 8.dp)) {
@@ -117,6 +126,7 @@ fun IosImportScreen(
                     variant = PixelButtonVariant.SECONDARY
                 )
             }
+            }
         }
     }
 }
@@ -136,7 +146,9 @@ fun IosPreferencesScreen(
     onIncludeTokensChange: (Boolean) -> Unit,
     onVariantPriorityChange: (List<String>) -> Unit,
     onBack: () -> Unit,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    isDarkTheme: Boolean = false,
+    onToggleTheme: () -> Unit = {}
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
@@ -145,15 +157,21 @@ fun IosPreferencesScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .safeDrawingPadding()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            // Compact stepper for mobile
-            CompactStepper(
+            // Inline header with MTG PIRATE branding, stepper, and theme toggle
+            IosInlineHeader(
                 currentStep = 2,
-                modifier = Modifier.fillMaxWidth()
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
+            
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+            ) {
 
             // Compact mobile header
             Column(modifier = Modifier.padding(bottom = 8.dp)) {
@@ -323,6 +341,7 @@ fun IosPreferencesScreen(
                     variant = PixelButtonVariant.SECONDARY
                 )
             }
+            }
         }
     }
 }
@@ -343,23 +362,19 @@ fun IosResultsScreen(
     matchedCount: Int = 0,
     unmatchedCount: Int = 0,
     ambiguousCount: Int = 0,
+    isDarkTheme: Boolean = false,
+    onToggleTheme: () -> Unit = {}
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
         
-        Column(modifier = Modifier.fillMaxSize()) {
-            // Compact stepper at the top with safe padding
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .safeDrawingPadding()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                CompactStepper(
-                    currentStep = 3,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+        Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+            // Inline header with MTG PIRATE branding, stepper, and theme toggle
+            IosInlineHeader(
+                currentStep = 3,
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
+            )
             
             // Results screen content - will handle its own padding and loading display
             Box(modifier = Modifier.weight(1f)) {
@@ -612,7 +627,9 @@ fun IosResolveScreen(
 fun IosExportScreen(
     matches: List<model.DeckEntryMatch>,
     onBack: () -> Unit,
-    onExport: () -> Unit
+    onExport: () -> Unit,
+    isDarkTheme: Boolean = false,
+    onToggleTheme: () -> Unit = {}
 ) {
     val resolved = matches.filter { it.selectedVariant != null }
     val unresolved = matches.filter { 
@@ -652,15 +669,21 @@ fun IosExportScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .safeDrawingPadding()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            // Compact stepper for mobile
-            CompactStepper(
+            // Inline header with MTG PIRATE branding, stepper, and theme toggle
+            IosInlineHeader(
                 currentStep = 4,
-                modifier = Modifier.fillMaxWidth()
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
+            
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+            ) {
 
             // Header
             Column(modifier = Modifier.padding(bottom = 8.dp)) {
@@ -773,6 +796,7 @@ fun IosExportScreen(
                     modifier = Modifier.weight(1f).height(52.dp),
                     variant = PixelButtonVariant.SECONDARY
                 )
+            }
             }
         }
     }

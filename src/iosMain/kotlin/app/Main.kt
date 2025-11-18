@@ -113,7 +113,9 @@ fun IosNavigationHost(
                 onShowSavedImports = {
                     viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(true))
                 },
-                isLoadingCatalog = state.loadingCatalog
+                isLoadingCatalog = state.loadingCatalog,
+                isDarkTheme = state.isDarkTheme,
+                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) }
             )
             
             IosScreen.PREFERENCES -> IosPreferencesScreen(
@@ -130,7 +132,9 @@ fun IosNavigationHost(
                     viewModel.processIntent(ViewIntent.CompleteWizardStep(2))
                     viewModel.processIntent(ViewIntent.RunMatch)
                     navigateTo(IosScreen.RESULTS)
-                }
+                },
+                isDarkTheme = state.isDarkTheme,
+                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) }
             )
             
             IosScreen.RESULTS -> IosResultsScreen(
@@ -153,7 +157,9 @@ fun IosNavigationHost(
                 isMatching = state.isMatching,
                 matchedCount = state.matchedCount,
                 unmatchedCount = state.unmatchedCount,
-                ambiguousCount = state.ambiguousCount
+                ambiguousCount = state.ambiguousCount,
+                isDarkTheme = state.isDarkTheme,
+                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) }
             )
             
                 IosScreen.RESOLVE -> {
@@ -187,7 +193,9 @@ fun IosNavigationHost(
                 onExport = {
                     viewModel.processIntent(ViewIntent.ExportCsv)
                     viewModel.processIntent(ViewIntent.CompleteWizardStep(4))
-                }
+                },
+                isDarkTheme = state.isDarkTheme,
+                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) }
             )
             
                 IosScreen.CATALOG -> {
@@ -215,15 +223,6 @@ fun IosNavigationHost(
                 )
             }
         }
-        
-        // Theme toggle floating action button
-        IosThemeToggleFab(
-            isDarkTheme = state.isDarkTheme,
-            onToggle = { viewModel.processIntent(ViewIntent.ToggleTheme) },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
-        )
         
         // Saved imports dialog
         if (state.showSavedImportsWindow) {
@@ -322,7 +321,66 @@ fun RowScope.IosNavButton(
 }
 
 /**
+ * Inline header combining MTG PIRATE branding, stepper, and theme toggle.
+ * Designed for compact mobile layout with all elements in one row.
+ */
+@Composable
+fun IosInlineHeader(
+    currentStep: Int,
+    totalSteps: Int = 4,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // MTG PIRATE branding on the left
+        Text(
+            text = "MTG PIRATE",
+            style = MaterialTheme.typography.subtitle2,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colors.primary,
+            fontSize = 12.sp,
+            modifier = Modifier.padding(end = 8.dp)
+        )
+        
+        // Compact stepper in the center
+        CompactStepper(
+            currentStep = currentStep,
+            totalSteps = totalSteps,
+            modifier = Modifier.weight(1f)
+        )
+        
+        // Smaller inline theme toggle on the right
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
+                .background(MaterialTheme.colors.primary, shape = PixelShape(cornerSize = 6.dp))
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() },
+                    onClick = onToggleTheme
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = if (isDarkTheme) "☀" else "☾",
+                fontSize = 16.sp,
+                color = MaterialTheme.colors.onPrimary
+            )
+        }
+    }
+}
+
+/**
  * iOS theme toggle floating action button with pixel styling.
+ * @deprecated Use IosInlineHeader instead for compact mobile layout
  */
 @Composable
 fun IosThemeToggleFab(
