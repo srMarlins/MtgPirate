@@ -43,15 +43,21 @@ class MviViewModel(
     init {
         // Subscribe to database flows and combine into ViewState
         scope.launch(Dispatchers.IO) {
+            // Create a flow that only refreshes matches when catalog or matches change
+            val refreshedMatchesFlow = combine(
+                database.observeCatalog().distinctUntilChanged(),
+                _localState.map { it.matches }.distinctUntilChanged()
+            ) { catalog, matches ->
+                refreshMatchesFromCatalog(matches, catalog)
+            }
+            
             combine(
                 database.observeCatalog(),
                 database.observePreferences().map { it ?: Preferences() },
                 database.observeSavedImports(),
-                _localState
-            ) { catalog, preferences, savedImports, localState ->
-                // Refresh matches with latest variant data from the catalog
-                val refreshedMatches = refreshMatchesFromCatalog(localState.matches, catalog)
-                
+                _localState,
+                refreshedMatchesFlow
+            ) { catalog, preferences, savedImports, localState, refreshedMatches ->
                 ViewState(
                     catalog = if (catalog.variants.isEmpty()) null else catalog,
                     preferences = preferences,
