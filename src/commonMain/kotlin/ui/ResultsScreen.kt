@@ -42,12 +42,16 @@ fun ResultsScreen(
     onClose: () -> Unit,
     onExport: () -> Unit = {},
     onEnrichVariant: ((CardVariant) -> Unit)? = null,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    matchedCount: Int = 0,
+    unmatchedCount: Int = 0,
+    ambiguousCount: Int = 0,
+    totalPriceCents: Int = 0,
 ) {
     val totalMatched = matches.filter { it.selectedVariant != null }
-    val totalCents = totalMatched.sumOf { it.selectedVariant!!.priceInCents * it.deckEntry.qty }
-    val missed = matches.count { it.selectedVariant == null && it.deckEntry.include }
-    val ambiguous = matches.count { it.status == MatchStatus.AMBIGUOUS }
+    val totalCents = totalPriceCents
+    val missed = unmatchedCount
+    val ambiguous = ambiguousCount
 
     var filterMode by rememberSaveable { mutableStateOf(0) } // 0 = All, 1 = Matched, 2 = Unmatched, 3 = Ambiguous
     val sortSaver = remember { Saver<SortOption, String>(save = { it.name }, restore = { SortOption.valueOf(it) }) }

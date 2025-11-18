@@ -725,7 +725,12 @@ fun main() = application {
                                         onExport = {
                                             viewModel.processIntent(ViewIntent.CompleteWizardStep(3))
                                             navController.navigate("export") { launchSingleTop = true }
-                                        }
+                                        },
+                                        isLoading = state.isMatching,
+                                        matchedCount = state.matchedCount,
+                                        unmatchedCount = state.unmatchedCount,
+                                        ambiguousCount = state.ambiguousCount,
+                                        totalPriceCents = state.totalPriceCents
                                     )
                                 }
                                 composable(
