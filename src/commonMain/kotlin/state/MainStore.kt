@@ -33,21 +33,20 @@ class MainStore(
     val state: StateFlow<MainState> = _state
 
     // --- Helper functions for code reuse ---
-    private fun updateAppLogs(level: String, message: String) {
-        _state.update { s ->
-            s.copy(app = s.app.copy(logs = Logging.log(s.app.logs, level, message)))
-        }
+    // Logs are now handled as side effects and don't update state to prevent recompositions
+    private fun log(level: String, message: String) {
+        // In a production app, this would write to a logging service or console
+        // For now, logs are simply not stored in state to avoid recompositions
+        println("[$level] $message")
     }
 
     private fun updatePreferencesAndPersist(update: (Preferences) -> Preferences, alsoUpdateState: (MainState) -> MainState = { it }) {
         _state.update { current ->
             val prefs = update(current.app.preferences)
-            val newApp = current.app.copy(
-                preferences = prefs,
-                logs = Logging.log(current.app.logs, "INFO", "Preferences updated")
-            )
+            val newApp = current.app.copy(preferences = prefs)
             alsoUpdateState(current.copy(app = newApp))
         }
+        log("INFO", "Preferences updated")
         scope.launch {
             platformServices.savePreferences(_state.value.app.preferences)
         }
@@ -59,9 +58,10 @@ class MainStore(
         }
         entries.forEach { e ->
             if (e.setCodeHint != null) {
-                updateAppLogs("DEBUG", "Parsed entry: ${e.qty} ${e.cardName} (set=${e.setCodeHint}${e.collectorNumberHint?.let { ", #$it" } ?: ""})")
+                val collectorHint = e.collectorNumberHint?.let { ", #$it" } ?: ""
+                log("DEBUG", "Parsed entry: ${e.qty} ${e.cardName} (set=${e.setCodeHint}$collectorHint)")
             } else {
-                updateAppLogs("DEBUG", "Parsed entry: ${e.qty} ${e.cardName}")
+                log("DEBUG", "Parsed entry: ${e.qty} ${e.cardName}")
             }
         }
         return entries
@@ -69,13 +69,9 @@ class MainStore(
 
     private fun reloadSavedImportsWithLog(imports: List<model.SavedImport>) {
         _state.update { s ->
-            s.copy(
-                app = s.app.copy(
-                    savedImports = imports,
-                    logs = Logging.log(s.app.logs, "INFO", "Loaded ${imports.size} saved imports")
-                )
-            )
+            s.copy(app = s.app.copy(savedImports = imports))
         }
+        log("INFO", "Loaded ${imports.size} saved imports")
     }
 
     fun dispatch(intent: MainIntent) {
@@ -123,40 +119,28 @@ class MainStore(
             val loaded = platformServices.loadPreferences()
             _state.update { current ->
                 current.copy(
-                    app = current.app.copy(
-                        preferences = loaded,
-                        logs = Logging.log(current.app.logs, "INFO", "Preferences loaded")
-                    ),
+                    app = current.app.copy(preferences = loaded),
                     includeSideboard = loaded.includeSideboard,
                     includeCommanders = loaded.includeCommanders,
                     includeTokens = loaded.includeTokens
                 )
             }
+            log("INFO", "Preferences loaded")
 
             // Load saved imports
             val imports = platformServices.loadSavedImports()
             reloadSavedImportsWithLog(imports)
 
             // Auto-load catalog (remote-first) on startup
-            updateAppLogs("INFO", "Catalog auto-load starting...")
-            val catalog = platformServices.loadCatalog(forceRefresh = true) { msg -> updateAppLogs("INFO", msg) }
+            log("INFO", "Catalog auto-load starting...")
+            val catalog = platformServices.loadCatalog(forceRefresh = true) { msg -> log("INFO", msg) }
             if (catalog != null) {
                 _state.update { s ->
-                    s.copy(
-                        app = s.app.copy(
-                            catalog = catalog,
-                            logs = Logging.log(s.app.logs, "INFO", "Catalog auto-loaded (remote): ${catalog.variants.size} variants")
-                        )
-                    )
+                    s.copy(app = s.app.copy(catalog = catalog))
                 }
+                log("INFO", "Catalog auto-loaded (remote): ${catalog.variants.size} variants")
             } else {
-                _state.update { s ->
-                    s.copy(
-                        app = s.app.copy(
-                            logs = Logging.log(s.app.logs, "ERROR", "Catalog auto-load failed (remote + fallback)")
-                        )
-                    )
-                }
+                log("ERROR", "Catalog auto-load failed (remote + fallback)")
             }
         }
     }
@@ -165,8 +149,8 @@ class MainStore(
         scope.launch {
             _state.update { it.copy(loadingCatalog = true, catalogError = null) }
             try {
-                updateAppLogs("INFO", "Manual catalog load starting...")
-                val catalog = platformServices.loadCatalog(forceRefresh = force) { msg -> updateAppLogs("INFO", msg) }
+                log("INFO", "Manual catalog load starting...")
+                val catalog = platformServices.loadCatalog(forceRefresh = force) { msg -> log("INFO", msg) }
                 if (catalog == null) {
                     _state.update { it.copy(catalogError = "Failed to load catalog") }
                 } else {
@@ -189,7 +173,7 @@ class MainStore(
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(catalogError = e.message) }
-                updateAppLogs("ERROR", "Catalog load exception: ${e.message}")
+                log("ERROR", "Catalog load exception: ${e.message}")
             } finally {
                 _state.update { it.copy(loadingCatalog = false) }
             }
@@ -271,7 +255,7 @@ class MainStore(
             val matches = s.app.matches
             if (matches.isNotEmpty()) {
                 platformServices.exportCsv(matches) { path ->
-                    log("CSV exported to: $path", level = "INFO")
+                    log("INFO", "CSV exported to: $path")
                 }
             }
         }
@@ -283,8 +267,8 @@ class MainStore(
             val matches = s.app.matches
             if (matches.isNotEmpty()) {
                 platformServices.exportWizardResults(matches) { foundPath, unfoundPath ->
-                    foundPath?.let { log("Found cards exported to: $it", level = "INFO") }
-                    unfoundPath?.let { log("Unfound cards exported to: $it", level = "INFO") }
+                    foundPath?.let { log("INFO", "Found cards exported to: $it") }
+                    unfoundPath?.let { log("INFO", "Unfound cards exported to: $it") }
                 }
             }
         }
@@ -403,29 +387,23 @@ class MainStore(
                     includeSideboard = import.includeSideboard,
                     includeCommanders = import.includeCommanders,
                     includeTokens = import.includeTokens,
-                    app = prev.app.copy(
-                        preferences = updatedPreferences,
-                        logs = Logging.log(prev.app.logs, "INFO", "Loaded import: ${import.name}")
-                    ),
+                    app = prev.app.copy(preferences = updatedPreferences),
                     showSavedImportsWindow = false,
                     showResultsWindow = true
                 )
             }
+            log("INFO", "Loaded import: ${import.name}")
         }
     }
 
     private fun deleteSavedImport(importId: String) {
         scope.launch {
             platformServices.deleteSavedImport(importId)
-            log("Deleted import", "INFO")
+            log("INFO", "Deleted import")
 
             // Reload the list
             loadSavedImports()
         }
-    }
-
-    fun log(message: String, level: String = "INFO") {
-        updateAppLogs(level, message)
     }
 }
 

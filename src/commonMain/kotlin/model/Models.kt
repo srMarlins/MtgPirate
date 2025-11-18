@@ -85,11 +85,15 @@ data class SavedImport(
     val includeTokens: Boolean = false
 )
 
+/**
+ * Main application state container.
+ * Note: Logs are intentionally excluded to prevent unnecessary recompositions.
+ * Logs are side effects and should be handled separately from state.
+ */
 data class AppState(
     var catalog: Catalog? = null,
     var deckEntries: List<DeckEntry> = emptyList(),
     var matches: List<DeckEntryMatch> = emptyList(),
     var preferences: Preferences = Preferences(),
-    var logs: List<LogEntry> = emptyList(),
     var savedImports: List<SavedImport> = emptyList()
 )

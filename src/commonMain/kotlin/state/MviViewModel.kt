@@ -44,25 +44,24 @@ class MviViewModel(
 
     init {
         // Subscribe to database flows and combine into ViewState
+        // Note: Logs are intentionally excluded from ViewState to prevent unnecessary recompositions
+        // since they are side effects and don't affect the UI directly
         scope.launch {
             combine(
                 database.observeCatalog(),
                 database.observePreferences().map { it ?: Preferences() },
                 database.observeSavedImports(),
-                database.observeLogs(),
                 _localState
             ) { flows: Array<Any> ->
                 val catalog = flows[0] as Catalog
                 val preferences = flows[1] as Preferences
                 val savedImports = flows[2] as List<*>
-                val logs = flows[3] as List<*>
-                val localState = flows[4] as LocalUiState
+                val localState = flows[3] as LocalUiState
                 
                 ViewState(
                     catalog = if (catalog.variants.isEmpty()) null else catalog,
                     preferences = preferences,
                     savedImports = savedImports.filterIsInstance<SavedImport>(),
-                    logs = logs.filterIsInstance<LogEntry>(),
                     deckText = localState.deckText,
                     deckEntries = localState.deckEntries,
                     matches = localState.matches,
@@ -490,12 +489,13 @@ class MviViewModel(
 
 /**
  * Immutable view state derived from database and local UI state.
+ * Note: Logs are intentionally excluded to prevent unnecessary recompositions.
+ * Logs are side effects and should be handled separately from state.
  */
 data class ViewState(
     val catalog: Catalog? = null,
     val preferences: Preferences = Preferences(),
     val savedImports: List<SavedImport> = emptyList(),
-    val logs: List<LogEntry> = emptyList(),
     val deckText: String = "",
     val deckEntries: List<DeckEntry> = emptyList(),
     val matches: List<DeckEntryMatch> = emptyList(),
