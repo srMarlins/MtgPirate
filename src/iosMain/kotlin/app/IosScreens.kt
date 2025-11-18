@@ -424,14 +424,13 @@ fun IosResultsScreen(
             
             // Results screen content - will handle its own padding
             Box(modifier = Modifier.weight(1f)) {
-                ResultsScreen(
+                MobileResultsScreen(
                     matches = matches,
                     onResolve = onResolve,
                     onShowAllCandidates = onResolve,
                     onClose = onBack,
                     onExport = onNext,
-                    onEnrichVariant = onEnrichVariant,
-                    isMobile = true
+                    onEnrichVariant = onEnrichVariant
                 )
             }
         }
