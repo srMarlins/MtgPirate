@@ -49,13 +49,16 @@ class MviViewModel(
                 database.observeSavedImports(),
                 _localState
             ) { catalog, preferences, savedImports, localState ->
+                // Refresh matches with latest variant data from the catalog
+                val refreshedMatches = refreshMatchesFromCatalog(localState.matches, catalog)
+                
                 ViewState(
                     catalog = if (catalog.variants.isEmpty()) null else catalog,
                     preferences = preferences,
                     savedImports = savedImports,
                     deckText = localState.deckText,
                     deckEntries = localState.deckEntries,
-                    matches = localState.matches,
+                    matches = refreshedMatches,
                     includeSideboard = preferences.includeSideboard,
                     includeCommanders = preferences.includeCommanders,
                     includeTokens = preferences.includeTokens,
@@ -74,6 +77,36 @@ class MviViewModel(
             }.onEach { newState ->
                 _viewState.update { newState }
             }.launchIn(scope)
+        }
+    }
+
+    /**
+     * Refresh matches with the latest variant data from the catalog.
+     * This ensures that when variants are updated in the database (e.g., image URLs enriched),
+     * the matches reflect those changes reactively.
+     */
+    private fun refreshMatchesFromCatalog(matches: List<DeckEntryMatch>, catalog: Catalog): List<DeckEntryMatch> {
+        if (matches.isEmpty() || catalog.variants.isEmpty()) return matches
+        
+        // Build a map of SKU to CardVariant for quick lookups
+        val variantsBySku = catalog.variants.associateBy { it.sku }
+        
+        return matches.map { match ->
+            // Refresh the selected variant if it exists
+            val refreshedSelectedVariant = match.selectedVariant?.let { oldVariant ->
+                variantsBySku[oldVariant.sku] ?: oldVariant
+            }
+            
+            // Refresh all candidate variants
+            val refreshedCandidates = match.candidates.map { candidate ->
+                val refreshedVariant = variantsBySku[candidate.variant.sku] ?: candidate.variant
+                candidate.copy(variant = refreshedVariant)
+            }
+            
+            match.copy(
+                selectedVariant = refreshedSelectedVariant,
+                candidates = refreshedCandidates
+            )
         }
     }
 
