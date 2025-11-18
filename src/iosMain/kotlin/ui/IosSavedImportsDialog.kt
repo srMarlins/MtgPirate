@@ -194,7 +194,7 @@ actual fun SavedImportsDialog(
 
 /**
  * Mobile-optimized saved import card for iOS.
- * Compact layout with larger touch targets and clear Load button.
+ * Compact inline layout with clear Load button and action icons.
  */
 @Composable
 fun MobileSavedImportCard(
@@ -218,76 +218,78 @@ fun MobileSavedImportCard(
         modifier = Modifier.fillMaxWidth(),
         glowing = false
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp)
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Deck name
-            Text(
-                import.name,
-                style = MaterialTheme.typography.body1,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colors.primary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            // Info row - aligned
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
+            // Left side - Info column
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
+                // Deck name
                 Text(
-                    "📅 $formattedDate",
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                    import.name,
+                    style = MaterialTheme.typography.body1,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colors.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    "🃏 ${import.cardCount}",
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                )
-            }
 
-            // Badges row if any options are enabled
-            if (import.includeSideboard || import.includeCommanders || import.includeTokens) {
-                Spacer(Modifier.height(8.dp))
+                // Info row - date and card count
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (import.includeSideboard) {
-                        PixelBadge(text = "SB", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
-                    }
-                    if (import.includeCommanders) {
-                        PixelBadge(text = "CMD", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
-                    }
-                    if (import.includeTokens) {
-                        PixelBadge(text = "TOK", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
+                    Text(
+                        "📅 $formattedDate",
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        "🃏 ${import.cardCount}",
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+
+                // Badges row if any options are enabled
+                if (import.includeSideboard || import.includeCommanders || import.includeTokens) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (import.includeSideboard) {
+                            PixelBadge(text = "SB", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
+                        }
+                        if (import.includeCommanders) {
+                            PixelBadge(text = "CMD", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
+                        }
+                        if (import.includeTokens) {
+                            PixelBadge(text = "TOK", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
+                        }
                     }
                 }
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.width(8.dp))
 
-            // Action buttons row - Load and Delete
+            // Right side - Action buttons (Load and Delete)
             Row(
-                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Load button
+                // Load button (double width of delete button)
                 PixelButton(
                     text = "Load",
                     onClick = onSelect,
                     variant = PixelButtonVariant.PRIMARY,
                     modifier = Modifier
-                        .weight(1f)
+                        .width(88.dp)
                         .height(44.dp)
                 )
 
