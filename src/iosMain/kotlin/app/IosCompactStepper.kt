@@ -16,6 +16,7 @@ import ui.*
 /**
  * Compact stepper for iOS mobile portrait mode.
  * Much smaller than the full AnimatedStepper, designed for limited vertical space.
+ * Optimized for inline layout - no internal padding.
  */
 @Composable
 fun CompactStepper(
@@ -24,9 +25,7 @@ fun CompactStepper(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        modifier = modifier,
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
