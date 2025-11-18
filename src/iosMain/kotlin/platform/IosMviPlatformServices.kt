@@ -89,6 +89,34 @@ class IosMviPlatformServices(
         }
     }
 
+    override suspend fun exportWizardResults(
+        matches: List<DeckEntryMatch>,
+        onComplete: (foundPath: String?, unfoundPath: String?) -> Unit
+    ) {
+        withContext(Dispatchers.Default) {
+            try {
+                // For iOS, generate both CSVs and copy to clipboard
+                val foundMatches = matches.filter { it.selectedVariant != null }
+                val unfoundMatches = matches.filter { it.selectedVariant == null }
+
+                val foundCsv = if (foundMatches.isNotEmpty()) generateCsvContent(foundMatches) else null
+                val unfoundCsv = if (unfoundMatches.isNotEmpty()) generateUnfoundCsvContent(unfoundMatches) else null
+
+                // Copy found cards to clipboard
+                if (foundCsv != null) {
+                    copyToClipboard(foundCsv)
+                }
+
+                onComplete(
+                    foundCsv?.let { "Found cards CSV copied to clipboard" },
+                    unfoundCsv?.let { "Unfound: ${unfoundMatches.size} cards" }
+                )
+            } catch (e: Exception) {
+                onComplete(null, "Export failed: ${e.message}")
+            }
+        }
+    }
+
     override suspend fun copyToClipboard(text: String) {
         withContext(Dispatchers.Default) {
             platform.copyToClipboard(text)
@@ -130,6 +158,17 @@ class IosMviPlatformServices(
         sb.appendLine("Holo Cards,$holoCount")
         sb.appendLine("Foil Cards,$foilCount")
         sb.appendLine("Total Price,${platform.formatDecimal(totalPriceCents / 100.0, 2)}")
+
+        return sb.toString()
+    }
+
+    private fun generateUnfoundCsvContent(matches: List<DeckEntryMatch>): String {
+        val sb = StringBuilder()
+        sb.appendLine("Card Name,Quantity,Section")
+
+        matches.forEach { match ->
+            sb.appendLine("${match.deckEntry.cardName},${match.deckEntry.qty},${match.deckEntry.section}")
+        }
 
         return sb.toString()
     }

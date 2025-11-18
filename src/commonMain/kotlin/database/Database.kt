@@ -99,7 +99,7 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
         )
     }
 
-    suspend fun deleteOldLogs(keepCount: Long = 1000L) {
+    suspend fun deleteOldLogs(keepCount: Long = 100L) {
         db.logEntryQueries.deleteOldLogs(keepCount)
     }
 
