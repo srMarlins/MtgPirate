@@ -124,8 +124,17 @@ class MviViewModel(
     private fun init() {
         scope.launch(Dispatchers.IO) {
             log("Initializing MVI ViewModel...", "INFO")
-            // Load catalog from remote API and store in database
-            loadCatalog()
+            
+            // Check if catalog exists in database
+            val variantCount = catalogStore.getVariantCount()
+            
+            if (variantCount == 0L) {
+                // Catalog is empty, load from remote API
+                log("Catalog is empty, loading from remote...", "INFO")
+                loadCatalog()
+            } else {
+                log("Catalog already loaded: $variantCount variants", "INFO")
+            }
         }
     }
 
