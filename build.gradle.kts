@@ -78,6 +78,8 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.sqldelight.driver.sqlite)
                 implementation(libs.ktor.client.cio)
+                implementation(libs.coil.compose)
+                implementation(libs.coil.network.okhttp)
             }
         }
 
