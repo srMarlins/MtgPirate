@@ -110,9 +110,9 @@ fun IosNavigationHost(
             )
             
             IosScreen.PREFERENCES -> IosPreferencesScreen(
-                includeSideboard = state.includeSideboard,
-                includeCommanders = state.includeCommanders,
-                includeTokens = state.includeTokens,
+                includeSideboard = state.preferences.includeSideboard,
+                includeCommanders = state.preferences.includeCommanders,
+                includeTokens = state.preferences.includeTokens,
                 variantPriority = state.preferences.variantPriority,
                 onIncludeSideboardChange = { viewModel.processIntent(ViewIntent.ToggleIncludeSideboard(it)) },
                 onIncludeCommandersChange = { viewModel.processIntent(ViewIntent.ToggleIncludeCommanders(it)) },
