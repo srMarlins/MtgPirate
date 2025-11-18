@@ -23,6 +23,7 @@ repositories {
 }
 
 kotlin {
+    compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
     jvmToolchain(17)
     jvm("desktop")
     iosX64 {
@@ -54,6 +55,9 @@ kotlin {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material)
+                implementation(libs.coil.compose)
+                implementation(libs.coil.network.ktor)
+                implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.ksoup)
@@ -64,12 +68,6 @@ kotlin {
                 implementation(libs.navigation.compose)
                 implementation(libs.sqldelight.coroutines.extensions)
                 implementation(libs.sqldelight.runtime)
-                implementation(libs.kotlinx.coroutines.core)
-            }
-        }
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
             }
         }
         val desktopMain by getting {
@@ -78,8 +76,6 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.sqldelight.driver.sqlite)
                 implementation(libs.ktor.client.cio)
-                implementation(libs.coil.compose)
-                implementation(libs.coil.network.okhttp)
             }
         }
 

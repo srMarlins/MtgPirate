@@ -4,12 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -380,6 +382,7 @@ fun IosResultsScreen(
 
 /**
  * iOS Resolve Screen - Card variant selection.
+ * Mobile-optimized for portrait layout with vertical card design.
  */
 @Composable
 fun IosResolveScreen(
@@ -389,12 +392,215 @@ fun IosResolveScreen(
     onEnrichVariant: ((model.CardVariant) -> Unit)? = null
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        ResolveScreen(
-            match = match,
-            onSelect = onSelect,
-            onBack = onBack,
-            onEnrichVariant = onEnrichVariant
-        )
+        ScanlineEffect(alpha = 0.03f)
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .safeDrawingPadding()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            // Compact header with back button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "▸ RESOLVE",
+                        style = MaterialTheme.typography.h5,
+                        color = MaterialTheme.colors.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "└─ ${match.deckEntry.cardName}",
+                        style = MaterialTheme.typography.body2,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                        maxLines = 1
+                    )
+                }
+                
+                // Candidate count badge
+                if (match.candidates.isNotEmpty()) {
+                    PixelBadge(
+                        text = "${match.candidates.size}",
+                        color = MaterialTheme.colors.secondary
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Empty state
+            if (match.candidates.isEmpty()) {
+                PixelCard(glowing = true, modifier = Modifier.weight(1f)) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            "⚠ NO CANDIDATES",
+                            style = MaterialTheme.typography.h6,
+                            color = Color(0xFFF44336),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "No matching cards found in catalog",
+                            style = MaterialTheme.typography.body2,
+                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            } else {
+                // Candidates list with vertical cards
+                val sorted = remember(match.candidates) { 
+                    match.candidates.sortedBy { it.score } 
+                }
+                
+                PixelCard(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    glowing = false
+                ) {
+                    val listState = rememberLazyListState()
+                    Box(Modifier.fillMaxSize()) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            state = listState,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(sorted) { cand: model.MatchCandidate ->
+                                val variant = cand.variant
+                                
+                                // Trigger image enrichment
+                                androidx.compose.runtime.LaunchedEffect(variant.sku) {
+                                    if (variant.imageUrl == null) {
+                                        onEnrichVariant?.invoke(variant)
+                                    }
+                                }
+                                
+                                // Candidate card
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .pixelBorder(
+                                            borderWidth = 2.dp,
+                                            enabled = true,
+                                            glowAlpha = 0.2f
+                                        )
+                                        .background(
+                                            MaterialTheme.colors.surface.copy(alpha = 0.5f),
+                                            shape = PixelShape(cornerSize = 6.dp)
+                                        )
+                                        .padding(12.dp)
+                                ) {
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        // Image preview and card info row
+                                        var showImageModal by remember { mutableStateOf(false) }
+                                        
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            // Compact inline image preview
+                                            CompactPixelImagePreview(
+                                                imageUrl = variant.imageUrl,
+                                                cardName = variant.nameOriginal,
+                                                onClick = { showImageModal = true }
+                                            )
+                                            
+                                            // Card details and price
+                                            Column(
+                                                modifier = Modifier.weight(1f),
+                                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                Text(
+                                                    variant.nameOriginal,
+                                                    style = MaterialTheme.typography.body1,
+                                                    fontWeight = FontWeight.Bold,
+                                                    maxLines = 2
+                                                )
+                                                Row(
+                                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    PixelBadge(
+                                                        text = variant.setCode,
+                                                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                                                    )
+                                                    PixelBadge(
+                                                        text = variant.variantType,
+                                                        color = MaterialTheme.colors.primary
+                                                    )
+                                                }
+                                                Text(
+                                                    util.formatPrice(variant.priceInCents),
+                                                    style = MaterialTheme.typography.h6,
+                                                    color = MaterialTheme.colors.secondary,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                            
+                                            // Compact icon select button - centered with image
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(40.dp)
+                                                    .clip(PixelShape(cornerSize = 6.dp))
+                                                    .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
+                                                    .background(MaterialTheme.colors.secondary, shape = PixelShape(cornerSize = 6.dp))
+                                                    .clickable {
+                                                        platform.IosHapticFeedback.triggerImpact(
+                                                            platform.IosHapticFeedback.ImpactStyle.MEDIUM
+                                                        )
+                                                        onSelect(variant)
+                                                    },
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = "✓",
+                                                    style = MaterialTheme.typography.h5,
+                                                    color = MaterialTheme.colors.onSecondary,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                        
+                                        // Image modal
+                                        if (showImageModal) {
+                                            MobilePixelImageModal(
+                                                imageUrl = variant.imageUrl,
+                                                cardName = variant.nameOriginal,
+                                                setCode = variant.setCode,
+                                                variantType = variant.variantType,
+                                                onDismiss = { showImageModal = false }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        LazyListScrollIndicators(
+                            state = listState,
+                            modifier = Modifier.matchParentSize()
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Back button
+            PixelButton(
+                text = "← Back",
+                onClick = onBack,
+                variant = PixelButtonVariant.SURFACE,
+                modifier = Modifier.fillMaxWidth().height(52.dp)
+            )
+        }
     }
 }
 
