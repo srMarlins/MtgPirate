@@ -1790,11 +1790,11 @@ private fun IosMobileDraggableItem(
                 detectDragGestures(
                     onDragStart = { offset ->
                         // Start tracking press time for long-press detection
-                        pressStartTime = System.currentTimeMillis()
+                        pressStartTime = platform.currentTimeMillis()
                         longPressTriggered = false
                     },
                     onDrag = { change, dragAmount ->
-                        val pressDuration = System.currentTimeMillis() - pressStartTime
+                        val pressDuration = platform.currentTimeMillis() - pressStartTime
                         
                         // Require long press (500ms) before enabling drag
                         if (pressDuration >= 500 && !longPressTriggered) {
