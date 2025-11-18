@@ -34,10 +34,13 @@ fun MobileResultsScreen(
     onExport: () -> Unit = {},
     onEnrichVariant: ((CardVariant) -> Unit)? = null,
     isLoading: Boolean = false,
+    matchedCount: Int = 0,
+    unmatchedCount: Int = 0,
+    ambiguousCount: Int = 0,
 ) {
     val totalMatched = matches.filter { it.selectedVariant != null }
-    val missed = matches.count { it.selectedVariant == null && it.deckEntry.include }
-    val ambiguous = matches.count { it.status == MatchStatus.AMBIGUOUS }
+    val missed = unmatchedCount
+    val ambiguous = ambiguousCount
 
     var filterMode by rememberSaveable { mutableStateOf(0) } // 0 = All, 1 = Matched, 2 = Unmatched, 3 = Ambiguous
     val sortSaver = remember { Saver<SortOption, String>(save = { it.name }, restore = { SortOption.valueOf(it) }) }
@@ -205,6 +208,31 @@ fun MobileResultsScreen(
             }
 
             Spacer(Modifier.height(16.dp))
+            
+            // Loading indicator during matching
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            "Matching cards...",
+                            style = MaterialTheme.typography.body1,
+                            color = MaterialTheme.colors.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                        AnimatedLoadingDots()
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+            
+            // Hide table and list when loading
+            if (!isLoading) {
 
             // Table Header - Mobile optimized with 4 columns
             Box(
@@ -427,6 +455,7 @@ fun MobileResultsScreen(
                     )
                 }
             }
+            } // End of if (!isLoading)
         }
     }
 }

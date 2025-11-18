@@ -145,7 +145,10 @@ fun IosNavigationHost(
                     viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
                 },
                 isLoadingCatalog = state.loadingCatalog,
-                isMatching = state.isMatching
+                isMatching = state.isMatching,
+                matchedCount = state.matchedCount,
+                unmatchedCount = state.unmatchedCount,
+                ambiguousCount = state.ambiguousCount
             )
             
             IosScreen.RESOLVE -> {

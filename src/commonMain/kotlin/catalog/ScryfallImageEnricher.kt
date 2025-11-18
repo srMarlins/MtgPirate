@@ -2,6 +2,7 @@ package catalog
 
 import kotlinx.coroutines.delay
 import model.CardVariant
+import platform.currentTimeMillis
 
 /**
  * Service for enriching catalog card variants with Scryfall image URLs.
@@ -30,12 +31,12 @@ object ScryfallImageEnricher {
         if (variant.imageUrl != null) return variant
 
         // Rate limiting
-        val now = platform.currentTimeMillis()
+        val now = currentTimeMillis()
         val timeSinceLastRequest = now - lastRequestTime
         if (timeSinceLastRequest < RATE_LIMIT_DELAY_MS) {
             delay(RATE_LIMIT_DELAY_MS - timeSinceLastRequest)
         }
-        lastRequestTime = platform.currentTimeMillis()
+        lastRequestTime = currentTimeMillis()
 
         try {
             val imageUrl = if (variant.collectorNumber != null) {

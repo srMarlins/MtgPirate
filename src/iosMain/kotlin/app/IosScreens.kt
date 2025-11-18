@@ -417,6 +417,9 @@ fun IosResultsScreen(
     onEnrichVariant: ((model.CardVariant) -> Unit)? = null,
     isLoadingCatalog: Boolean = false,
     isMatching: Boolean = false,
+    matchedCount: Int = 0,
+    unmatchedCount: Int = 0,
+    ambiguousCount: Int = 0,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
@@ -444,7 +447,10 @@ fun IosResultsScreen(
                     onClose = onBack,
                     onExport = onNext,
                     onEnrichVariant = onEnrichVariant,
-                    isLoading = isLoadingCatalog || isMatching
+                    isLoading = isLoadingCatalog || isMatching,
+                    matchedCount = matchedCount,
+                    unmatchedCount = unmatchedCount,
+                    ambiguousCount = ambiguousCount
                 )
             }
         }

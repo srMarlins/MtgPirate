@@ -2,6 +2,7 @@
 
 package state
 
+import catalog.ScryfallImageEnricher
 import database.CatalogStore
 import database.Database
 import database.ImportsStore
@@ -68,7 +69,11 @@ class MviViewModel(
                     showSavedImportsWindow = localState.showSavedImportsWindow,
                     wizardCompletedSteps = localState.wizardCompletedSteps,
                     isDarkTheme = localState.isDarkTheme,
-                    isMatching = localState.isMatching
+                    isMatching = localState.isMatching,
+                    matchedCount = localState.matchedCount,
+                    unmatchedCount = localState.unmatchedCount,
+                    ambiguousCount = localState.ambiguousCount,
+                    totalPriceCents = localState.totalPriceCents
                 )
             }.onEach { newState ->
                 _viewState.update { newState }
@@ -250,7 +255,22 @@ class MviViewModel(
             )
         }
 
-        _localState.update { it.copy(matches = matches, showResultsWindow = true, isMatching = false) }
+        // Calculate counts on background thread
+        val counts = withContext(Dispatchers.Default) {
+            calculateMatchCounts(matches)
+        }
+
+        _localState.update { 
+            it.copy(
+                matches = matches, 
+                showResultsWindow = true, 
+                isMatching = false,
+                matchedCount = counts.matched,
+                unmatchedCount = counts.unmatched,
+                ambiguousCount = counts.ambiguous,
+                totalPriceCents = counts.totalPrice
+            ) 
+        }
         log("Matched ${matches.size} entries", "INFO")
     }
 
@@ -297,22 +317,39 @@ class MviViewModel(
     }
 
     private fun resolveCandidate(index: Int, variant: CardVariant) {
-        _localState.update { state ->
-            if (index !in state.matches.indices) return@update state
+        scope.launch {
+            _localState.update { state ->
+                if (index !in state.matches.indices) return@update state
 
-            val match = state.matches[index]
-            val updated = match.copy(
-                status = MatchStatus.MANUAL_SELECTED,
-                selectedVariant = variant
-            )
+                val match = state.matches[index]
+                val updated = match.copy(
+                    status = MatchStatus.MANUAL_SELECTED,
+                    selectedVariant = variant
+                )
 
-            val newMatches = state.matches.toMutableList()
-            newMatches[index] = updated
+                val newMatches = state.matches.toMutableList()
+                newMatches[index] = updated
 
-            state.copy(matches = newMatches, showCandidatesFor = null)
+                state.copy(matches = newMatches, showCandidatesFor = null)
+            }
+
+            // Recalculate counts on background thread after resolving
+            val matches = _localState.value.matches
+            val counts = withContext(Dispatchers.Default) {
+                calculateMatchCounts(matches)
+            }
+            
+            _localState.update {
+                it.copy(
+                    matchedCount = counts.matched,
+                    unmatchedCount = counts.unmatched,
+                    ambiguousCount = counts.ambiguous,
+                    totalPriceCents = counts.totalPrice
+                )
+            }
+
+            log("Resolved card variant at index $index", "INFO")
         }
-
-        log("Resolved card variant at index $index", "INFO")
     }
 
     private fun exportCsv() {
@@ -501,7 +538,7 @@ class MviViewModel(
                 log("Fetching image for ${variant.nameOriginal} (${variant.setCode})...", "DEBUG")
 
                 // Use ScryfallImageEnricher to fetch the image URL
-                val enrichedVariant = catalog.ScryfallImageEnricher.enrichVariant(
+                val enrichedVariant = ScryfallImageEnricher.enrichVariant(
                     variant = variant,
                     imageSize = "normal",
                     log = { msg -> log(msg, "DEBUG") }
@@ -523,7 +560,39 @@ class MviViewModel(
             platformServices.addLog(LogEntry(level, message, Clock.System.now().toString()))
         }
     }
+
+    /**
+     * Calculate match statistics on a background thread.
+     * This should be called from Dispatchers.Default context.
+     */
+    private fun calculateMatchCounts(matches: List<DeckEntryMatch>): MatchCounts {
+        val matched = matches.count { it.selectedVariant != null }
+        val unmatched = matches.count { it.selectedVariant == null && it.deckEntry.include }
+        val ambiguous = matches.count { it.status == MatchStatus.AMBIGUOUS }
+        val totalPrice = matches
+            .filter { it.selectedVariant != null }
+            .sumOf { match ->
+                match.selectedVariant!!.priceInCents * match.deckEntry.qty
+            }
+        
+        return MatchCounts(
+            matched = matched,
+            unmatched = unmatched,
+            ambiguous = ambiguous,
+            totalPrice = totalPrice
+        )
+    }
 }
+
+/**
+ * Pre-calculated match statistics for performance.
+ */
+private data class MatchCounts(
+    val matched: Int,
+    val unmatched: Int,
+    val ambiguous: Int,
+    val totalPrice: Int
+)
 
 /**
  * Immutable view state derived from database and local UI state.
@@ -549,7 +618,12 @@ data class ViewState(
     val showSavedImportsWindow: Boolean = false,
     val wizardCompletedSteps: Set<Int> = emptySet(),
     val isDarkTheme: Boolean = true,
-    val isMatching: Boolean = false
+    val isMatching: Boolean = false,
+    // Pre-calculated counts for performance (calculated on background threads)
+    val matchedCount: Int = 0,
+    val unmatchedCount: Int = 0,
+    val ambiguousCount: Int = 0,
+    val totalPriceCents: Int = 0
 )
 
 /**
@@ -569,7 +643,12 @@ private data class LocalUiState(
     val showSavedImportsWindow: Boolean = false,
     val wizardCompletedSteps: Set<Int> = emptySet(),
     val isDarkTheme: Boolean = true,
-    val isMatching: Boolean = false
+    val isMatching: Boolean = false,
+    // Pre-calculated counts for performance (calculated on background threads)
+    val matchedCount: Int = 0,
+    val unmatchedCount: Int = 0,
+    val ambiguousCount: Int = 0,
+    val totalPriceCents: Int = 0
 )
 
 /**
