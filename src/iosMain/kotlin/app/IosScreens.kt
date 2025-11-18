@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Checkbox
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
@@ -174,37 +173,43 @@ fun IosPreferencesScreen(
                     modifier = Modifier.padding(bottom = 6.dp)
                 )
 
-                // Use Row to fit all checkboxes horizontally on mobile
+                // Use Row to fit all toggles horizontally on mobile
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable { onIncludeSideboardChange(!includeSideboard) }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Checkbox(checked = includeSideboard, onCheckedChange = onIncludeSideboardChange)
-                        Spacer(Modifier.width(2.dp))
                         Text("SB", style = MaterialTheme.typography.caption)
+                        PixelToggle(
+                            checked = includeSideboard,
+                            onCheckedChange = onIncludeSideboardChange
+                        )
                     }
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable { onIncludeCommandersChange(!includeCommanders) }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Checkbox(checked = includeCommanders, onCheckedChange = onIncludeCommandersChange)
-                        Spacer(Modifier.width(2.dp))
                         Text("CMD", style = MaterialTheme.typography.caption)
+                        PixelToggle(
+                            checked = includeCommanders,
+                            onCheckedChange = onIncludeCommandersChange
+                        )
                     }
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable { onIncludeTokensChange(!includeTokens) }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Checkbox(checked = includeTokens, onCheckedChange = onIncludeTokensChange)
-                        Spacer(Modifier.width(2.dp))
                         Text("TOK", style = MaterialTheme.typography.caption)
+                        PixelToggle(
+                            checked = includeTokens,
+                            onCheckedChange = onIncludeTokensChange
+                        )
                     }
                 }
             }

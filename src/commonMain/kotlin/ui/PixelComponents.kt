@@ -2,6 +2,7 @@ package ui
 
 import androidx.compose.animation.core.*
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -1276,6 +1277,91 @@ fun ScrollableCardLazyList(
             height = indicatorsHeight,
             paddingHorizontal = paddingHorizontalIndicators,
             modifier = Modifier.matchParentSize()
+        )
+    }
+}
+
+// ========================================
+// PIXEL TOGGLE (iOS-style with pixel design)
+// ========================================
+/**
+ * A custom iOS-style toggle switch with pixel art aesthetic.
+ * Features animated transitions and mystical colors.
+ */
+@Suppress("FunctionNaming", "LongMethod")
+@Composable
+fun PixelToggle(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    val colors = MaterialTheme.colors
+    
+    // Animate the toggle position
+    val toggleOffset by animateFloatAsState(
+        targetValue = if (checked) 1f else 0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        )
+    )
+    
+    // Animate background color
+    val backgroundColor by animateColorAsState(
+        targetValue = when {
+            !enabled -> Color.Gray.copy(alpha = 0.3f)
+            checked -> colors.secondary.copy(alpha = 0.8f)
+            else -> colors.surface.copy(alpha = 0.5f)
+        },
+        animationSpec = tween(300)
+    )
+    
+    // Glow effect when checked
+    val infiniteTransition = rememberInfiniteTransition()
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.2f,
+        targetValue = 0.5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    
+    val trackWidth = 44.dp
+    val trackHeight = 24.dp
+    val thumbSize = 18.dp
+    val thumbPadding = 3.dp
+    
+    Box(
+        modifier = modifier
+            .width(trackWidth)
+            .height(trackHeight)
+            .pixelBorder(
+                borderWidth = 2.dp,
+                enabled = enabled,
+                glowAlpha = if (checked && enabled) glowAlpha else 0f
+            )
+            .background(backgroundColor, shape = PixelShape(cornerSize = 6.dp))
+            .clickable(enabled = enabled) { onCheckedChange(!checked) }
+            .padding(thumbPadding)
+    ) {
+        // Thumb (the sliding part)
+        val thumbOffset = (trackWidth - thumbSize - thumbPadding * 2) * toggleOffset
+        
+        Box(
+            modifier = Modifier
+                .size(thumbSize)
+                .offset(x = thumbOffset)
+                .pixelBorder(
+                    borderWidth = 2.dp,
+                    enabled = true,
+                    glowAlpha = if (checked && enabled) 0.3f else 0f
+                )
+                .background(
+                    if (enabled) colors.primary else Color.Gray,
+                    shape = PixelShape(cornerSize = 4.dp)
+                )
         )
     }
 }
