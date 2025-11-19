@@ -457,7 +457,7 @@ fun MobileResultsScreen(
                 )
                 if (matches.isNotEmpty()) {
                     PixelButton(
-                        text = "Export Results →",
+                        text = "Continue to Export →",
                         onClick = onExport,
                         variant = PixelButtonVariant.SECONDARY,
                         modifier = Modifier.weight(1f).height(52.dp)

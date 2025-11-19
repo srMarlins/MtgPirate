@@ -343,7 +343,7 @@ fun main() = application {
                 ),
                 Step(
                     number = 3,
-                    title = "Review",
+                    title = "Results",
                     description = "Review matches",
                     state = when {
                         state.wizardCompletedSteps.contains(3) -> StepState.COMPLETED
