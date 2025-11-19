@@ -86,7 +86,7 @@ fun CatalogScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
+                    .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.3f)
                     .background(MaterialTheme.colors.primary.copy(alpha = 0.1f), shape = PixelShape(cornerSize = 6.dp))
                     .padding(12.dp)
             ) {
@@ -178,7 +178,7 @@ private fun PixelDropdownSelector(label: String, options: List<String>, selected
     Column {
         Box(
             modifier = Modifier
-                .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = if (expanded) 0.5f else 0.2f)
+                .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = if (expanded) 0.5f else 0.2f)
                 .background(MaterialTheme.colors.surface, shape = PixelShape(cornerSize = 6.dp))
                 .clickable { expanded = true }
                 .padding(horizontal = 16.dp, vertical = 12.dp)

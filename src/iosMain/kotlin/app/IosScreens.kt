@@ -294,11 +294,12 @@ fun IosPreferencesScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
+                        .clip(PixelShape(cornerSize = 6.dp))
                         .background(
                             MaterialTheme.colors.surface.copy(alpha = 0.5f),
                             shape = PixelShape(cornerSize = 6.dp)
                         )
+                        .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.2f)
                         .padding(8.dp)
                 ) {
                     val variants = variantPriority.ifEmpty { listOf("Regular", "Foil", "Holo") }
@@ -501,14 +502,16 @@ fun IosResolveScreen(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .pixelBorder(
-                                            borderWidth = 2.dp,
-                                            enabled = true,
-                                            glowAlpha = 0.2f
-                                        )
+                                        .clip(PixelShape(cornerSize = 6.dp))
                                         .background(
                                             MaterialTheme.colors.surface.copy(alpha = 0.5f),
                                             shape = PixelShape(cornerSize = 6.dp)
+                                        )
+                                        .pixelBorder(
+                                            borderWidth = 2.dp,
+                                            cornerSize = 6.dp,
+                                            enabled = true,
+                                            glowAlpha = 0.2f
                                         )
                                         .padding(12.dp)
                                 ) {
@@ -565,14 +568,14 @@ fun IosResolveScreen(
                                                 modifier = Modifier
                                                     .size(40.dp)
                                                     .clip(PixelShape(cornerSize = 6.dp))
-                                                    .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
                                                     .background(MaterialTheme.colors.secondary, shape = PixelShape(cornerSize = 6.dp))
                                                     .clickable {
                                                         platform.IosHapticFeedback.triggerImpact(
                                                             platform.IosHapticFeedback.ImpactStyle.MEDIUM
                                                         )
                                                         onSelect(variant)
-                                                    },
+                                                    }
+                                                    .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.3f),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Text(

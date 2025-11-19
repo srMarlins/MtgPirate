@@ -205,8 +205,8 @@ private fun <T> HybridReorderableItem(
     // Glow animation
     val infiniteTransition = rememberInfiniteTransition()
     val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.7f,
+        initialValue = 0.2f,
+        targetValue = 0.5f,
         animationSpec = infiniteRepeatable(
             animation = tween(1000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -266,14 +266,16 @@ private fun <T> HybridReorderableItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(72.dp)
-                    .clip(PixelShape(cornerSize = 10.dp))
+                    .clip(PixelShape(cornerSize = 9.dp))
+                    .background(backgroundColor, shape = PixelShape(cornerSize = 9.dp))
                     .pixelBorder(
                         borderWidth = if (isDragging) 3.dp else 2.dp,
+                        cornerSize = 9.dp,
                         enabled = true,
-                        glowAlpha = if (isDragging) glowAlpha else 0.2f
+                        glowAlpha = if (isDragging) glowAlpha else 0.1f
                     )
-                    .background(backgroundColor, shape = PixelShape(cornerSize = 10.dp))
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                contentAlignment = Alignment.Center
             ) {
                 content()
             }
@@ -356,7 +358,15 @@ fun HybridVariantPriorityItem(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(if (usePixelStyle) PixelShape(cornerSize = 6.dp) else RoundedCornerShape(8.dp))
-                    .background(colors.primary.copy(alpha = 0.15f)),
+                    .background(colors.primary.copy(alpha = 0.15f))
+                    .then(
+                        if (usePixelStyle) Modifier.pixelBorder(
+                            borderWidth = 2.dp,
+                            cornerSize = 6.dp,
+                            enabled = true,
+                            glowAlpha = 0.1f
+                        ) else Modifier
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

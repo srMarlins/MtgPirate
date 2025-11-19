@@ -13,6 +13,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -89,16 +90,18 @@ fun ResultsScreen(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .pixelBorder(
-                            borderWidth = if (filterMode == 0) 3.dp else 2.dp,
-                            enabled = true,
-                            glowAlpha = if (filterMode == 0) 0.5f else 0.1f
-                        )
+                        .clip(PixelShape(cornerSize = 9.dp))
                         .background(
                             if (filterMode == 0) MaterialTheme.colors.primary.copy(alpha = 0.2f) else MaterialTheme.colors.surface,
                             shape = PixelShape(cornerSize = 9.dp)
                         )
                         .clickable { filterMode = 0 }
+                        .pixelBorder(
+                            borderWidth = if (filterMode == 0) 3.dp else 2.dp,
+                            cornerSize = 9.dp,
+                            enabled = true,
+                            glowAlpha = if (filterMode == 0) 0.5f else 0.1f
+                        )
                         .padding(12.dp)
                 ) {
                     Column {
@@ -122,16 +125,18 @@ fun ResultsScreen(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .pixelBorder(
-                            borderWidth = if (filterMode == 1) 3.dp else 2.dp,
-                            enabled = true,
-                            glowAlpha = if (filterMode == 1) 0.5f else if (totalMatched.isNotEmpty()) 0.3f else 0.1f
-                        )
+                        .clip(PixelShape(cornerSize = 9.dp))
                         .background(
                             if (filterMode == 1) Color(0xFF4CAF50).copy(alpha = 0.2f) else MaterialTheme.colors.surface,
                             shape = PixelShape(cornerSize = 9.dp)
                         )
                         .clickable { filterMode = 1 }
+                        .pixelBorder(
+                            borderWidth = if (filterMode == 1) 3.dp else 2.dp,
+                            cornerSize = 9.dp,
+                            enabled = true,
+                            glowAlpha = if (filterMode == 1) 0.5f else if (totalMatched.isNotEmpty()) 0.3f else 0.1f
+                        )
                         .padding(12.dp)
                 ) {
                     Column {
@@ -155,16 +160,18 @@ fun ResultsScreen(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .pixelBorder(
-                            borderWidth = if (filterMode == 2) 3.dp else 2.dp,
-                            enabled = true,
-                            glowAlpha = if (filterMode == 2) 0.5f else if (missed > 0) 0.3f else 0.1f
-                        )
+                        .clip(PixelShape(cornerSize = 9.dp))
                         .background(
                             if (filterMode == 2) Color(0xFFF44336).copy(alpha = 0.2f) else MaterialTheme.colors.surface,
                             shape = PixelShape(cornerSize = 9.dp)
                         )
                         .clickable { filterMode = 2 }
+                        .pixelBorder(
+                            borderWidth = if (filterMode == 2) 3.dp else 2.dp,
+                            cornerSize = 9.dp,
+                            enabled = true,
+                            glowAlpha = if (filterMode == 2) 0.5f else if (missed > 0) 0.3f else 0.1f
+                        )
                         .padding(12.dp)
                 ) {
                     Column {
@@ -188,16 +195,18 @@ fun ResultsScreen(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .pixelBorder(
-                            borderWidth = if (filterMode == 3) 3.dp else 2.dp,
-                            enabled = true,
-                            glowAlpha = if (filterMode == 3) 0.5f else if (ambiguous > 0) 0.3f else 0.1f
-                        )
+                        .clip(PixelShape(cornerSize = 9.dp))
                         .background(
                             if (filterMode == 3) Color(0xFFFF9800).copy(alpha = 0.2f) else MaterialTheme.colors.surface,
                             shape = PixelShape(cornerSize = 9.dp)
                         )
                         .clickable { filterMode = 3 }
+                        .pixelBorder(
+                            borderWidth = if (filterMode == 3) 3.dp else 2.dp,
+                            cornerSize = 9.dp,
+                            enabled = true,
+                            glowAlpha = if (filterMode == 3) 0.5f else if (ambiguous > 0) 0.3f else 0.1f
+                        )
                         .padding(12.dp)
                 ) {
                     Column {
@@ -221,7 +230,7 @@ fun ResultsScreen(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.1f)
+                        .pixelBorder(borderWidth = 2.dp, cornerSize = 9.dp, enabled = true, glowAlpha = 0.1f)
                         .background(MaterialTheme.colors.surface, shape = PixelShape(cornerSize = 9.dp))
                         .padding(12.dp)
                 ) {
@@ -263,7 +272,7 @@ fun ResultsScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
+                    .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.3f)
                     .background(MaterialTheme.colors.primary.copy(alpha = 0.1f), shape = PixelShape(cornerSize = 6.dp))
                     .padding(12.dp)
             ) {
@@ -495,14 +504,14 @@ fun ResultsScreen(
                     text = "← Back to Configure",
                     onClick = onClose,
                     variant = PixelButtonVariant.SURFACE,
-                    modifier = Modifier.width(220.dp)
+                    modifier = Modifier.width(180.dp)
                 )
                 if (matches.isNotEmpty()) {
                     PixelButton(
                         text = "Export Results →",
                         onClick = onExport,
                         variant = PixelButtonVariant.SECONDARY,
-                        modifier = Modifier.width(220.dp)
+                        modifier = Modifier.width(280.dp)
                     )
                 }
             }
