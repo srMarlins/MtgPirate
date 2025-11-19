@@ -8,6 +8,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.pointerInput
@@ -117,7 +118,7 @@ fun PreferencesWizardScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f) // Use weight instead of fixed height
-                        .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
+                        .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.2f)
                         .background(MaterialTheme.colors.surface.copy(alpha = 0.5f), shape = PixelShape(cornerSize = 6.dp))
                         .padding(12.dp) // Increased padding
                 ) {
@@ -374,13 +375,16 @@ fun DraggableVariantItem(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .clip(PixelShape(cornerSize = 6.dp))
+                .background(backgroundColor, shape = PixelShape(cornerSize = 6.dp))
                 .pixelBorder(
                     borderWidth = borderWidth,
+                    cornerSize = 6.dp,
                     enabled = true,
                     glowAlpha = glowAlpha
                 )
-                .background(backgroundColor, shape = PixelShape(cornerSize = 6.dp))
-                .padding(horizontal = 12.dp, vertical = 12.dp)
+                .padding(horizontal = 12.dp, vertical = 12.dp),
+            contentAlignment = Alignment.CenterStart
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),

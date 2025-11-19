@@ -25,6 +25,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -36,6 +38,12 @@ import androidx.compose.ui.zIndex
 // ========================================
 // PIXEL SHAPE (for matching border clipping)
 // ========================================
+/**
+ * A pixel-art style shape with chamfered corners.
+ * This shape is designed to work perfectly with the pixelBorder modifier.
+ * 
+ * @param cornerSize The size of the chamfered corners
+ */
 class PixelShape(private val cornerSize: Dp = 6.dp) : Shape {
     override fun createOutline(
         size: Size,
@@ -44,27 +52,35 @@ class PixelShape(private val cornerSize: Dp = 6.dp) : Shape {
     ): androidx.compose.ui.graphics.Outline {
         val cornerPx = with(density) { cornerSize.toPx() }
         return androidx.compose.ui.graphics.Outline.Generic(
-            path = Path().apply {
-                // Start at top-left corner (after the chamfer)
-                moveTo(cornerPx, 0f)
-                // Top edge
-                lineTo(size.width - cornerPx, 0f)
-                // Top-right chamfer
-                lineTo(size.width, cornerPx)
-                // Right edge
-                lineTo(size.width, size.height - cornerPx)
-                // Bottom-right chamfer
-                lineTo(size.width - cornerPx, size.height)
-                // Bottom edge
-                lineTo(cornerPx, size.height)
-                // Bottom-left chamfer
-                lineTo(0f, size.height - cornerPx)
-                // Left edge
-                lineTo(0f, cornerPx)
-                // Top-left chamfer (close the path)
-                close()
-            }
+            path = createPixelPath(size.width, size.height, cornerPx)
         )
+    }
+}
+
+/**
+ * Creates a pixel-art path with chamfered corners.
+ * This is the single source of truth for the pixel shape geometry.
+ */
+private fun createPixelPath(width: Float, height: Float, cornerSize: Float): Path {
+    return Path().apply {
+        // Start at top-left corner (after the chamfer)
+        moveTo(cornerSize, 0f)
+        // Top edge
+        lineTo(width - cornerSize, 0f)
+        // Top-right chamfer
+        lineTo(width, cornerSize)
+        // Right edge
+        lineTo(width, height - cornerSize)
+        // Bottom-right chamfer
+        lineTo(width - cornerSize, height)
+        // Bottom edge
+        lineTo(cornerSize, height)
+        // Bottom-left chamfer
+        lineTo(0f, height - cornerSize)
+        // Left edge
+        lineTo(0f, cornerSize)
+        // Top-left chamfer (close the path)
+        close()
     }
 }
 
@@ -109,13 +125,14 @@ fun PixelButton(
         modifier = modifier
             .height(48.dp)
             .clip(PixelShape(cornerSize = 9.dp))
+            .background(backgroundColor, shape = PixelShape(cornerSize = 9.dp))
+            .clickable(enabled = enabled, onClick = onClick)
             .pixelBorder(
                 borderWidth = 3.dp,
+                cornerSize = 9.dp,
                 enabled = enabled,
                 glowAlpha = if (enabled) glowAlpha else 0f
             )
-            .background(backgroundColor, shape = PixelShape(cornerSize = 9.dp))
-            .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -178,7 +195,7 @@ fun PixelTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(PixelShape(cornerSize = 6.dp))
-                .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.2f)
+                .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.2f)
                 .background(colors.surface, shape = PixelShape(cornerSize = 6.dp))
                 .padding(12.dp)
         ) {
@@ -234,6 +251,7 @@ fun PixelCard(
             .clip(PixelShape(cornerSize = 9.dp))
             .pixelBorder(
                 borderWidth = 3.dp,
+                cornerSize = 9.dp,
                 enabled = true,
                 glowAlpha = if (glowing) glowAlpha else 0.1f
             )
@@ -317,7 +335,7 @@ fun PixelProgressBar(
             .height(height)
             .fillMaxWidth()
             .clip(PixelShape(cornerSize = 6.dp))
-            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
+            .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.3f)
             .background(colors.surface, shape = PixelShape(cornerSize = 6.dp))
     ) {
         // Progress fill - Mystical gradient
@@ -390,117 +408,138 @@ private fun DrawScope.drawScanlines(alpha: Float) {
 // ========================================
 // PIXEL BORDER MODIFIER
 // ========================================
+/**
+ * Draws a pixel-art style border around the content using path-based rendering.
+ * This ensures perfect alignment with PixelShape clipping.
+ * 
+ * The border is drawn ON TOP OF content using drawWithContent, and uses the exact
+ * PixelShape path with Stroke style for mathematical precision.
+ * 
+ * @param borderWidth Width of the border stroke
+ * @param cornerSize Size of the chamfered corners (should match PixelShape)
+ * @param enabled Whether the border is enabled (affects color)
+ * @param glowAlpha Alpha value for the outer glow effect (0f = no glow)
+ */
 fun Modifier.pixelBorder(
     borderWidth: Dp = 2.dp,
+    cornerSize: Dp = 6.dp,
     enabled: Boolean = true,
     glowAlpha: Float = 0f
-): Modifier {
-    return this.drawBehind {
-        val strokeWidth = borderWidth.toPx()
-        val width = size.width
-        val height = size.height
-
-        // Corner size for pixel art effect
-        val cornerSize = strokeWidth * 3
-
-        // Main border color - Fantasy themed!
-        val borderColor = if (enabled) {
-            Color(0xFFB794F6) // Mystical purple (arcane glow)
-        } else {
-            Color(0xFF6B7280) // Muted grey
-        }
-
-        // Draw outer glow if enabled
-        if (glowAlpha > 0f && enabled) {
-            val glowColor = borderColor.copy(alpha = glowAlpha)
-            drawPixelBorder(width, height, cornerSize, strokeWidth + 2f, glowColor)
-        }
-
-        // Draw main border
-        drawPixelBorder(width, height, cornerSize, strokeWidth, borderColor)
-
-        // Draw inner shadow for depth
-        val shadowColor = Color.Black.copy(alpha = 0.3f)
-        drawPixelBorder(width, height, cornerSize, strokeWidth / 2, shadowColor, inner = true)
+): Modifier = this.drawWithContent {
+    // Draw content first
+    drawContent()
+    
+    val strokeWidth = borderWidth.toPx()
+    val cornerPx = cornerSize.toPx()
+    
+    // Main border color - Fantasy themed with reduced opacity for subtlety
+    val borderColor = if (enabled) {
+        Color(0xFFB794F6).copy(alpha = 0.6f) // Mystical purple with 60% opacity
+    } else {
+        Color(0xFF6B7280).copy(alpha = 0.4f) // Muted grey with 40% opacity
+    }
+    
+    // Create the pixel path - this is the single source of truth
+    // The path is inset by half the stroke width so the stroke appears fully inside
+    val halfStroke = strokeWidth / 2f
+    val path = createPixelPath(
+        width = size.width - strokeWidth,
+        height = size.height - strokeWidth,
+        cornerSize = cornerPx
+    )
+    
+    // Translate the path to center it (accounting for the stroke)
+    path.translate(Offset(halfStroke, halfStroke))
+    
+    // Draw outer glow if enabled
+    if (glowAlpha > 0f && enabled) {
+        val glowColor = Color(0xFFB794F6).copy(alpha = glowAlpha * 0.5f) // Reduce glow intensity
+        drawPath(
+            path = path,
+            color = glowColor,
+            style = Stroke(
+                width = strokeWidth + 4f,
+                cap = StrokeCap.Square,
+                join = StrokeJoin.Miter
+            )
+        )
+    }
+    
+    // Draw main border
+    drawPath(
+        path = path,
+        color = borderColor,
+        style = Stroke(
+            width = strokeWidth,
+            cap = StrokeCap.Square,
+            join = StrokeJoin.Miter
+        )
+    )
+    
+    // Draw inner shadow for depth (only when enabled and subtle)
+    if (enabled && glowAlpha > 0.2f) {
+        val shadowColor = Color.Black.copy(alpha = 0.15f) // Reduced from 0.2f
+        val innerPath = createPixelPath(
+            width = size.width - strokeWidth * 2,
+            height = size.height - strokeWidth * 2,
+            cornerSize = maxOf(0f, cornerPx - strokeWidth)
+        )
+        innerPath.translate(Offset(strokeWidth, strokeWidth))
+        
+        drawPath(
+            path = innerPath,
+            color = shadowColor,
+            style = Stroke(
+                width = strokeWidth / 2f,
+                cap = StrokeCap.Square,
+                join = StrokeJoin.Miter
+            )
+        )
     }
 }
 
-private fun DrawScope.drawPixelBorder(
-    width: Float,
-    height: Float,
-    cornerSize: Float,
-    strokeWidth: Float,
-    color: Color,
-    inner: Boolean = false
+// ========================================
+// PIXEL BORDER CONTAINER
+// ========================================
+/**
+ * A high-level container that combines pixel border, background, and content
+ * with proper layering and clipping. This is the recommended way to create
+ * pixel-bordered components.
+ * 
+ * @param modifier Modifier for the container
+ * @param borderWidth Width of the border
+ * @param cornerSize Size of the chamfered corners
+ * @param enabled Whether the border is enabled
+ * @param glowAlpha Alpha for the glow effect
+ * @param backgroundColor Background color for the container
+ * @param contentPadding Padding inside the border
+ * @param content Content to display inside the container
+ */
+@Composable
+fun PixelBorderContainer(
+    modifier: Modifier = Modifier,
+    borderWidth: Dp = 2.dp,
+    cornerSize: Dp = 6.dp,
+    enabled: Boolean = true,
+    glowAlpha: Float = 0f,
+    backgroundColor: Color = MaterialTheme.colors.surface,
+    contentPadding: Dp = 0.dp,
+    content: @Composable BoxScope.() -> Unit
 ) {
-    // Calculate offset accounting for stroke width (stroke is centered on the line)
-    val halfStroke = strokeWidth / 2f
-    val offset = if (inner) strokeWidth else halfStroke
-
-    // Top line
-    drawLine(
-        color = color,
-        start = Offset(cornerSize + offset, offset),
-        end = Offset(width - cornerSize - offset, offset),
-        strokeWidth = strokeWidth
-    )
-
-    // Bottom line
-    drawLine(
-        color = color,
-        start = Offset(cornerSize + offset, height - offset),
-        end = Offset(width - cornerSize - offset, height - offset),
-        strokeWidth = strokeWidth
-    )
-
-    // Left line
-    drawLine(
-        color = color,
-        start = Offset(offset, cornerSize + offset),
-        end = Offset(offset, height - cornerSize - offset),
-        strokeWidth = strokeWidth
-    )
-
-    // Right line
-    drawLine(
-        color = color,
-        start = Offset(width - offset, cornerSize + offset),
-        end = Offset(width - offset, height - cornerSize - offset),
-        strokeWidth = strokeWidth
-    )
-
-    // Corners (pixel art style)
-    // Top-left
-    drawLine(
-        color = color,
-        start = Offset(cornerSize + offset, offset),
-        end = Offset(offset, cornerSize + offset),
-        strokeWidth = strokeWidth
-    )
-
-    // Top-right
-    drawLine(
-        color = color,
-        start = Offset(width - cornerSize - offset, offset),
-        end = Offset(width - offset, cornerSize + offset),
-        strokeWidth = strokeWidth
-    )
-
-    // Bottom-left
-    drawLine(
-        color = color,
-        start = Offset(offset, height - cornerSize - offset),
-        end = Offset(cornerSize + offset, height - offset),
-        strokeWidth = strokeWidth
-    )
-
-    // Bottom-right
-    drawLine(
-        color = color,
-        start = Offset(width - offset, height - cornerSize - offset),
-        end = Offset(width - cornerSize - offset, height - offset),
-        strokeWidth = strokeWidth
-    )
+    Box(
+        modifier = modifier
+            .clip(PixelShape(cornerSize = cornerSize))
+            .pixelBorder(
+                borderWidth = borderWidth,
+                cornerSize = cornerSize,
+                enabled = enabled,
+                glowAlpha = glowAlpha
+            )
+            .background(backgroundColor, shape = PixelShape(cornerSize = cornerSize))
+            .padding(contentPadding)
+    ) {
+        content()
+    }
 }
 
 // ========================================
@@ -516,8 +555,8 @@ fun PixelBadge(
     Box(
         modifier = modifier
             .clip(PixelShape(cornerSize = 6.dp))
-            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
             .background(color, shape = PixelShape(cornerSize = 6.dp))
+            .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.4f)
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(
@@ -1103,6 +1142,7 @@ fun PixelIconButton(
             .clip(PixelShape(cornerSize = 6.dp))
             .pixelBorder(
                 borderWidth = 2.dp,
+                cornerSize = 6.dp,
                 enabled = enabled,
                 glowAlpha = if (isHovered) 0.5f else 0.2f
             )
@@ -1156,7 +1196,7 @@ private fun PixelArrowBadge(
             .size(badgeSize)
             .offset(y = yOffset)
             .clip(PixelShape(cornerSize = 4.dp))
-            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.5f)
+            .pixelBorder(borderWidth = 2.dp, cornerSize = 4.dp, enabled = true, glowAlpha = 0.5f)
             .background(MaterialTheme.colors.surface.copy(alpha = 0.8f), shape = PixelShape(cornerSize = 4.dp)),
         contentAlignment = Alignment.Center
     ) {
@@ -1345,6 +1385,7 @@ fun PixelToggle(
             .clip(PixelShape(cornerSize = 6.dp))
             .pixelBorder(
                 borderWidth = 2.dp,
+                cornerSize = 6.dp,
                 enabled = enabled,
                 glowAlpha = if (checked && enabled) glowAlpha else 0f
             )
@@ -1362,6 +1403,7 @@ fun PixelToggle(
                 .clip(PixelShape(cornerSize = 4.dp))
                 .pixelBorder(
                     borderWidth = 2.dp,
+                    cornerSize = 4.dp,
                     enabled = true,
                     glowAlpha = if (checked && enabled) 0.3f else 0f
                 )

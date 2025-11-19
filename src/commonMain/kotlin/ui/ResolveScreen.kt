@@ -98,7 +98,7 @@ fun ResolveScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
+                        .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.3f)
                         .background(MaterialTheme.colors.primary.copy(alpha = 0.1f), shape = PixelShape(cornerSize = 6.dp))
                         .padding(12.dp)
                 ) {

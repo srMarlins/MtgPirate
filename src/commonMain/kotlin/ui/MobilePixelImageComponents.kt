@@ -31,78 +31,66 @@ fun CompactPixelImagePreview(
 ) {
     val colors = MaterialTheme.colors
 
-    // Outer container
-    Box(
+    PixelBorderContainer(
         modifier = modifier
             .size(width = 56.dp, height = 78.dp)
             .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
+        borderWidth = 2.dp,
+        cornerSize = 3.dp,
+        enabled = true,
+        glowAlpha = 0.3f,
+        backgroundColor = colors.surface.copy(alpha = 0.5f)
     ) {
-        // Image layer - inset by border width and clipped
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(2.dp) // Inset by border width
-                .clip(PixelShape(cornerSize = 3.dp)) // Clip to prevent overflow
-                .background(colors.surface.copy(alpha = 0.5f)),
-            contentAlignment = Alignment.Center
-        ) {
-            when {
-                imageUrl != null -> {
-                    var loadState by remember { mutableStateOf<AsyncImagePainter.State>(AsyncImagePainter.State.Empty) }
+        when {
+            imageUrl != null -> {
+                var loadState by remember { mutableStateOf<AsyncImagePainter.State>(AsyncImagePainter.State.Empty) }
 
-                    AsyncImage(
-                        model = imageUrl,
-                        contentDescription = cardName,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(1.2f), // Scale larger for more aggressive crop
-                        onState = { loadState = it }
-                    )
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = cardName,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                    onState = { loadState = it }
+                )
 
-                    // Loading indicator
-                    if (loadState is AsyncImagePainter.State.Loading) {
-                        Box(
-                            modifier = Modifier.fillMaxSize().background(colors.surface.copy(alpha = 0.8f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp), color = colors.primary, strokeWidth = 2.dp
-                            )
-                        }
-                    }
-
-                    // Error state
-                    if (loadState is AsyncImagePainter.State.Error) {
-                        Box(
-                            modifier = Modifier.fillMaxSize().background(colors.surface.copy(alpha = 0.9f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "✗", style = MaterialTheme.typography.body1, color = Color(0xFFF44336)
-                            )
-                        }
+                // Loading indicator
+                if (loadState is AsyncImagePainter.State.Loading) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().background(colors.surface.copy(alpha = 0.8f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp), color = colors.primary, strokeWidth = 2.dp
+                        )
                     }
                 }
 
-                else -> {
-                    // No image placeholder
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
+                // Error state
+                if (loadState is AsyncImagePainter.State.Error) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().background(colors.surface.copy(alpha = 0.9f)),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "🖼", style = MaterialTheme.typography.body2, color = colors.onSurface.copy(alpha = 0.3f)
+                            text = "✗", style = MaterialTheme.typography.body1, color = Color(0xFFF44336)
                         )
                     }
                 }
             }
+
+            else -> {
+                // No image placeholder
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally, 
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(
+                        text = "🖼", style = MaterialTheme.typography.body2, color = colors.onSurface.copy(alpha = 0.3f)
+                    )
+                }
+            }
         }
-        
-        // Border layer - drawn on top of the image
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
-        )
     }
 }
 
@@ -122,7 +110,7 @@ fun MobilePixelImageModal(
     ) {
         Box(
             modifier = Modifier.fillMaxWidth(0.95f).wrapContentHeight().clip(PixelShape(cornerSize = 12.dp))
-                .pixelBorder(borderWidth = 4.dp, enabled = true, glowAlpha = 0.6f)
+                .pixelBorder(borderWidth = 4.dp, cornerSize = 12.dp, enabled = true, glowAlpha = 0.6f)
                 .background(colors.surface, shape = PixelShape(cornerSize = 12.dp)).padding(16.dp)
         ) {
             Column(
@@ -154,7 +142,7 @@ fun MobilePixelImageModal(
                     // Close button
                     Box(
                         modifier = Modifier.size(40.dp).clip(PixelShape(cornerSize = 6.dp))
-                            .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.3f)
+                            .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.3f)
                             .background(colors.surface, shape = PixelShape(cornerSize = 6.dp))
                             .clickable(onClick = onDismiss), contentAlignment = Alignment.Center
                     ) {
@@ -167,99 +155,87 @@ fun MobilePixelImageModal(
                 Spacer(Modifier.height(12.dp))
 
                 // Large image preview - mobile aspect ratio
-                Box(
+                PixelBorderContainer(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(0.715f), // Standard MTG card aspect ratio
-                    contentAlignment = Alignment.Center
+                    borderWidth = 3.dp,
+                    cornerSize = 6.dp,
+                    enabled = true,
+                    glowAlpha = 0.4f,
+                    backgroundColor = colors.surface.copy(alpha = 0.5f)
                 ) {
-                    // Image layer - inset by border width and clipped
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(3.dp) // Inset by border width
-                            .clip(PixelShape(cornerSize = 6.dp)) // Clip to prevent overflow
-                            .background(colors.surface.copy(alpha = 0.5f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        when {
-                            imageUrl != null -> {
-                                var loadState by remember { mutableStateOf<AsyncImagePainter.State>(AsyncImagePainter.State.Empty) }
+                    when {
+                        imageUrl != null -> {
+                            var loadState by remember { mutableStateOf<AsyncImagePainter.State>(AsyncImagePainter.State.Empty) }
 
-                                AsyncImage(
-                                    model = imageUrl,
-                                    contentDescription = cardName,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize(1.2f), // Scale larger for more aggressive crop
-                                    onState = { loadState = it }
+                            AsyncImage(
+                                model = imageUrl,
+                                contentDescription = cardName,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize(),
+                                onState = { loadState = it }
+                            )
+
+                        // Loading indicator
+                        if (loadState is AsyncImagePainter.State.Loading) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                MagicalLoadingSpinner(size = 48.dp)
+                                Spacer(Modifier.height(12.dp))
+                                Text(
+                                    "Loading image...",
+                                    style = MaterialTheme.typography.body2,
+                                    color = colors.onSurface.copy(alpha = 0.7f)
                                 )
-
-                            // Loading indicator
-                            if (loadState is AsyncImagePainter.State.Loading) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    MagicalLoadingSpinner(size = 48.dp)
-                                    Spacer(Modifier.height(12.dp))
-                                    Text(
-                                        "Loading image...",
-                                        style = MaterialTheme.typography.body2,
-                                        color = colors.onSurface.copy(alpha = 0.7f)
-                                    )
-                                }
-                            }
-
-                            // Error state
-                            if (loadState is AsyncImagePainter.State.Error) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier.padding(16.dp)
-                                ) {
-                                    Text(
-                                        text = "⚠", style = MaterialTheme.typography.h4, color = Color(0xFFF44336)
-                                    )
-                                    Spacer(Modifier.height(8.dp))
-                                    Text(
-                                        text = "Failed to load image",
-                                        style = MaterialTheme.typography.body2,
-                                        color = colors.onSurface.copy(alpha = 0.7f)
-                                    )
-                                }
                             }
                         }
 
-                            else -> {
-                                // No image placeholder
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier.padding(16.dp)
-                                ) {
-                                    Text(
-                                        text = "🖼",
-                                        style = MaterialTheme.typography.h3,
-                                        color = colors.onSurface.copy(alpha = 0.3f)
-                                    )
-                                    Spacer(Modifier.height(12.dp))
-                                    Text(
-                                        text = "NO IMAGE",
-                                        style = MaterialTheme.typography.body1,
-                                        color = colors.onSurface.copy(alpha = 0.5f),
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
+                        // Error state
+                        if (loadState is AsyncImagePainter.State.Error) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxSize().padding(16.dp)
+                            ) {
+                                Text(
+                                    text = "⚠", style = MaterialTheme.typography.h4, color = Color(0xFFF44336)
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Text(
+                                    text = "Failed to load image",
+                                    style = MaterialTheme.typography.body2,
+                                    color = colors.onSurface.copy(alpha = 0.7f)
+                                )
                             }
                         }
                     }
-                    
-                    // Border layer - drawn on top of the image
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .pixelBorder(borderWidth = 3.dp, enabled = true, glowAlpha = 0.4f)
-                    )
+
+                        else -> {
+                            // No image placeholder
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxSize().padding(16.dp)
+                            ) {
+                                Text(
+                                    text = "🖼",
+                                    style = MaterialTheme.typography.h3,
+                                    color = colors.onSurface.copy(alpha = 0.3f)
+                                )
+                                Spacer(Modifier.height(12.dp))
+                                Text(
+                                    text = "NO IMAGE",
+                                    style = MaterialTheme.typography.body1,
+                                    color = colors.onSurface.copy(alpha = 0.5f),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
                 }
 
                 Spacer(Modifier.height(12.dp))
