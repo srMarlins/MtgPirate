@@ -7,7 +7,7 @@ import java.util.*
 
 actual open class DatabaseDriverFactory {
     actual open fun createDriver(): SqlDriver {
-        // You can change the DB path if you want persistence
-        return JdbcSqliteDriver("jdbc:sqlite:pirate.db", Properties(), MtgPirateDatabase.Schema)
+        val dbPath = platform.AppDirectories.dataDir.resolve("pirate.db").toString()
+        return JdbcSqliteDriver("jdbc:sqlite:$dbPath", Properties(), MtgPirateDatabase.Schema)
     }
 }

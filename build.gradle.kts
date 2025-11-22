@@ -115,6 +115,8 @@ compose.desktop {
             packageName = "MtgPirate"
             packageVersion = appVersionCore
             
+            modules("java.sql")
+            
             // Configure app icons for all platforms
             macOS {
                 iconFile.set(project.file("src/desktopMain/resources/icons/icon_512.png"))
