@@ -92,9 +92,6 @@ kotlin {
         // See: https://kotlinlang.org/docs/multiplatform/multiplatform-hierarchy.html
         val appleMain by getting {
             dependencies {
-                implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material)
                 implementation(compose.ui)
                 implementation(libs.sqldelight.driver.native)
                 implementation(libs.ktor.client.darwin)
@@ -115,17 +112,17 @@ compose.desktop {
             packageName = "MtgPirate"
             packageVersion = appVersionCore
             
-            modules("java.sql")
+            // Include all required runtime modules (from suggestRuntimeModules task)
+            modules("java.instrument", "java.management", "java.sql", "jdk.unsupported")
             
-            // Configure app icons for all platforms
             macOS {
-                iconFile.set(project.file("src/desktopMain/resources/icons/icon_512.png"))
+                iconFile.set(project.file("src/desktopMain/resources/icon.icns"))
             }
             windows {
-                iconFile.set(project.file("src/desktopMain/resources/icons/icon_256.png"))
+                iconFile.set(project.file("src/desktopMain/resources/icon.ico"))
             }
             linux {
-                iconFile.set(project.file("src/desktopMain/resources/icons/icon_512.png"))
+                iconFile.set(project.file("src/desktopMain/resources/icon.png"))
             }
         }
     }
