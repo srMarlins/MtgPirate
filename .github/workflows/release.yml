@@ -241,8 +241,12 @@ jobs:
             -configuration Release \
             -archivePath $PWD/build/mtgPirate.xcarchive \
             archive \
-            CODE_SIGNING_ALLOWED=${{ env.SIGN_IOS == 'true' && 'YES' || 'NO' }} \
             CODE_SIGN_IDENTITY="${{ env.SIGN_IOS == 'true' && secrets.IOS_CODE_SIGN_IDENTITY || '' }}"
+
+      - name: Zip iOS Archive
+        run: |
+          cd mtgPirate/build
+          zip -r mtgPirate.xcarchive.zip mtgPirate.xcarchive
 
       - name: Export IPA (if signed)
         if: ${{ env.SIGN_IOS == 'true' }}
@@ -271,7 +275,7 @@ jobs:
         with:
           name: MtgPirate-iOS-${{ env.APP_VERSION }}
           path: |
-            mtgPirate/build/mtgPirate.xcarchive
+            mtgPirate/build/mtgPirate.xcarchive.zip
             mtgPirate/build/ipa/*.ipa
           if-no-files-found: warn
 
