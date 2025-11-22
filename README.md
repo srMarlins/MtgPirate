@@ -38,6 +38,9 @@ A Kotlin Multiplatform application for importing Magic: The Gathering decklists,
 - **iOS**: iPhone and iPad (iOS 14+)
 - **Coming Soon**: Android
 
+## Discalimer
+- **Entirely coded with agentic ai** - This is just a hobby project to test the bounds of cross platform engineering using agentic ai.
+
 ## Tech Stack
 
 - **Kotlin Multiplatform** - Cross-platform codebase (Desktop + iOS)
@@ -46,36 +49,6 @@ A Kotlin Multiplatform application for importing Magic: The Gathering decklists,
 - **Kotlin Serialization** - JSON persistence
 - **KSoup** - HTML parsing for catalog fetching
 - **SQLDelight** - Type-safe SQL database (MVI architecture)
-- **Detekt** - Static code analysis for code quality
-
-## Development
-
-### Code Quality
-
-This project uses [Detekt](https://detekt.dev/) for static code analysis. Detekt runs automatically on all pull requests via GitHub Actions.
-
-**Running locally:**
-```bash
-./gradlew detekt
-```
-
-**Generate HTML report:**
-```bash
-./gradlew detekt
-# Open build/reports/detekt/detekt.html
-```
-
-**Update baseline** (if you need to update the baseline for existing issues):
-```bash
-./gradlew detektBaseline
-```
-
-The detekt configuration is in `detekt.yml` and includes rules for:
-- Code complexity
-- Potential bugs
-- Code style
-- Performance issues
-- Coroutines best practices
 
 ## Architecture
 
@@ -164,36 +137,43 @@ The catalog system supports pluggable data sources:
 - **DatabaseCatalogDataSource** (template) - For database integration
 - **Mock sources** - For unit testing
 
-📖 See [Catalog Data Source Architecture](docs/CATALOG_DATA_SOURCE.md) and [Database Quick Start](docs/QUICK_START_DATABASE.md).
+📖 See [Catalog Data Source Architecture](CATALOG_DATA_SOURCE.md)
 
 ## Platform Support
 
 ### Desktop (Primary)
-## Running the App
 
-### Desktop
+Full-featured desktop application:
+- ✅ Complete catalog fetching from USEA
+- ✅ File system access for imports/exports
+- ✅ Native file dialogs
+- ✅ Window management
 
-Run the desktop application:
+**Running the Desktop App:**
 ```bash
 ./gradlew run
 ```
 
-Or build a distributable package:
+**Building Distributables:**
 ```bash
 ./gradlew packageDmg  # macOS
 ./gradlew packageExe  # Windows
 ```
 
-### iOS
+### iOS (Experimental)
+
+Wizard-style iOS app:
+- ✅ MVI architecture with SQLDelight
+- ✅ Pixel-style retro UI
+- ✅ Decklist parsing and matching
+- ✅ Clipboard export
+- ⚠️ Uses cached catalog (no live fetching)
+- ⚠️ Limited platform integration
+
+**Running the iOS App:**
 
 The iOS app is located in the `mtgPirate/` directory.
 
-This will:
-1. Build the Kotlin framework
-2. Open the Xcode project
-3. You can then click Run in Xcode to launch the app!
-
-**Manual Steps:**
 1. Build the framework:
    ```bash
    ./gradlew linkDebugFrameworkIosSimulatorArm64
@@ -207,35 +187,7 @@ This will:
 
 **Note**: iOS apps cannot be run from IntelliJ - they require Xcode to run on simulators or devices.
 
-For detailed iOS setup and troubleshooting, see:
-
-### State Management - MVI Architecture
->>>>>>> ec045f3 (Base ios implementation)
-
-Full-featured desktop application:
-- ✅ Complete catalog fetching from USEA
-- ✅ File system access for imports/exports
-- ✅ Native file dialogs
-- ✅ Window management
-
-### iOS (Experimental)
-
-Wizard-style iOS app:
-- ✅ MVI architecture with SQLDelight
-- ✅ Pixel-style retro UI
-- ✅ Decklist parsing and matching
-- ✅ Clipboard export
-- ⚠️ Uses cached catalog (no live fetching)
-- ⚠️ Limited platform integration
-
 📖 See [iOS Implementation Guide](docs/IOS_IMPLEMENTATION.md).
-
-## Data Storage
-
-Application data is stored in the `data/` directory:
-- `catalog.json` - Cached card catalog
-- `preferences.json` - User preferences
-- `saved-imports.json` - Import history
 
 ## Matching Algorithm
 
@@ -263,37 +215,6 @@ Foil Cards,0
 Total Price,10.80
 ```
 
-## Configuration
-
-### Catalog Update
-
-Automatically fetched on first run. To force refresh:
-1. Open Catalog window from menu
-2. Click **Refresh Catalog**
-
-### Preferences
-
-Configure via settings menu:
-- Default include/exclude options
-- Theme settings
-- Export directory defaults
-
-## Troubleshooting
-
-**Catalog won't load**
-- Check internet connection
-- Verify USEA website is accessible
-- Clear `data/catalog.json` and restart
-
-**Cards not matching**
-- Check spelling in decklist
-- Add set codes: `Card Name (SET)`
-- Use manual resolution for ambiguous matches
-
-**Export fails**
-- Ensure write permissions in export directory
-- Verify all cards are resolved (no red highlights)
-
 ## Acknowledgments
 
 - Card data sourced from [USEA MTG Proxy](https://www.usmtgproxy.com/)
@@ -308,5 +229,5 @@ Configure via settings menu:
 
 ## Disclaimer
 
-This tool is for personal use with proxy card services. Magic: The Gathering is trademarked by Wizards of the Coast. This project is not affiliated with or endorsed by Wizards of the Coast.
+This tool is for personal use with USEA proxy card services. Magic: The Gathering is trademarked by Wizards of the Coast. This project is not affiliated with or endorsed by Wizards of the Coast.
 
