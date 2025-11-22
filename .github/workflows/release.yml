@@ -30,6 +30,11 @@ on:
         type: boolean
         default: false
         required: false
+      export_method:
+        description: 'iOS Export Method (app-store, ad-hoc, development)'
+        type: string
+        default: 'ad-hoc'
+        required: false
 
 jobs:
   setup:
@@ -40,6 +45,7 @@ jobs:
       RUN_WINDOWS: ${{ steps.filter.outputs.RUN_WINDOWS }}
       RUN_MACOS: ${{ steps.filter.outputs.RUN_MACOS }}
       RUN_IOS: ${{ steps.filter.outputs.RUN_IOS }}
+      EXPORT_METHOD: ${{ steps.filter.outputs.EXPORT_METHOD }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -77,16 +83,19 @@ jobs:
           RUN_WINDOWS="true"
           RUN_MACOS="true"
           RUN_IOS="true"
+          EXPORT_METHOD="ad-hoc"
           
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             RUN_WINDOWS="${{ inputs.run_windows }}"
             RUN_MACOS="${{ inputs.run_macos }}"
             RUN_IOS="${{ inputs.run_ios }}"
+            EXPORT_METHOD="${{ inputs.export_method }}"
           fi
           
           echo "RUN_WINDOWS=$RUN_WINDOWS" >> "$GITHUB_OUTPUT"
           echo "RUN_MACOS=$RUN_MACOS" >> "$GITHUB_OUTPUT"
           echo "RUN_IOS=$RUN_IOS" >> "$GITHUB_OUTPUT"
+          echo "EXPORT_METHOD=$EXPORT_METHOD" >> "$GITHUB_OUTPUT"
 
   build-windows:
     name: Build (Windows .exe)
@@ -108,14 +117,6 @@ jobs:
         with:
           cache-read-only: false
 
-      # Placeholder for Windows Code Signing
-      # - name: Sign Windows Application
-      #   if: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 != '' }}
-      #   run: |
-      #     # Decode certificate and use signtool or similar
-      #     # echo "${{ secrets.WINDOWS_CERTIFICATE_BASE64 }}" | base64 --decode > cert.pfx
-      #     # signtool sign /f cert.pfx /p "${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}" ...
-
       - name: Build release distribution
         shell: cmd
         env:
@@ -127,7 +128,7 @@ jobs:
         with:
           name: MtgPirate-Windows-${{ needs.setup.outputs.APP_VERSION }}
           path: build/compose/binaries/**/*.exe
-          if-no-files-found: warn
+          if-no-files-found: error
 
   build-macos:
     name: Build (macOS .dmg)
@@ -135,7 +136,7 @@ jobs:
     if: ${{ needs.setup.outputs.RUN_MACOS == 'true' }}
     runs-on: macos-latest
     env:
-      SIGN_MAC: ${{ (github.event_name == 'workflow_dispatch' && inputs.sign_mac) || secrets.SIGN_MAC || 'false' }}
+      SIGN_MAC: ${{ (github.event_name == 'workflow_dispatch' && inputs.sign_mac) || (secrets.SIGN_MAC == 'true') }}
       APP_VERSION: ${{ needs.setup.outputs.APP_VERSION }}
     steps:
       - name: Checkout repository
@@ -172,7 +173,7 @@ jobs:
         with:
           name: MtgPirate-macOS-${{ env.APP_VERSION }}
           path: build/compose/binaries/**/*.dmg
-          if-no-files-found: warn
+          if-no-files-found: error
 
   build-ios:
     name: Build (iOS .ipa/.xcarchive)
@@ -180,8 +181,9 @@ jobs:
     if: ${{ needs.setup.outputs.RUN_IOS == 'true' }}
     runs-on: macos-latest
     env:
-      SIGN_IOS: ${{ (github.event_name == 'workflow_dispatch' && inputs.sign_ios) || secrets.SIGN_IOS || 'false' }}
+      SIGN_IOS: ${{ (github.event_name == 'workflow_dispatch' && inputs.sign_ios) || (secrets.SIGN_IOS == 'true') }}
       APP_VERSION: ${{ needs.setup.outputs.APP_VERSION }}
+      EXPORT_METHOD: ${{ needs.setup.outputs.EXPORT_METHOD }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -233,14 +235,14 @@ jobs:
         if: ${{ env.SIGN_IOS == 'true' }}
         run: |
           cd mtgPirate
-          # Create export options plist
+          # Generate export options plist (overwrites if exists)
           cat <<EOF > exportOptions.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
               <key>method</key>
-              <string>app-store</string>
+              <string>${{ env.EXPORT_METHOD }}</string>
           </dict>
           </plist>
           EOF
@@ -257,7 +259,7 @@ jobs:
           path: |
             mtgPirate/build/mtgPirate.xcarchive.zip
             mtgPirate/build/ipa/*.ipa
-          if-no-files-found: warn
+          if-no-files-found: error
 
   attach-to-release:
     name: Attach artifacts to GitHub Release
