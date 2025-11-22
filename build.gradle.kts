@@ -115,6 +115,11 @@ compose.desktop {
             // Include all required runtime modules (from suggestRuntimeModules task)
             modules("java.instrument", "java.management", "java.sql", "jdk.unsupported")
             
+            // ProGuard rules to prevent breaking SQLite and other reflection-based code
+            buildTypes.release.proguard {
+                configurationFiles.from(project.file("compose-desktop.pro"))
+            }
+            
             macOS {
                 iconFile.set(project.file("src/desktopMain/resources/icon.icns"))
             }
