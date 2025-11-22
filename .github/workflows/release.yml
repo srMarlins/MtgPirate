@@ -1,7 +1,6 @@
 name: Build and Upload Release Artifacts
 
 on:
-  # Build on published releases and on version tags (e.g., v1.2.3)
   release:
     types: [published]
   workflow_dispatch:
@@ -31,56 +30,72 @@ on:
         type: boolean
         default: false
         required: false
-  push:
-    tags:
-      - 'v*'
-
-# IMPORTANT: For signed builds, you must configure the following secrets in your repository:
-# macOS:
-# - MACOS_P12_BASE64: Base64 encoded .p12 certificate file
-# - MACOS_P12_PASSWORD: Password for the .p12 file
-# - MACOS_SIGNING_IDENTITY: Common Name of the signing certificate (e.g. "Developer ID Application: Name (ID)")
-# - MACOS_NOTARIZATION_APPLE_ID: Apple ID for notarization
-# - MACOS_NOTARIZATION_PASSWORD: App-specific password for notarization
-#
-# iOS:
-# - IOS_P12_BASE64: Base64 encoded .p12 certificate file
-# - IOS_P12_PASSWORD: Password for the .p12 file
-# - IOS_PROVISIONING_PROFILE_BASE64: Base64 encoded .mobileprovision file
-# - IOS_CODE_SIGN_IDENTITY: Common Name of the signing certificate (e.g. "Apple Distribution: Name (ID)")
 
 jobs:
-  build-windows:
-    name: Build (Windows .exe)
-    runs-on: windows-latest
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_windows }}
-    permissions:
-      contents: read
+  setup:
+    name: Setup & Versioning
+    runs-on: ubuntu-latest
+    outputs:
+      APP_VERSION: ${{ steps.version.outputs.APP_VERSION }}
+      RUN_WINDOWS: ${{ steps.filter.outputs.RUN_WINDOWS }}
+      RUN_MACOS: ${{ steps.filter.outputs.RUN_MACOS }}
+      RUN_IOS: ${{ steps.filter.outputs.RUN_IOS }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Compute version (SemVer from tag)
+      - name: Compute version
+        id: version
         shell: bash
         run: |
           set -euo pipefail
           RAW="${GITHUB_REF_NAME}"
           if [ "${{ github.event_name }}" = "release" ]; then RAW="${{ github.event.release.tag_name }}"; fi
-          # Normalize (strip CR/LF and whitespace)
           RAW=$(echo "$RAW" | tr -d '\r' | xargs)
-          # POSIX ERE-compatible SemVer (no non-capturing groups): optional leading v; optional pre-release and build metadata
+          
+          # Default to dev version
+          VERSION="1.0.0-dev"
+          
+          # POSIX ERE-compatible SemVer check
           if [[ "$RAW" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
-            V="${RAW#v}"
-            echo "APP_VERSION=$V" >> "$GITHUB_ENV"
+            VERSION="${RAW#v}"
           else
-            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-              echo "APP_VERSION=1.0.0-dev" >> "$GITHUB_ENV"
-              echo "[INFO] Non-SemVer ref '$RAW'. Using fallback APP_VERSION=1.0.0-dev for manual run."
-            else
-              echo "::error::Invalid tag format '$RAW'. Expected SemVer like v1.2.3 or v1.2.3-rc.1+build.5";
+            if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+              echo "::error::Invalid tag format '$RAW'. Expected SemVer like v1.2.3"
               exit 1
+            else
+              echo "[INFO] Non-SemVer ref '$RAW'. Using fallback $VERSION for manual run."
             fi
           fi
+          
+          echo "APP_VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Computed version: $VERSION"
+
+      - name: Determine jobs to run
+        id: filter
+        run: |
+          RUN_WINDOWS="true"
+          RUN_MACOS="true"
+          RUN_IOS="true"
+          
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            RUN_WINDOWS="${{ inputs.run_windows }}"
+            RUN_MACOS="${{ inputs.run_macos }}"
+            RUN_IOS="${{ inputs.run_ios }}"
+          fi
+          
+          echo "RUN_WINDOWS=$RUN_WINDOWS" >> "$GITHUB_OUTPUT"
+          echo "RUN_MACOS=$RUN_MACOS" >> "$GITHUB_OUTPUT"
+          echo "RUN_IOS=$RUN_IOS" >> "$GITHUB_OUTPUT"
+
+  build-windows:
+    name: Build (Windows .exe)
+    needs: setup
+    if: ${{ needs.setup.outputs.RUN_WINDOWS == 'true' }}
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -93,52 +108,38 @@ jobs:
         with:
           cache-read-only: false
 
-      - name: Build release distribution for current OS
+      # Placeholder for Windows Code Signing
+      # - name: Sign Windows Application
+      #   if: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 != '' }}
+      #   run: |
+      #     # Decode certificate and use signtool or similar
+      #     # echo "${{ secrets.WINDOWS_CERTIFICATE_BASE64 }}" | base64 --decode > cert.pfx
+      #     # signtool sign /f cert.pfx /p "${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}" ...
+
+      - name: Build release distribution
         shell: cmd
+        env:
+          APP_VERSION: ${{ needs.setup.outputs.APP_VERSION }}
         run: ./gradlew.bat -PappVersion=%APP_VERSION% packageReleaseDistributionForCurrentOS --stacktrace --no-daemon
 
-
-      - name: Upload build artifacts (Windows installer only)
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: MtgPirate-Windows-${{ env.APP_VERSION }}
-          path: |
-            build/compose/binaries/**/*.exe
+          name: MtgPirate-Windows-${{ needs.setup.outputs.APP_VERSION }}
+          path: build/compose/binaries/**/*.exe
           if-no-files-found: warn
 
   build-macos:
     name: Build (macOS .dmg)
+    needs: setup
+    if: ${{ needs.setup.outputs.RUN_MACOS == 'true' }}
     runs-on: macos-latest
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_macos }}
-    permissions:
-      contents: read
     env:
       SIGN_MAC: ${{ (github.event_name == 'workflow_dispatch' && inputs.sign_mac) || secrets.SIGN_MAC || 'false' }}
+      APP_VERSION: ${{ needs.setup.outputs.APP_VERSION }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Compute version (SemVer from tag)
-        shell: bash
-        run: |
-          set -euo pipefail
-          RAW="${GITHUB_REF_NAME}"
-          if [ "${{ github.event_name }}" = "release" ]; then RAW="${{ github.event.release.tag_name }}"; fi
-          # Normalize (strip CR/LF and whitespace)
-          RAW=$(echo "$RAW" | tr -d '\r' | xargs)
-          # POSIX ERE-compatible SemVer: optional leading v; optional pre-release and build metadata
-          if [[ "$RAW" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
-            V="${RAW#v}"
-            echo "APP_VERSION=$V" >> "$GITHUB_ENV"
-          else
-            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-              echo "APP_VERSION=1.0.0-dev" >> "$GITHUB_ENV"
-              echo "[INFO] Non-SemVer ref '$RAW'. Using fallback APP_VERSION=1.0.0-dev for manual run."
-            else
-              echo "::error::Invalid tag format '$RAW'. Expected SemVer like v1.2.3 or v1.2.3-rc.1+build.5";
-              exit 1
-            fi
-          fi
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -158,53 +159,32 @@ jobs:
           p12-file-base64: ${{ secrets.MACOS_P12_BASE64 }}
           p12-password: ${{ secrets.MACOS_P12_PASSWORD }}
 
-      - name: Build release distribution for current OS (signed/notarized if enabled)
+      - name: Build release distribution
         env:
-          SIGN_MAC: ${{ env.SIGN_MAC }}
           MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
           MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.MACOS_NOTARIZATION_APPLE_ID }}
           MACOS_NOTARIZATION_PASSWORD: ${{ secrets.MACOS_NOTARIZATION_PASSWORD }}
         run: |
-          ./gradlew --version
           ./gradlew -PappVersion=$APP_VERSION packageReleaseDistributionForCurrentOS --stacktrace --no-daemon
 
-      - name: Upload build artifacts (macOS DMG only)
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: MtgPirate-macOS-${{ env.APP_VERSION }}
-          path: |
-            build/compose/binaries/**/*.dmg
+          path: build/compose/binaries/**/*.dmg
           if-no-files-found: warn
 
   build-ios:
     name: Build (iOS .ipa/.xcarchive)
+    needs: setup
+    if: ${{ needs.setup.outputs.RUN_IOS == 'true' }}
     runs-on: macos-latest
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_ios }}
-    permissions:
-      contents: read
     env:
       SIGN_IOS: ${{ (github.event_name == 'workflow_dispatch' && inputs.sign_ios) || secrets.SIGN_IOS || 'false' }}
+      APP_VERSION: ${{ needs.setup.outputs.APP_VERSION }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Compute version (SemVer from tag)
-        shell: bash
-        run: |
-          set -euo pipefail
-          RAW="${GITHUB_REF_NAME}"
-          if [ "${{ github.event_name }}" = "release" ]; then RAW="${{ github.event.release.tag_name }}"; fi
-          RAW=$(echo "$RAW" | tr -d '\r' | xargs)
-          if [[ "$RAW" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
-            V="${RAW#v}"
-            echo "APP_VERSION=$V" >> "$GITHUB_ENV"
-          else
-            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-              echo "APP_VERSION=1.0.0-dev" >> "$GITHUB_ENV"
-            else
-              echo "::error::Invalid tag format '$RAW'"; exit 1
-            fi
-          fi
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -241,7 +221,8 @@ jobs:
             -configuration Release \
             -archivePath $PWD/build/mtgPirate.xcarchive \
             archive \
-            CODE_SIGN_IDENTITY="${{ env.SIGN_IOS == 'true' && secrets.IOS_CODE_SIGN_IDENTITY || '' }}"
+            CODE_SIGN_IDENTITY="${{ env.SIGN_IOS == 'true' && secrets.IOS_CODE_SIGN_IDENTITY || '' }}" \
+            MARKETING_VERSION=$APP_VERSION
 
       - name: Zip iOS Archive
         run: |
@@ -252,8 +233,7 @@ jobs:
         if: ${{ env.SIGN_IOS == 'true' }}
         run: |
           cd mtgPirate
-          # Create a dummy export options plist if one doesn't exist
-          # In a real setup, you might want to check in a template or generate one dynamically
+          # Create export options plist
           cat <<EOF > exportOptions.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -281,7 +261,7 @@ jobs:
 
   attach-to-release:
     name: Attach artifacts to GitHub Release
-    needs: [build-windows, build-macos, build-ios]
+    needs: [setup, build-windows, build-macos, build-ios]
     if: ${{ github.event_name == 'release' }}
     runs-on: ubuntu-latest
     permissions:

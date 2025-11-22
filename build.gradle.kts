@@ -9,10 +9,19 @@ plugins {
 }
 
 group = "org.srmarlins"
-val appVersion = (project.findProperty("appVersion") as String?)
-    ?: System.getenv("APP_VERSION")
-    ?: "1.0.0"
+
+// Retrieve the app version from:
+// 1. Gradle property 'appVersion' (passed via -PappVersion=...)
+// 2. Environment variable 'APP_VERSION'
+// 3. Default fallback "1.0.0"
+val appVersion = providers.gradleProperty("appVersion")
+    .orElse(providers.environmentVariable("APP_VERSION"))
+    .getOrElse("1.0.0")
+
+// Core version for native distributions (strips SemVer suffixes like -rc.1)
+// Windows/macOS installers often require strict X.Y.Z format
 val appVersionCore = appVersion.substringBefore('-').substringBefore('+')
+
 version = appVersion
 
 repositories {
