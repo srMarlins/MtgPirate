@@ -124,11 +124,7 @@ compose.desktop {
                 iconFile.set(project.file("src/desktopMain/resources/icon.icns"))
             }
             windows {
-                // Only set icon if file exists to prevent jpackage failures
-                val windowsIcon = project.file("src/desktopMain/resources/icon.ico")
-                if (windowsIcon.exists()) {
-                    iconFile.set(windowsIcon)
-                }
+                iconFile.set(project.file("src/desktopMain/resources/icon.png"))
             }
             linux {
                 iconFile.set(project.file("src/desktopMain/resources/icon.png"))
