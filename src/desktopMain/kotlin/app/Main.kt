@@ -305,15 +305,6 @@ fun main() = application {
         viewModel.processIntent(ViewIntent.Init)
     }
 
-    // Load scimitar logo as window icon
-    val windowIcon = remember {
-        loadSvgPainter(
-            inputStream = object {}.javaClass.getResourceAsStream("/scimitar_logo.svg")
-                ?: throw IllegalStateException("scimitar_logo.svg not found in resources"),
-            density = Density(1f)
-        )
-    }
-
     val windowState = rememberWindowState(width = 1200.dp, height = 900.dp)
 
 
@@ -368,7 +359,6 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         title = "MTG Pirate",
         state = windowState,
-        icon = windowIcon,
         undecorated = true
     ) {
         AppTheme(darkTheme = state.isDarkTheme) {
