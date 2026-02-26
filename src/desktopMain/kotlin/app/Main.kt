@@ -641,6 +641,7 @@ fun main() = application {
                                         onNext = {
                                             viewModel.processIntent(ViewIntent.CompleteWizardStep(2))
                                             viewModel.processIntent(ViewIntent.RunMatch)
+                                            viewModel.processIntent(ViewIntent.LoadAllCatalogs)
                                             navController.navigate("results") {
                                                 launchSingleTop = true
                                             }
