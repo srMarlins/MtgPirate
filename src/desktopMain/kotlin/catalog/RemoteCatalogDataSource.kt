@@ -18,7 +18,6 @@ import kotlinx.coroutines.withContext
 
 /**
  * Remote catalog data source that fetches catalog data from remote HTML/CSV endpoints.
- * This is the current implementation extracted from CatalogFetcher.
  */
 class RemoteCatalogDataSource : CatalogDataSource {
     private val json = Json { prettyPrint = true }
