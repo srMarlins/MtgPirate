@@ -21,6 +21,7 @@ import database.DatabaseDriverFactory
 import database.ImportsStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import platform.IosMviPlatformServices
 import state.MviViewModel
@@ -50,6 +51,14 @@ fun IosApp() {
             importsStore = importsStore,
             platformServices = platformServices
         )
+    }
+
+    // Clean up coroutine scope and HTTP client when composable leaves composition
+    DisposableEffect(Unit) {
+        onDispose {
+            platformServices.close()
+            scope.coroutineContext[Job]?.cancel()
+        }
     }
 
     // Collect view state

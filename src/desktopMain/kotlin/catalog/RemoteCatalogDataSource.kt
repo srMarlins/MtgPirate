@@ -194,13 +194,17 @@ class RemoteCatalogDataSource : CatalogDataSource {
             setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) MtgPirate/1.0")
             setRequestProperty("Accept", "*/*")
         }
-        val code = conn.responseCode
-        log("HTTP GET $urlStr -> $code")
-        if (code !in 200..299) {
-            val err = conn.errorStream?.bufferedReader()?.use { it.readText() } ?: "HTTP $code without body"
-            throw IllegalStateException("Failed to fetch: $code $err")
+        try {
+            val code = conn.responseCode
+            log("HTTP GET $urlStr -> $code")
+            if (code !in 200..299) {
+                val err = conn.errorStream?.bufferedReader()?.use { it.readText() } ?: "HTTP $code without body"
+                throw IllegalStateException("Failed to fetch: $code $err")
+            }
+            return conn.inputStream.bufferedReader().use { it.readText() }
+        } finally {
+            conn.disconnect()
         }
-        return conn.inputStream.bufferedReader().use { it.readText() }
     }
 
     // Extract object literal CARD_TYPE_PRICES = { ... } mapping to Map<String, Double>
