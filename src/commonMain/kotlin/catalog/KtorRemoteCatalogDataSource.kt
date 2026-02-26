@@ -1,18 +1,24 @@
 package catalog
 
-import io.ktor.client.*
-import io.ktor.client.plugins.logging.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.accept
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import model.Catalog
-import model.VariantType
 
 /**
  * Multiplatform remote catalog data source implemented with Ktor.
- * This mirrors the desktop fetching strategy but uses HttpClient so it runs on iOS.
+ * Works on both desktop and iOS via platform-specific Ktor engines.
+ *
+ * Parsing helpers (fillZeroPrices, extractTypePrices, etc.) live in [CatalogUtils]
+ * so they are shared across the codebase without duplication.
  */
 class KtorRemoteCatalogDataSource(private val client: HttpClient? = null) : CatalogDataSource {
     private val urlSource = "https://www.usmtgproxy.com/wp-content/uploads/singlecardslist.html"
@@ -25,9 +31,9 @@ class KtorRemoteCatalogDataSource(private val client: HttpClient? = null) : Cata
                 // Try CSV first (possibly paginated)
                 val allCsv = fetchAllCsvPages(http, log)
                 if (allCsv.isNotBlank()) {
-                    val typePrices = canonicalizePriceMap(jsPriceMapFallback())
+                    val typePrices = CatalogUtils.canonicalizePriceMap(CatalogUtils.jsPriceMapFallback())
                     val catalog = CatalogCsvParser.parse(allCsv, typePrices)
-                    if (catalog.variants.isNotEmpty()) return@withContext fillZeroPrices(catalog)
+                    if (catalog.variants.isNotEmpty()) return@withContext CatalogUtils.fillZeroPrices(catalog)
                 }
 
                 // Try HTML page
@@ -35,15 +41,18 @@ class KtorRemoteCatalogDataSource(private val client: HttpClient? = null) : Cata
                 val html =
                     runCatching { fetchRaw(http, urlSource, log) }.onFailure { log("HTML fetch failed: ${it.message}") }
                         .getOrNull() ?: return@withContext null
-                val typeMap = canonicalizePriceMap(extractTypePrices(html).ifEmpty { jsPriceMapFallback() })
-                val exampleCsv = extractExampleCsv(html)
+                val typeMap = CatalogUtils.canonicalizePriceMap(
+                    CatalogUtils.extractTypePrices(html).ifEmpty { CatalogUtils.jsPriceMapFallback() }
+                )
+                val exampleCsv = CatalogUtils.extractExampleCsv(html)
                 if (exampleCsv != null) {
                     log("Parsing embedded example CSV block")
                     val catalog = CatalogCsvParser.parse(exampleCsv, typeMap)
-                    if (catalog.variants.isNotEmpty()) return@withContext fillZeroPrices(catalog)
+                    if (catalog.variants.isNotEmpty()) return@withContext CatalogUtils.fillZeroPrices(catalog)
                 }
-                return@withContext runCatching { CatalogParser.parse(html) }.onFailure { log("Table parse failed: ${it.message}") }
-                    .getOrNull()?.let { fillZeroPrices(it) }
+                return@withContext runCatching { CatalogParser.parse(html) }
+                    .onFailure { log("Table parse failed: ${it.message}") }
+                    .getOrNull()?.let { CatalogUtils.fillZeroPrices(it) }
             } catch (e: Exception) {
                 log("Error fetching/parsing catalog: ${e.message}")
                 return@withContext null
@@ -54,17 +63,6 @@ class KtorRemoteCatalogDataSource(private val client: HttpClient? = null) : Cata
         install(Logging) { level = LogLevel.INFO }
         // keep configuration minimal; engine provided by platform-specific deps
         expectSuccess = true
-    }
-
-    private fun fillZeroPrices(catalog: Catalog): Catalog {
-        val updated = catalog.variants.map { v ->
-            if (v.priceInCents <= 0) {
-                v.copy(priceInCents = v.variantType.defaultPriceInCents)
-            } else {
-                v
-            }
-        }
-        return Catalog(updated)
     }
 
     private suspend fun fetchAllCsvPages(client: HttpClient, log: (String) -> Unit): String {
@@ -110,40 +108,6 @@ class KtorRemoteCatalogDataSource(private val client: HttpClient? = null) : Cata
         log("HTTP GET $url -> $code")
         if (code !in 200..299) throw IllegalStateException("Failed to fetch: $code")
         return resp.bodyAsText()
-    }
-
-    private fun extractTypePrices(html: String): Map<String, Double> {
-        val regex = Regex("CARD_TYPE_PRICES\\s*=\\s*\\{([^}]+)\\}")
-        val match = regex.find(html) ?: return emptyMap()
-        val body = match.groupValues[1]
-        return body.split(',').mapNotNull { entry ->
-            val parts = entry.split(':').map { it.trim() }
-            if (parts.size == 2) {
-                val key = parts[0].trim().trim('"', '\'')
-                val value = parts[1].replace("[^0-9.]".toRegex(), "").toDoubleOrNull()
-                if (key.isNotBlank() && value != null) key to value else null
-            } else null
-        }.toMap()
-    }
-
-    private fun extractExampleCsv(html: String): String? {
-        val regex = Regex("EXAMPLE_CSV\\s*=\\s*`([\\s\\S]*?)`")
-        val match = regex.find(html) ?: return null
-        return match.groupValues[1].trim()
-    }
-
-    private fun canonicalizePriceMap(map: Map<String, Double>): Map<String, Double> {
-        val out = mutableMapOf<String, Double>()
-        for ((k, v) in map) {
-            val t = VariantType.fromString(k).displayName
-            val existing = out[t]
-            if (existing == null || v > existing) out[t] = v
-        }
-        return out
-    }
-
-    private fun jsPriceMapFallback(): Map<String, Double> = VariantType.entries.associate {
-        it.displayName to it.defaultPriceInCents / 100.0
     }
 }
 
