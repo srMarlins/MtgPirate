@@ -180,10 +180,12 @@ object Matcher {
      * Only returns candidates that would NOT have been found by the standard fuzzy pass.
      */
     private fun fuzzyRecheck(targetNorm: String, catalog: Catalog): List<MatchCandidate> {
+        val blocked = FUZZY_BLOCKLIST[targetNorm].orEmpty()
         val results = mutableListOf<MatchCandidate>()
         val standardThreshold = if (targetNorm.length <= 15) 2 else 3
         val relaxedThreshold = standardThreshold + 2
         for (variant in catalog.variants) {
+            if (variant.nameNormalized in blocked) continue
             val dist = Levenshtein.distance(targetNorm, variant.nameNormalized)
             if (dist in (standardThreshold + 1)..relaxedThreshold) {
                 results += MatchCandidate(variant, dist, "recheck:$dist")
