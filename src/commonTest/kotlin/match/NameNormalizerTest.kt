@@ -65,4 +65,25 @@ class NameNormalizerTest {
     fun alreadyNormalizedStringIsUnchanged() {
         assertEquals("lightning bolt", NameNormalizer.normalize("lightning bolt"))
     }
+
+    @Test
+    fun stripsDiacriticsFromAccentedU() {
+        // Yucahú → yucahu (accent on ú stripped)
+        val result = NameNormalizer.normalize("Yucahú")
+        assertEquals("yucahu", result)
+    }
+
+    @Test
+    fun stripsDiacriticsFromSeance() {
+        // Séance → seance (accent on é stripped, non-alnum removed)
+        val result = NameNormalizer.normalize("Séance")
+        assertEquals("seance", result)
+    }
+
+    @Test
+    fun stripsDiacriticsFromMultipleAccents() {
+        // Covers ñ and á together
+        val result = NameNormalizer.normalize("Año")
+        assertEquals("ano", result)
+    }
 }
