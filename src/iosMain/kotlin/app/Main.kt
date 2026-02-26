@@ -21,6 +21,7 @@ import database.DatabaseDriverFactory
 import database.ImportsStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import platform.IosMviPlatformServices
 import state.MviViewModel
@@ -50,6 +51,14 @@ fun IosApp() {
             importsStore = importsStore,
             platformServices = platformServices
         )
+    }
+
+    // Clean up coroutine scope and HTTP client when composable leaves composition
+    DisposableEffect(Unit) {
+        onDispose {
+            platformServices.close()
+            scope.coroutineContext[Job]?.cancel()
+        }
     }
 
     // Collect view state
@@ -257,70 +266,6 @@ enum class IosScreen {
 }
 
 /**
- * iOS bottom navigation bar with pixel styling.
- */
-@Composable
-fun IosBottomNavBar(
-    currentScreen: IosScreen,
-    onNavigate: (IosScreen) -> Unit,
-    hasCatalog: Boolean,
-    hasMatches: Boolean,
-    modifier: Modifier = Modifier
-) {
-    PixelCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            IosNavButton(
-                text = "Import",
-                isActive = currentScreen == IosScreen.IMPORT,
-                onClick = { onNavigate(IosScreen.IMPORT) }
-            )
-            
-            IosNavButton(
-                text = "Catalog",
-                isActive = currentScreen == IosScreen.CATALOG,
-                enabled = hasCatalog,
-                onClick = { onNavigate(IosScreen.CATALOG) }
-            )
-            
-            IosNavButton(
-                text = "Matches",
-                isActive = currentScreen == IosScreen.MATCHES,
-                enabled = hasMatches,
-                onClick = { onNavigate(IosScreen.MATCHES) }
-            )
-        }
-    }
-}
-
-/**
- * iOS navigation button for bottom bar.
- */
-@Composable
-fun RowScope.IosNavButton(
-    text: String,
-    isActive: Boolean,
-    onClick: () -> Unit,
-    enabled: Boolean = true
-) {
-    PixelButton(
-        text = text,
-        onClick = onClick,
-        enabled = enabled,
-        variant = if (isActive) PixelButtonVariant.PRIMARY else PixelButtonVariant.SURFACE,
-        modifier = Modifier
-            .weight(1f)
-            .padding(horizontal = 4.dp)
-    )
-}
-
-/**
  * Inline header combining MTG PIRATE branding, stepper, and theme toggle.
  * Designed for compact mobile layout with all elements in one row.
  */
@@ -378,35 +323,6 @@ fun IosInlineHeader(
     }
 }
 
-/**
- * iOS theme toggle floating action button with pixel styling.
- * @deprecated Use IosInlineHeader instead for compact mobile layout
- */
-@Composable
-fun IosThemeToggleFab(
-    isDarkTheme: Boolean,
-    onToggle: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .size(56.dp)
-            .pixelBorder(borderWidth = 3.dp, enabled = true, glowAlpha = 0.5f)
-            .background(MaterialTheme.colors.primary, shape = PixelShape(cornerSize = 9.dp))
-            .clickable(
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() },
-                onClick = onToggle
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = if (isDarkTheme) "☀" else "☾",
-            fontSize = 24.sp,
-            color = MaterialTheme.colors.onPrimary
-        )
-    }
-}
 
 /**
  * Entry point for iOS app to create the main UIViewController.

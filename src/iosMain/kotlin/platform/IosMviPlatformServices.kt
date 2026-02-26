@@ -34,6 +34,14 @@ class IosMviPlatformServices(
         install(Logging) { level = LogLevel.INFO }
     }
 
+    /**
+     * Close the underlying HttpClient to release resources.
+     * Should be called when the services are no longer needed.
+     */
+    fun close() {
+        httpClient.close()
+    }
+
     override suspend fun fetchCatalogFromRemote(log: (String) -> Unit): Catalog? {
         return withContext(Dispatchers.Default) {
             try {
@@ -118,7 +126,7 @@ class IosMviPlatformServices(
     }
 
     override suspend fun copyToClipboard(text: String) {
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.Main) {
             platform.copyToClipboard(text)
         }
     }

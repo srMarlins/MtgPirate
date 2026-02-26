@@ -460,7 +460,7 @@ fun IosResolveScreen(
                         Text(
                             "⚠ NO CANDIDATES",
                             style = MaterialTheme.typography.h6,
-                            color = Color(0xFFF44336),
+                            color = PixelRed,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.height(8.dp))
@@ -488,7 +488,7 @@ fun IosResolveScreen(
                             state = listState,
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            items(sorted) { cand: model.MatchCandidate ->
+                            items(sorted, key = { it.uniqueIdentifier }) { cand: model.MatchCandidate ->
                                 val variant = cand.variant
                                 
                                 // Trigger image enrichment
@@ -713,7 +713,7 @@ fun IosExportScreen(
                         Modifier.fillMaxWidth().padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        PixelBadge(text = "⚠", color = Color(0xFFFF9800))
+                        PixelBadge(text = "⚠", color = PixelOrange)
                         Spacer(Modifier.width(8.dp))
                         Text(
                             "$ambiguousCount ambiguous cards - please resolve them first",

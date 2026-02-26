@@ -25,13 +25,7 @@ class CatalogStore(private val database: Database) {
      * This is typically called after fetching from a remote source.
      */
     suspend fun replaceCatalog(catalog: Catalog) {
-        // Clear existing variants
-        database.clearAllVariants()
-        
-        // Insert all new variants
-        catalog.variants.forEach { variant ->
-            database.insertVariant(variant)
-        }
+        database.replaceCatalogTransaction(catalog.variants)
     }
     
     /**

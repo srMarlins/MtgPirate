@@ -134,7 +134,7 @@ fun MatchesScreen(
                 val listState = rememberLazyListState()
                 Box(Modifier.fillMaxSize()) {
                     LazyColumn(Modifier.fillMaxSize(), state = listState) {
-                        itemsIndexed(filtered) { index, m ->
+                        itemsIndexed(filtered, key = { _, m -> m.uniqueIdentifier }) { index, m ->
                             val v = m.selectedVariant
                             val price = v?.priceInCents
                             val rowTotal = price?.let { it * m.deckEntry.qty }
@@ -165,11 +165,11 @@ fun MatchesScreen(
                                         MatchStatus.UNRESOLVED -> "UNRESOLVED"
                                     }
                                     val statusColor = when (m.status) {
-                                        MatchStatus.AUTO_MATCHED -> Color(0xFF4CAF50)
-                                        MatchStatus.MANUAL_SELECTED -> Color(0xFF2196F3)
-                                        MatchStatus.AMBIGUOUS -> Color(0xFFFF9800)
-                                        MatchStatus.NOT_FOUND -> Color(0xFFF44336)
-                                        MatchStatus.UNRESOLVED -> Color(0xFF9E9E9E)
+                                        MatchStatus.AUTO_MATCHED -> PixelGreen
+                                        MatchStatus.MANUAL_SELECTED -> PixelBlue
+                                        MatchStatus.AMBIGUOUS -> PixelOrange
+                                        MatchStatus.NOT_FOUND -> PixelRed
+                                        MatchStatus.UNRESOLVED -> PixelGrey
                                     }
                                     PixelBadge(text = statusText, color = statusColor)
                                 }

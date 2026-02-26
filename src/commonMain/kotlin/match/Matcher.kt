@@ -1,6 +1,11 @@
 package match
 
-import model.*
+import model.CardVariant
+import model.Catalog
+import model.DeckEntry
+import model.DeckEntryMatch
+import model.MatchCandidate
+import model.MatchStatus
 
 object Matcher {
     data class MatchConfig(

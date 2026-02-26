@@ -17,6 +17,7 @@ object DecklistParser {
         var sawSideboard = false
         var blankAfterSideboard = false
         val entries = mutableListOf<DeckEntry>()
+        var idCounter = 0
         for (raw in lines) {
             val lineOriginal = raw
             var line = raw.trim()
@@ -90,6 +91,7 @@ object DecklistParser {
                 Section.COMMANDER -> includeCommanders
             }
             entries += DeckEntry(
+                id = "entry_${idCounter++}",
                 originalLine = lineOriginal,
                 qty = qty,
                 cardName = cardName,

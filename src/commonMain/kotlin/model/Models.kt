@@ -12,17 +12,14 @@ data class CardVariant(
     val priceInCents: Int,
     val collectorNumber: String? = null,
     val imageUrl: String? = null
-)
+) {
+    val uniqueIdentifier: String get() = sku
+}
 
 @Serializable
 data class Catalog(
     val variants: List<CardVariant>
-) {
-    // Simple index built on demand
-    val indexByName: Map<String, List<CardVariant>> by lazy {
-        variants.groupBy { it.nameNormalized }
-    }
-}
+)
 
 enum class Section { MAIN, SIDEBOARD, COMMANDER }
 
@@ -33,6 +30,7 @@ enum class Section { MAIN, SIDEBOARD, COMMANDER }
 // These are not serialized currently (runtime only) so exclude from @Serializable
 
 data class DeckEntry(
+    val id: String,
     val originalLine: String,
     val qty: Int,
     val cardName: String,
@@ -41,7 +39,9 @@ data class DeckEntry(
     val setCodeHint: String? = null,
     val collectorNumberHint: String? = null,
     val rawSetHint: String? = null
-)
+) {
+    val uniqueIdentifier: String get() = id
+}
 
 enum class MatchStatus { UNRESOLVED, AUTO_MATCHED, AMBIGUOUS, NOT_FOUND, MANUAL_SELECTED }
 
@@ -49,7 +49,9 @@ data class MatchCandidate(
     val variant: CardVariant,
     val score: Int,
     val reason: String
-)
+) {
+    val uniqueIdentifier: String get() = variant.sku
+}
 
 data class DeckEntryMatch(
     val deckEntry: DeckEntry,
@@ -57,7 +59,9 @@ data class DeckEntryMatch(
     val selectedVariant: CardVariant? = null,
     val candidates: List<MatchCandidate> = emptyList(),
     val notes: String = ""
-)
+) {
+    val uniqueIdentifier: String get() = deckEntry.id
+}
 
 @Serializable
 data class Preferences(
@@ -83,4 +87,6 @@ data class SavedImport(
     val includeSideboard: Boolean = false,
     val includeCommanders: Boolean = false,
     val includeTokens: Boolean = false
-)
+) {
+    val uniqueIdentifier: String get() = id
+}

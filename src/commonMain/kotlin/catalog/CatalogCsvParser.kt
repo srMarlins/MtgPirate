@@ -1,5 +1,6 @@
 package catalog
 
+import kotlin.math.roundToInt
 import match.NameNormalizer
 import model.CardVariant
 import model.Catalog
@@ -56,8 +57,6 @@ object CatalogCsvParser {
      *                      the CSV does not include a Price/Base Price column.
      */
     fun parse(csv: String, typePriceMap: Map<String, Double> = emptyMap()): Catalog {
-            // DEBUG: Print values before skip
-            // (moved inside forEach below)
         val preprocessed = preprocess(csv)
         val rawLines = preprocessed.trim().split('\n').filter { it.isNotBlank() }
         if (rawLines.isEmpty()) return Catalog(emptyList())
@@ -118,7 +117,7 @@ object CatalogCsvParser {
                 val key = type.lowercase()
                 mapLower[key] ?: defaultsLower[key] ?: 0.0
             }
-            val priceCents = (priceDollars * 100.0).toInt()
+            val priceCents = (priceDollars * 100.0).roundToInt()
             variants += CardVariant(
                 nameOriginal = name,
                 nameNormalized = NameNormalizer.normalize(name),

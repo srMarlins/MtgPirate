@@ -53,6 +53,30 @@ val PixelAccent6 = Color(0xFFFBB6CE) // Rose quartz (soft pink)
 val PixelGlow = Color(0xFFB794F6) // Purple arcane glow
 val PixelShadow = Color(0xFF1A0F2E) // Deep mystical shadow
 
+// ========================================
+// ADDITIONAL UI COLORS
+// ========================================
+
+// UI Status Colors
+val PixelGreen = Color(0xFF4CAF50)
+val PixelRed = Color(0xFFF44336)
+val PixelOrange = Color(0xFFFF9800)
+val PixelGrey = Color(0xFF9E9E9E)
+val PixelBlue = Color(0xFF2196F3)
+
+// Brand / UI Colors
+val Slate100 = Color(0xFFF1F5F9)
+val Slate400 = Color(0xFF94A3B8)
+val Slate500 = Color(0xFF64748B)
+val Slate600 = Color(0xFF475569)
+val Slate700 = Color(0xFF334155)
+val Slate800 = Color(0xFF1E293B)
+val Violet500 = Color(0xFF8B5CF6)
+val Cyan500 = Color(0xFF06B6D4)
+val Amber400 = Color(0xFFFBBF24)
+val Emerald500 = Color(0xFF10B981)
+val Red500 = Color(0xFFEF4444)
+
 val AppDarkColors = darkColors(
     primary = PixelDarkPrimary,
     primaryVariant = PixelDarkPrimaryVariant,

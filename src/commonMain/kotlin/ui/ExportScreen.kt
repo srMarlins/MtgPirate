@@ -75,7 +75,7 @@ fun ExportScreen(
         if (ambiguousCount > 0) {
             PixelCard(glowing = true) {
                 Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    PixelBadge(text = "Resolve Required", color = Color(0xFFFF9800))
+                    PixelBadge(text = "Resolve Required", color = PixelOrange)
                     Spacer(Modifier.width(12.dp))
                     Text(
                         "There are $ambiguousCount ambiguous cards. Please resolve them before exporting.",
@@ -100,7 +100,7 @@ fun ExportScreen(
                     }
                     Box(Modifier.fillMaxWidth().weight(1f, fill = true)) {
                         LazyColumn(Modifier.fillMaxSize(), state = matchedListState) {
-                            items(grouped.values.toList()) { group ->
+                            items(grouped.values.toList(), key = { it.first().selectedVariant!!.uniqueIdentifier }) { group ->
                                 val first = group.first().selectedVariant!!
                                 val qtyTotal = group.sumOf { it.deckEntry.qty }
                                 Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -132,7 +132,7 @@ fun ExportScreen(
                     } else {
                         Box(Modifier.fillMaxWidth().heightIn(max = 220.dp)) {
                             LazyColumn(Modifier.fillMaxSize(), state = unmatchedListState) {
-                                items(unresolved) { m ->
+                                items(unresolved, key = { it.uniqueIdentifier }) { m ->
                                     Row(Modifier.fillMaxWidth().padding(12.dp)) {
                                         Text("${m.deckEntry.qty}", Modifier.width(40.dp))
                                         Text(m.deckEntry.cardName, Modifier.weight(1f))

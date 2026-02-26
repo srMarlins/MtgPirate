@@ -7,10 +7,22 @@ import database.CatalogStore
 import database.Database
 import database.ImportsStore
 import deck.DecklistParser
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.*
 import match.Matcher
-import model.*
+import model.CardVariant
+import model.Catalog
+import model.DeckEntry
+import model.DeckEntryMatch
+import model.LogEntry
+import model.MatchStatus
+import model.Preferences
+import model.SavedImport
+import model.Section
 import kotlin.time.Clock
 
 /**
@@ -155,7 +167,6 @@ class MviViewModel(
             is ViewIntent.CompleteWizardStep -> completeWizardStep(intent.step)
             ViewIntent.ToggleTheme -> toggleTheme()
             is ViewIntent.SetShowSavedImportsWindow -> setShowSavedImportsWindow(intent.show)
-            ViewIntent.LoadSavedImports -> loadSavedImports()
             is ViewIntent.SaveCurrentImport -> saveCurrentImport()
             is ViewIntent.LoadSavedImport -> loadSavedImport(intent.importId)
             is ViewIntent.DeleteSavedImport -> deleteSavedImport(intent.importId)
@@ -168,16 +179,21 @@ class MviViewModel(
     private fun init() {
         scope.launch(Dispatchers.IO) {
             log("Initializing MVI ViewModel...", "INFO")
-            
-            // Check if catalog exists in database
-            val variantCount = catalogStore.getVariantCount()
-            
-            if (variantCount == 0L) {
-                // Catalog is empty, load from remote API
-                log("Catalog is empty, loading from remote...", "INFO")
-                loadCatalog()
-            } else {
-                log("Catalog already loaded: $variantCount variants", "INFO")
+
+            try {
+                // Check if catalog exists in database
+                val variantCount = catalogStore.getVariantCount()
+
+                if (variantCount == 0L) {
+                    // Catalog is empty, load from remote API
+                    log("Catalog is empty, loading from remote...", "INFO")
+                    loadCatalog()
+                } else {
+                    log("Catalog already loaded: $variantCount variants", "INFO")
+                }
+            } catch (e: Exception) {
+                log("Failed to check catalog: ${e.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to initialize catalog"))
             }
         }
     }
@@ -188,22 +204,37 @@ class MviViewModel(
 
     private fun toggleIncludeSideboard(value: Boolean) {
         scope.launch {
-            platformServices.updatePreferences { it.copy(includeSideboard = value) }
-            log("Include sideboard: $value", "INFO")
+            try {
+                platformServices.updatePreferences { it.copy(includeSideboard = value) }
+                log("Include sideboard: $value", "INFO")
+            } catch (e: Exception) {
+                log("Failed to save sideboard preference: ${e.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to save sideboard preference"))
+            }
         }
     }
 
     private fun toggleIncludeCommanders(value: Boolean) {
         scope.launch {
-            platformServices.updatePreferences { it.copy(includeCommanders = value) }
-            log("Include commanders: $value", "INFO")
+            try {
+                platformServices.updatePreferences { it.copy(includeCommanders = value) }
+                log("Include commanders: $value", "INFO")
+            } catch (e: Exception) {
+                log("Failed to save commanders preference: ${e.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to save commanders preference"))
+            }
         }
     }
 
     private fun toggleIncludeTokens(value: Boolean) {
         scope.launch {
-            platformServices.updatePreferences { it.copy(includeTokens = value) }
-            log("Include tokens: $value", "INFO")
+            try {
+                platformServices.updatePreferences { it.copy(includeTokens = value) }
+                log("Include tokens: $value", "INFO")
+            } catch (e: Exception) {
+                log("Failed to save tokens preference: ${e.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to save tokens preference"))
+            }
         }
     }
 
@@ -225,6 +256,7 @@ class MviViewModel(
             } catch (e: Exception) {
                 _localState.update { it.copy(catalogError = e.message) }
                 log("Catalog load exception: ${e.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to load catalog"))
             } finally {
                 _localState.update { it.copy(loadingCatalog = false) }
             }
@@ -439,22 +471,32 @@ class MviViewModel(
 
     private fun savePreferences(variantPriority: List<String>, setPriority: List<String>, fuzzyEnabled: Boolean) {
         scope.launch {
-            platformServices.updatePreferences {
-                it.copy(
-                    variantPriority = variantPriority,
-                    setPriority = setPriority,
-                    fuzzyEnabled = fuzzyEnabled
-                )
+            try {
+                platformServices.updatePreferences {
+                    it.copy(
+                        variantPriority = variantPriority,
+                        setPriority = setPriority,
+                        fuzzyEnabled = fuzzyEnabled
+                    )
+                }
+                log("Preferences saved", "INFO")
+                _localState.update { it.copy(showPreferences = false) }
+            } catch (e: Exception) {
+                log("Failed to save preferences: ${e.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to save preferences"))
             }
-            log("Preferences saved", "INFO")
-            _localState.update { it.copy(showPreferences = false) }
         }
     }
 
     private fun updateVariantPriority(newPriority: List<String>) {
         scope.launch {
-            platformServices.updatePreferences { it.copy(variantPriority = newPriority) }
-            log("Variant priority updated", "INFO")
+            try {
+                platformServices.updatePreferences { it.copy(variantPriority = newPriority) }
+                log("Variant priority updated", "INFO")
+            } catch (e: Exception) {
+                log("Failed to update variant priority: ${e.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to update variant priority"))
+            }
         }
     }
 
@@ -472,11 +514,6 @@ class MviViewModel(
 
     private fun setShowSavedImportsWindow(show: Boolean) {
         _localState.update { it.copy(showSavedImportsWindow = show) }
-    }
-
-    private fun loadSavedImports() {
-        // Saved imports are automatically loaded from database via Flow
-        log("Saved imports loaded from database", "INFO")
     }
 
     private fun saveCurrentImport() {
@@ -524,14 +561,20 @@ class MviViewModel(
                 includeTokens = preferences.includeTokens
             )
 
-            if (existing != null) {
-                // Update existing import (delete and re-add with new timestamp and cardCount)
-                importsStore.delete(existing.id)
-                importsStore.add(import)
-                log("Import updated: $generatedName", "INFO")
-            } else {
-                importsStore.add(import)
-                log("Import saved: $generatedName", "INFO")
+            try {
+                withContext(Dispatchers.IO) {
+                    if (existing != null) {
+                        // Update existing import (delete and re-add with new timestamp and cardCount)
+                        importsStore.delete(existing.id)
+                        importsStore.add(import)
+                    } else {
+                        importsStore.add(import)
+                    }
+                }
+                log(if (existing != null) "Import updated: $generatedName" else "Import saved: $generatedName", "INFO")
+            } catch (e: Exception) {
+                log("Failed to save import: ${e.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to save import"))
             }
         }
     }
@@ -540,31 +583,43 @@ class MviViewModel(
         scope.launch {
             val import = _viewState.value.savedImports.find { it.id == importId }
             if (import != null) {
-                platformServices.updatePreferences {
-                    it.copy(
-                        includeSideboard = import.includeSideboard,
-                        includeCommanders = import.includeCommanders,
-                        includeTokens = import.includeTokens
-                    )
-                }
+                try {
+                    platformServices.updatePreferences {
+                        it.copy(
+                            includeSideboard = import.includeSideboard,
+                            includeCommanders = import.includeCommanders,
+                            includeTokens = import.includeTokens
+                        )
+                    }
 
-                _localState.update {
-                    it.copy(
-                        deckText = import.deckText,
-                        showSavedImportsWindow = false,
-                        showResultsWindow = true
-                    )
-                }
+                    _localState.update {
+                        it.copy(
+                            deckText = import.deckText,
+                            showSavedImportsWindow = false,
+                            showResultsWindow = true
+                        )
+                    }
 
-                log("Loaded import: ${import.name}", "INFO")
+                    log("Loaded import: ${import.name}", "INFO")
+                } catch (e: Exception) {
+                    log("Failed to load import: ${e.message}", "ERROR")
+                    _viewEffects.emit(ViewEffect.ShowError("Failed to load saved import"))
+                }
             }
         }
     }
 
     private fun deleteSavedImport(importId: String) {
         scope.launch {
-            importsStore.delete(importId)
-            log("Import deleted", "INFO")
+            try {
+                withContext(Dispatchers.IO) {
+                    importsStore.delete(importId)
+                }
+                log("Import deleted", "INFO")
+            } catch (e: Exception) {
+                log("Failed to delete import: ${e.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to delete import"))
+            }
         }
     }
 
@@ -723,7 +778,6 @@ sealed class ViewIntent {
     data class CompleteWizardStep(val step: Int) : ViewIntent()
     data object ToggleTheme : ViewIntent()
     data class SetShowSavedImportsWindow(val show: Boolean) : ViewIntent()
-    data object LoadSavedImports : ViewIntent()
     data object SaveCurrentImport : ViewIntent()
     data class LoadSavedImport(val importId: String) : ViewIntent()
     data class DeleteSavedImport(val importId: String) : ViewIntent()
@@ -735,6 +789,7 @@ sealed class ViewIntent {
  */
 sealed class ViewEffect {
     data class ShowMessage(val message: String) : ViewEffect()
+    data class ShowError(val message: String) : ViewEffect()
 }
 
 /**

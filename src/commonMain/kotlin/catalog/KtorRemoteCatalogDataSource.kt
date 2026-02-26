@@ -61,16 +61,15 @@ class KtorRemoteCatalogDataSource(private val client: HttpClient? = null) : Cata
             "Holo" to 300,
             "Foil" to 350
         )
-        var changed = false
         val updated = catalog.variants.map { v ->
+            val t = canonicalType(v.variantType)
             if (v.priceInCents <= 0) {
-                changed = true
-                val t = canonicalType(v.variantType)
                 v.copy(priceInCents = centsMap[t] ?: 0, variantType = t)
-            } else v.copy(variantType = canonicalType(v.variantType))
+            } else {
+                v.copy(variantType = t)
+            }
         }
-        val fixed = Catalog(updated)
-        return if (changed) fixed else fixed
+        return Catalog(updated)
     }
 
     private fun canonicalType(raw: String): String {
@@ -82,10 +81,10 @@ class KtorRemoteCatalogDataSource(private val client: HttpClient? = null) : Cata
         }
     }
 
-    private fun fetchAllCsvPages(client: HttpClient, log: (String) -> Unit): String {
+    private suspend fun fetchAllCsvPages(client: HttpClient, log: (String) -> Unit): String {
         // Try direct CSV
         log("Attempting direct CSV fetch: $urlApi")
-        runCatching { runBlockingLike { fetchRaw(client, urlApi, log) } }
+        runCatching { fetchRaw(client, urlApi, log) }
             .onSuccess { csv -> if (csv.isNotBlank()) return csv }
             .onFailure { ex -> log("Direct CSV fetch failed: ${ex.message}") }
 
@@ -97,7 +96,7 @@ class KtorRemoteCatalogDataSource(private val client: HttpClient? = null) : Cata
         while (page <= maxPages) {
             val url = "$urlApi?page=$page"
             log("Fetching CSV page: $url")
-            val csv = runCatching { runBlockingLike { fetchRaw(client, url, log) } }.getOrNull() ?: break
+            val csv = runCatching { fetchRaw(client, url, log) }.getOrNull() ?: break
             val lines = csv.lines().filter { it.isNotBlank() }
             if (lines.isEmpty()) break
             val bodyHash = lines.drop(1).joinToString("\n").hashCode()
@@ -115,9 +114,6 @@ class KtorRemoteCatalogDataSource(private val client: HttpClient? = null) : Cata
         }
         return allRows.joinToString("\n")
     }
-
-    // Helper to call suspend fetchRaw inside non-suspend context used above
-    private fun <T> runBlockingLike(block: suspend () -> T): T = kotlinx.coroutines.runBlocking { block() }
 
     private suspend fun fetchRaw(client: HttpClient, url: String, log: (String) -> Unit): String {
         val resp = client.get(url) {

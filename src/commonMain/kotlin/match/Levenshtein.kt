@@ -1,5 +1,7 @@
 package match
 
+import kotlin.math.min
+
 object Levenshtein {
     fun distance(a: String, b: String): Int {
         if (a == b) return 0
@@ -14,10 +16,9 @@ object Levenshtein {
             for (j in 1..n) {
                 val temp = dp[j]
                 val cost = if (a[i - 1] == b[j - 1]) 0 else 1
-                dp[j] = minOf(
-                    dp[j] + 1,      // deletion
-                    dp[j - 1] + 1,  // insertion
-                    prev + cost     // substitution
+                dp[j] = min(
+                    min(dp[j] + 1, dp[j - 1] + 1), // deletion or insertion
+                    prev + cost                    // substitution
                 )
                 prev = temp
             }

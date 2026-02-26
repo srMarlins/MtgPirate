@@ -18,7 +18,6 @@ import kotlinx.coroutines.withContext
 
 /**
  * Remote catalog data source that fetches catalog data from remote HTML/CSV endpoints.
- * This is the current implementation extracted from CatalogFetcher.
  */
 class RemoteCatalogDataSource : CatalogDataSource {
     private val json = Json { prettyPrint = true }
@@ -41,17 +40,15 @@ class RemoteCatalogDataSource : CatalogDataSource {
             "Holo" to 300,
             "Foil" to 350
         )
-        var changed = false
         val updated = catalog.variants.map { v ->
+            val t = canonicalType(v.variantType)
             if (v.priceInCents <= 0) {
-                changed = true
-                val t = canonicalType(v.variantType)
                 v.copy(priceInCents = centsMap[t] ?: 0, variantType = t)
-            } else v.copy(variantType = canonicalType(v.variantType))
+            } else {
+                v.copy(variantType = t)
+            }
         }
-        val fixed = Catalog(updated)
-        // Keep same structure
-        return if (changed) fixed else fixed
+        return Catalog(updated)
     }
 
     override suspend fun load(forceRefresh: Boolean, log: (String) -> Unit): Catalog? = withContext(Dispatchers.IO) {
@@ -194,13 +191,17 @@ class RemoteCatalogDataSource : CatalogDataSource {
             setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) MtgPirate/1.0")
             setRequestProperty("Accept", "*/*")
         }
-        val code = conn.responseCode
-        log("HTTP GET $urlStr -> $code")
-        if (code !in 200..299) {
-            val err = conn.errorStream?.bufferedReader()?.use { it.readText() } ?: "HTTP $code without body"
-            throw IllegalStateException("Failed to fetch: $code $err")
+        try {
+            val code = conn.responseCode
+            log("HTTP GET $urlStr -> $code")
+            if (code !in 200..299) {
+                val err = conn.errorStream?.bufferedReader()?.use { it.readText() } ?: "HTTP $code without body"
+                throw IllegalStateException("Failed to fetch: $code $err")
+            }
+            return conn.inputStream.bufferedReader().use { it.readText() }
+        } finally {
+            conn.disconnect()
         }
-        return conn.inputStream.bufferedReader().use { it.readText() }
     }
 
     // Extract object literal CARD_TYPE_PRICES = { ... } mapping to Map<String, Double>
