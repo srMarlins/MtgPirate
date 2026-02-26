@@ -1,23 +1,73 @@
 package app
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import ui.*
+import model.MultiMatch
+import model.OrderItem
+import model.Seller
+import model.SellerOrder
+import model.ShoppingPlan
+import ui.AnimatedLoadingDots
+import ui.BlinkingCursor
+import ui.CatalogScreen
+import ui.CompactPixelImagePreview
+import ui.formatForExport
+import ui.HybridVariantPriorityItem
+import ui.InlineLoadingCard
+import ui.LazyListScrollIndicators
+import ui.MatchesScreen
+import ui.MobilePixelImageModal
+import ui.MobileResultsScreen
+import ui.ModernIosReorderableListWithPixelStyle
+import ui.PixelBadge
+import ui.PixelButton
+import ui.PixelButtonVariant
+import ui.PixelCard
+import ui.PixelDivider
+import ui.PixelGreen
+import ui.PixelOrange
+import ui.PixelRed
+import ui.PixelShape
+import ui.PixelTextField
+import ui.PixelToggle
+import ui.ScanlineEffect
+import ui.pixelBorder
+import ui.sellerColor
+import util.formatPrice
 
 /**
  * iOS Import Screen - Step 1 of the wizard.
@@ -374,11 +424,14 @@ fun IosResultsScreen(
     unmatchedCount: Int = 0,
     ambiguousCount: Int = 0,
     isDarkTheme: Boolean = false,
-    onToggleTheme: () -> Unit = {}
+    onToggleTheme: () -> Unit = {},
+    multiMatches: List<MultiMatch> = emptyList(),
+    availableSellers: List<Seller> = emptyList(),
+    onOverrideSeller: (Int, Seller) -> Unit = { _, _ -> },
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
-        
+
         Column(modifier = Modifier.fillMaxSize()) {
             // Inline header with MTG PIRATE branding, stepper, and theme toggle
             IosInlineHeader(
@@ -386,7 +439,7 @@ fun IosResultsScreen(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme
             )
-            
+
             // Results screen content - will handle its own padding and loading display
             Box(modifier = Modifier.weight(1f)) {
                 MobileResultsScreen(
@@ -399,7 +452,10 @@ fun IosResultsScreen(
                     isLoading = isLoadingCatalog || isMatching,
                     matchedCount = matchedCount,
                     unmatchedCount = unmatchedCount,
-                    ambiguousCount = ambiguousCount
+                    ambiguousCount = ambiguousCount,
+                    multiMatches = multiMatches,
+                    availableSellers = availableSellers,
+                    onOverrideSeller = onOverrideSeller,
                 )
             }
         }
@@ -631,56 +687,38 @@ fun IosResolveScreen(
     }
 }
 
+private const val TCGPLAYER_MASS_ENTRY_URL = "https://www.tcgplayer.com/massentry?productline=Magic"
+private const val BOOTLEG_MAGE_DECK_IMPORT_URL = "https://bootlegmage.com/deck-import/"
+
+
 /**
- * iOS Export Screen - Step 4 of the wizard.
- * Mobile-optimized single-column layout for portrait screens.
+ * iOS Shopping Plan Screen - Step 4 of the wizard.
+ * Mobile-optimized multi-seller shopping plan with per-seller order cards,
+ * expandable item lists, and checkout action buttons.
  */
 @Composable
-fun IosExportScreen(
-    matches: List<model.DeckEntryMatch>,
+fun IosShoppingPlanScreen(
+    shoppingPlan: ShoppingPlan?,
+    multiMatches: List<MultiMatch>,
+    onOptimize: () -> Unit,
+    onCopyToClipboard: (String) -> Unit,
+    onOpenUrl: (String) -> Unit,
     onBack: () -> Unit,
-    onExport: () -> Unit,
+    isLoading: Boolean = false,
     isDarkTheme: Boolean = false,
-    onToggleTheme: () -> Unit = {}
+    onToggleTheme: () -> Unit = {},
 ) {
-    val resolved = matches.filter { it.selectedVariant != null }
-    val unresolved = matches.filter { 
-        it.selectedVariant == null && it.deckEntry.include 
-    }
-    val ambiguousCount = matches.count { 
-        it.status == model.MatchStatus.AMBIGUOUS 
-    }
-
-    val promo = util.Promotions.calculate(matches)
-
-    // Shipping selection state
-    var selectedShipping by remember { 
-        mutableStateOf(promo.shippingType) 
-    }
-    val expressEligible = promo.subtotalAfterDiscountCents > 300_00
-    
-    // Coerce selection if express becomes ineligible
-    LaunchedEffect(expressEligible) {
-        if (!expressEligible) {
-            selectedShipping = util.Promotions.ShippingType.NORMAL
+    // Auto-trigger optimization if plan is null but multiMatches exist
+    LaunchedEffect(shoppingPlan, multiMatches) {
+        if (shoppingPlan == null && multiMatches.isNotEmpty()) {
+            onOptimize()
         }
     }
-
-    val normalShippingCost = if (promo.subtotalAfterDiscountCents > 100_00) 0 else 10_00
-    val selectedShippingCost = calculateShippingCost(
-        selectedShipping,
-        expressEligible,
-        normalShippingCost
-    )
-    val grandTotal = promo.subtotalAfterDiscountCents + selectedShippingCost
 
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
+        Column(modifier = Modifier.fillMaxSize()) {
             // Inline header with MTG PIRATE branding, stepper, and theme toggle
             IosInlineHeader(
                 currentStep = 4,
@@ -689,125 +727,434 @@ fun IosExportScreen(
             )
 
             Spacer(Modifier.height(8.dp))
-            
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
-
-            // Header
-            Column(modifier = Modifier.padding(bottom = 8.dp)) {
-                Text(
-                    "▸ EXPORT",
-                    style = MaterialTheme.typography.h5,
-                    color = MaterialTheme.colors.primary,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    "└─ Review totals and export CSV",
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                )
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            // Ambiguous guard
-            if (ambiguousCount > 0) {
-                PixelCard(glowing = true) {
-                    Row(
-                        Modifier.fillMaxWidth().padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        PixelBadge(text = "⚠", color = PixelOrange)
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            "$ambiguousCount ambiguous cards - please resolve them first",
-                            style = MaterialTheme.typography.body2,
-                            color = MaterialTheme.colors.onSurface
-                        )
-                    }
-                }
-                Spacer(Modifier.height(12.dp))
-            }
-
-            // Scrollable content area
-            LazyColumn(
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Summary Card
-                item {
-                    ExportSummaryCard(resolved, unresolved)
-                }
-
-                // Pricing Card
-                item {
-                    ExportPricingCard(promo)
-                }
-
-                // Shipping Card
-                item {
-                    ExportShippingCard(
-                        selectedShipping = selectedShipping,
-                        onShippingChange = { selectedShipping = it },
-                        normalShippingCost = normalShippingCost,
-                        expressEligible = expressEligible
+                // Header
+                Column(modifier = Modifier.padding(bottom = 8.dp)) {
+                    Text(
+                        "▸ SHOPPING PLAN",
+                        style = MaterialTheme.typography.h5,
+                        color = MaterialTheme.colors.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "└─ Optimized order across sellers",
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
                     )
                 }
 
-                // Grand Total Card
-                item {
-                    PixelCard(
-                        glowing = true,
-                        modifier = Modifier.fillMaxWidth()
+                Spacer(Modifier.height(12.dp))
+
+                if (isLoading || shoppingPlan == null) {
+                    // Loading state
+                    Box(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Row(
-                            Modifier.fillMaxWidth().padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                "Grand Total:",
+                                "Optimizing shopping plan",
                                 style = MaterialTheme.typography.h6,
-                                fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colors.primary
                             )
-                            Text(
-                                util.formatPrice(grandTotal),
-                                style = MaterialTheme.typography.h5,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colors.secondary
+                            Spacer(Modifier.height(16.dp))
+                            AnimatedLoadingDots()
+                        }
+                    }
+                } else {
+                    // Grand total summary card
+                    MobileShoppingPlanSummary(shoppingPlan)
+                    Spacer(Modifier.height(12.dp))
+
+                    // Per-seller order cards (scrollable)
+                    LazyColumn(
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(
+                            shoppingPlan.orders,
+                            key = { it.seller.name }
+                        ) { order ->
+                            MobileSellerOrderCard(
+                                order = order,
+                                onCopyToClipboard = onCopyToClipboard,
+                                onOpenUrl = onOpenUrl,
                             )
                         }
                     }
                 }
-            }
 
-            Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(12.dp))
 
-            // Action buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
+                // Back button
                 PixelButton(
-                    text = "← Back",
+                    text = "← Back to Results",
                     onClick = onBack,
-                    modifier = Modifier.weight(1f).height(52.dp),
-                    variant = PixelButtonVariant.SURFACE
-                )
-
-                PixelButton(
-                    text = "Export CSV",
-                    onClick = onExport,
-                    enabled = ambiguousCount == 0 && resolved.isNotEmpty(),
-                    modifier = Modifier.weight(1f).height(52.dp),
-                    variant = PixelButtonVariant.SECONDARY
+                    variant = PixelButtonVariant.SURFACE,
+                    modifier = Modifier.fillMaxWidth().height(52.dp)
                 )
             }
+        }
+    }
+}
+
+/**
+ * Summary card showing total price and savings across all sellers.
+ */
+@Composable
+private fun MobileShoppingPlanSummary(plan: ShoppingPlan) {
+    PixelCard(glowing = true) {
+        Column(
+            Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Grand Total",
+                    style = MaterialTheme.typography.h6,
+                    color = MaterialTheme.colors.onSurface,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    formatPrice(plan.totalPriceCents),
+                    style = MaterialTheme.typography.h6,
+                    color = MaterialTheme.colors.primary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            if (plan.savingsVsSingleSeller > 0) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "Savings vs. single seller",
+                        style = MaterialTheme.typography.body2,
+                        color = PixelGreen
+                    )
+                    Text(
+                        "- ${formatPrice(plan.savingsVsSingleSeller)}",
+                        style = MaterialTheme.typography.body2,
+                        color = PixelGreen,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            PixelDivider()
+
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                plan.orders.forEach { order ->
+                    PixelBadge(
+                        text = "${order.seller.displayName}: ${formatPrice(order.totalCents)}",
+                        color = sellerColor(order.seller)
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Expandable card for a single seller's order (mobile-optimized).
+ */
+@Composable
+private fun MobileSellerOrderCard(
+    order: SellerOrder,
+    onCopyToClipboard: (String) -> Unit,
+    onOpenUrl: (String) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val color = sellerColor(order.seller)
+    val totalItems = order.items.sumOf { it.qty }
+
+    PixelCard(glowing = false) {
+        Column(Modifier.fillMaxWidth().padding(12.dp)) {
+            // Seller header row
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    PixelBadge(text = order.seller.displayName, color = color)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "$totalItems cards",
+                        style = MaterialTheme.typography.body2,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+                Text(
+                    formatPrice(order.totalCents),
+                    style = MaterialTheme.typography.h6,
+                    color = color,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            // Order details: subtotal, discount, shipping
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Subtotal",
+                        style = MaterialTheme.typography.body2,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        formatPrice(order.subtotalCents),
+                        style = MaterialTheme.typography.body2,
+                        color = MaterialTheme.colors.onSurface
+                    )
+                }
+
+                if (order.discountPercent > 0) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Discount (${order.discountPercent}%)",
+                            style = MaterialTheme.typography.body2,
+                            color = PixelGreen
+                        )
+                        val discountAmount = order.subtotalCents * order.discountPercent / 100
+                        Text(
+                            "- ${formatPrice(discountAmount)}",
+                            style = MaterialTheme.typography.body2,
+                            color = PixelGreen
+                        )
+                    }
+                }
+
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Shipping",
+                        style = MaterialTheme.typography.body2,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        if (order.shippingCents == 0) "Free" else formatPrice(order.shippingCents),
+                        style = MaterialTheme.typography.body2,
+                        color = if (order.shippingCents == 0) PixelGreen
+                        else MaterialTheme.colors.onSurface
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+            PixelDivider()
+            Spacer(Modifier.height(8.dp))
+
+            // Expand/collapse toggle for card list
+            Row(
+                Modifier.fillMaxWidth().clickable {
+                    platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.LIGHT)
+                    expanded = !expanded
+                },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    if (expanded) "Hide cards" else "Show cards ($totalItems)",
+                    style = MaterialTheme.typography.subtitle2,
+                    color = MaterialTheme.colors.primary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            // Expandable card list
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                Column(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                    // Item list header
+                    Row(
+                        Modifier.fillMaxWidth()
+                            .background(MaterialTheme.colors.surface.copy(alpha = 0.6f))
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "QTY",
+                            Modifier.width(36.dp),
+                            style = MaterialTheme.typography.overline,
+                            color = MaterialTheme.colors.primary
+                        )
+                        Text(
+                            "CARD",
+                            Modifier.weight(1f),
+                            style = MaterialTheme.typography.overline,
+                            color = MaterialTheme.colors.primary
+                        )
+                        Text(
+                            "SET",
+                            Modifier.width(44.dp),
+                            style = MaterialTheme.typography.overline,
+                            color = MaterialTheme.colors.primary
+                        )
+                        Text(
+                            "PRICE",
+                            Modifier.width(56.dp),
+                            style = MaterialTheme.typography.overline,
+                            color = MaterialTheme.colors.primary
+                        )
+                    }
+                    PixelDivider()
+
+                    // Constrain item list height
+                    val itemListState = rememberLazyListState()
+                    Box(Modifier.fillMaxWidth().heightIn(max = 250.dp)) {
+                        LazyColumn(
+                            Modifier.fillMaxWidth(),
+                            state = itemListState
+                        ) {
+                            items(
+                                order.items,
+                                key = { it.variant.uniqueIdentifier }
+                            ) { item ->
+                                Row(
+                                    Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        "${item.qty}",
+                                        Modifier.width(36.dp),
+                                        style = MaterialTheme.typography.body2
+                                    )
+                                    Text(
+                                        item.variant.nameOriginal,
+                                        Modifier.weight(1f),
+                                        style = MaterialTheme.typography.body2,
+                                        maxLines = 1
+                                    )
+                                    Text(
+                                        item.variant.setCode,
+                                        Modifier.width(44.dp),
+                                        style = MaterialTheme.typography.body2
+                                    )
+                                    Text(
+                                        formatPrice(item.variant.priceInCents),
+                                        Modifier.width(56.dp),
+                                        style = MaterialTheme.typography.body2
+                                    )
+                                }
+                                PixelDivider()
+                            }
+                        }
+                        LazyListScrollIndicators(
+                            state = itemListState,
+                            modifier = Modifier.matchParentSize()
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            // Per-seller action buttons
+            MobileSellerActionButtons(
+                order = order,
+                onCopyToClipboard = onCopyToClipboard,
+                onOpenUrl = onOpenUrl,
+            )
+        }
+    }
+}
+
+/**
+ * Per-seller action buttons for checkout and export (mobile-optimized).
+ */
+@Composable
+private fun MobileSellerActionButtons(
+    order: SellerOrder,
+    onCopyToClipboard: (String) -> Unit,
+    onOpenUrl: (String) -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        when (order.seller) {
+            Seller.USEA -> {
+                PixelButton(
+                    text = "Copy CSV",
+                    onClick = {
+                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        val exportText = formatForExport(Seller.USEA, order.items)
+                        onCopyToClipboard(exportText)
+                    },
+                    variant = PixelButtonVariant.PRIMARY,
+                    modifier = Modifier.weight(1f).height(40.dp)
+                )
+                PixelButton(
+                    text = "Email",
+                    onClick = {
+                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        val exportText = formatForExport(Seller.USEA, order.items)
+                        val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
+                        val mailtoUrl = "mailto:?subject=$subject&body=$exportText"
+                        onOpenUrl(mailtoUrl)
+                    },
+                    variant = PixelButtonVariant.SECONDARY,
+                    modifier = Modifier.weight(1f).height(40.dp)
+                )
+            }
+            Seller.BOOTLEG_MAGE -> {
+                PixelButton(
+                    text = "Open Deck Import",
+                    onClick = {
+                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        onOpenUrl(BOOTLEG_MAGE_DECK_IMPORT_URL)
+                    },
+                    variant = PixelButtonVariant.PRIMARY,
+                    modifier = Modifier.weight(1f).height(40.dp)
+                )
+            }
+            Seller.TCGPLAYER -> {
+                PixelButton(
+                    text = "Mass Entry",
+                    onClick = {
+                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        onOpenUrl(TCGPLAYER_MASS_ENTRY_URL)
+                    },
+                    variant = PixelButtonVariant.PRIMARY,
+                    modifier = Modifier.weight(1f).height(40.dp)
+                )
+                PixelButton(
+                    text = "Copy List",
+                    onClick = {
+                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        val exportText = formatForExport(Seller.TCGPLAYER, order.items)
+                        onCopyToClipboard(exportText)
+                    },
+                    variant = PixelButtonVariant.SECONDARY,
+                    modifier = Modifier.weight(1f).height(40.dp)
+                )
             }
         }
     }
