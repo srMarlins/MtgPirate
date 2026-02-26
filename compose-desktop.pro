@@ -9,15 +9,10 @@
 # Keep all JDBC drivers (they use Class.forName)
 -keep class * implements java.sql.Driver { *; }
 
-# Keep database-related classes that might use reflection
--keepclassmembers class * {
-    @androidx.room.** *;
-}
-
 # Prevent obfuscation of SQL-related classes
 -keep class java.sql.** { *; }
 
-# Keep Kotlin coroutines for database operations
+# Keep Kotlin coroutines for database and Ktor operations
 -keepclassmembers class kotlinx.coroutines.** {
     volatile <fields>;
 }
@@ -34,10 +29,14 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-# Keep Compose runtime
--keep class androidx.compose.** { *; }
--keep class androidx.compose.runtime.** { *; }
+# Ktor CIO engine uses reflection
+-keep class io.ktor.** { *; }
+-keep class kotlinx.coroutines.** { *; }
+-dontwarn io.ktor.**
 
-# Don't warn about missing classes
+# SLF4J service provider interface
+-keep class org.slf4j.** { *; }
 -dontwarn org.slf4j.**
+
+# Don't warn about missing optional logging backends
 -dontwarn org.apache.log4j.**
