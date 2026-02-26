@@ -130,7 +130,7 @@ jobs:
         run: ./gradlew.bat -PappVersion=%APP_VERSION% packageReleaseDistributionForCurrentOS --stacktrace --no-daemon
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: MtgPirate-Windows-${{ needs.setup.outputs.APP_VERSION }}
           path: build/compose/binaries/**/*.exe
@@ -176,7 +176,7 @@ jobs:
           ./gradlew -PappVersion=$APP_VERSION packageReleaseDistributionForCurrentOS --stacktrace --no-daemon
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: MtgPirate-macOS-${{ env.APP_VERSION }}
           path: build/compose/binaries/**/*.dmg
@@ -261,7 +261,7 @@ jobs:
             -exportPath $PWD/build/ipa
 
       - name: Upload iOS Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: MtgPirate-iOS-${{ env.APP_VERSION }}
           path: |
