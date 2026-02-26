@@ -625,9 +625,13 @@ class MviViewModel(
         completeWizardStep(1)
     }
 
-    /** Step 2 → 3: Mark step complete, load catalogs (which chains into multi-match) */
+    /** Step 2 → 3: Mark complete, run single-seller match, load multi-seller catalogs */
     private suspend fun wizardPreferencesToResults() {
         completeWizardStep(2)
+        // Re-parse with latest preferences, then match against existing catalog
+        parseDeck()
+        runMatch()
+        // Load all multi-seller catalogs (chains into runMultiMatch for alternatives)
         loadAllCatalogs()
     }
 
@@ -641,10 +645,15 @@ class MviViewModel(
     // Helpers
     // -----------------------------------------------------------------------
 
-    /** Fire-and-forget logging — intentionally launches independently */
+    /** Fire-and-forget logging — intentionally launches independently.
+     *  Catches exceptions so a logging failure never crashes the app. */
     private fun log(message: String, level: String = "INFO") {
         scope.launch {
-            platformServices.addLog(LogEntry(level, message, Clock.System.now().toString()))
+            try {
+                platformServices.addLog(LogEntry(level, message, Clock.System.now().toString()))
+            } catch (_: Exception) {
+                // Logging is best-effort — never crash the app for a log write failure
+            }
         }
     }
 
