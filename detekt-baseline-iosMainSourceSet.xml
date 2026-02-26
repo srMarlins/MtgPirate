@@ -20,7 +20,6 @@
     <ID>MagicNumber:IosSavedImportsDialog.kt:200</ID>
     <ID>MagicNumber:IosSavedImportsDialog.kt:3</ID>
     <ID>MagicNumber:IosScreens.kt:100</ID>
-    <ID>MagicNumber:Main.kt:3</ID>
     <ID>MagicNumber:MobileResultsScreen.kt:3</ID>
     <ID>MagicNumber:ModernIosReorderableListHybrid.kt:1000</ID>
     <ID>MagicNumber:ModernIosReorderableListHybrid.kt:10f</ID>
@@ -28,6 +27,7 @@
     <ID>MagicNumber:PlatformUtils.kt:1000</ID>
     <ID>MatchingDeclarationName:ModernIosReorderableListHybrid.kt:HybridDragState&lt;T&gt;</ID>
     <ID>MaxLineLength:IosScreens.kt:.</ID>
+    <ID>MaxLineLength:IosScreens.kt:val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&amp;body=${encodeUrlParameter(exportText)}"</ID>
     <ID>MaxLineLength:MobileResultsScreen.kt:Text("${m.deckEntry.qty}", Modifier.width(40.dp), style = MaterialTheme.typography.body2)</ID>
     <ID>MaxLineLength:MobileResultsScreen.kt:color = if (ambiguous &gt; 0) PixelOrange else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)</ID>
     <ID>MaxLineLength:MobileResultsScreen.kt:if</ID>

@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.*
 import match.Matcher
 import match.MultiCatalogMatcher
@@ -68,109 +69,143 @@ class MviViewModel(
 
     init {
         // Subscribe to database flows and combine into ViewState
-        scope.launch(Dispatchers.IO) {
-            // Create a flow that only refreshes matches when catalog or matches change
-            val refreshedMatchesFlow = combine(
-                database.observeCatalog().distinctUntilChanged(),
-                _localState.map { it.matches }.distinctUntilChanged()
-            ) { catalog, matches ->
-                catalogUseCase.refreshMatchesFromCatalog(matches, catalog)
-            }
-
-            combine(
-                database.observeCatalog(),
-                database.observePreferences().map { it ?: Preferences() },
-                database.observeSavedImports(),
-                _localState,
-                refreshedMatchesFlow
-            ) { catalog, preferences, savedImports, localState, refreshedMatches ->
-                ViewState(
-                    catalog = if (catalog.variants.isEmpty()) null else catalog,
-                    preferences = preferences,
-                    savedImports = savedImports,
-                    deckText = localState.deckText,
-                    deckEntries = localState.deckEntries,
-                    matches = refreshedMatches,
-                    includeSideboard = preferences.includeSideboard,
-                    includeCommanders = preferences.includeCommanders,
-                    includeTokens = preferences.includeTokens,
-                    loadingCatalog = localState.loadingCatalog,
-                    catalogError = localState.catalogError,
-                    showCandidatesFor = localState.showCandidatesFor,
-                    showPreferences = localState.showPreferences,
-                    showCatalogWindow = localState.showCatalogWindow,
-                    showMatchesWindow = localState.showMatchesWindow,
-                    showResultsWindow = localState.showResultsWindow,
-                    showSavedImportsWindow = localState.showSavedImportsWindow,
-                    wizardCompletedSteps = localState.wizardCompletedSteps,
-                    isDarkTheme = localState.isDarkTheme,
-                    isMatching = localState.isMatching,
-                    matchedCount = localState.matchedCount,
-                    unmatchedCount = localState.unmatchedCount,
-                    ambiguousCount = localState.ambiguousCount,
-                    totalPriceCents = localState.totalPriceCents,
-                    multiMatches = localState.multiMatches,
-                    shoppingPlan = localState.shoppingPlan,
-                    availableSellers = localState.availableSellers,
-                    loadingMultiCatalogs = localState.loadingMultiCatalogs
-                )
-            }.onEach { newState ->
-                _viewState.update { newState }
-            }.launchIn(scope)
+        // No outer scope.launch needed — launchIn(scope) handles collection
+        val refreshedMatchesFlow = combine(
+            database.observeCatalog().distinctUntilChanged(),
+            _localState.map { it.matches }.distinctUntilChanged()
+        ) { catalog, matches ->
+            catalogUseCase.refreshMatchesFromCatalog(matches, catalog)
         }
+
+        // Derive match counts reactively from matches
+        val matchCountsFlow = _localState
+            .map { it.matches }
+            .distinctUntilChanged()
+            .map { matchingUseCase.calculateMatchCounts(it) }
+
+        // Group refreshedMatches + counts to stay within combine's 5-param limit
+        val derivedFlow = combine(refreshedMatchesFlow, matchCountsFlow) { refreshed, counts ->
+            refreshed to counts
+        }
+
+        combine(
+            database.observeCatalog(),
+            database.observePreferences().map { it ?: Preferences() },
+            database.observeSavedImports(),
+            _localState,
+            derivedFlow
+        ) { catalog, preferences, savedImports, localState, (refreshedMatches, counts) ->
+            ViewState(
+                catalog = if (catalog.variants.isEmpty()) null else catalog,
+                preferences = preferences,
+                savedImports = savedImports,
+                deckText = localState.deckText,
+                deckEntries = localState.deckEntries,
+                matches = refreshedMatches,
+                includeSideboard = preferences.includeSideboard,
+                includeCommanders = preferences.includeCommanders,
+                includeTokens = preferences.includeTokens,
+                loadingCatalog = localState.loadingCatalog,
+                catalogError = localState.catalogError,
+                showCandidatesFor = localState.showCandidatesFor,
+                showPreferences = localState.showPreferences,
+                showCatalogWindow = localState.showCatalogWindow,
+                showMatchesWindow = localState.showMatchesWindow,
+                showResultsWindow = localState.showResultsWindow,
+                showSavedImportsWindow = localState.showSavedImportsWindow,
+                wizardCompletedSteps = localState.wizardCompletedSteps,
+                isDarkTheme = localState.isDarkTheme,
+                isMatching = localState.isMatching,
+                matchedCount = counts.matched,
+                unmatchedCount = counts.unmatched,
+                ambiguousCount = counts.ambiguous,
+                totalPriceCents = counts.totalPrice,
+                multiMatches = localState.multiMatches,
+                shoppingPlan = localState.shoppingPlan,
+                availableSellers = localState.availableSellers,
+                loadingMultiCatalogs = localState.loadingMultiCatalogs
+            )
+        }.onEach { newState ->
+            _viewState.update { newState }
+        }.launchIn(scope)
     }
 
     /**
      * Process user intents.
-     * Intents trigger state changes and side effects.
+     * Synchronous intents are handled inline. Async intents are launched
+     * in a single coroutine so that sequential calls within a handler
+     * (e.g. loadAllCatalogs → runMultiMatch) share the same coroutine
+     * and cannot race.
      */
     fun processIntent(intent: ViewIntent) {
+        // Synchronous intents — no coroutine needed
         when (intent) {
-            is ViewIntent.Init -> init()
-            is ViewIntent.UpdateDeckText -> updateDeckText(intent.text)
-            is ViewIntent.ToggleIncludeSideboard -> toggleIncludeSideboard(intent.value)
-            is ViewIntent.ToggleIncludeCommanders -> toggleIncludeCommanders(intent.value)
-            is ViewIntent.ToggleIncludeTokens -> toggleIncludeTokens(intent.value)
-            is ViewIntent.LoadCatalog -> loadCatalog()
-            ViewIntent.ParseDeck -> parseDeck()
-            ViewIntent.RunMatch -> runMatch()
-            ViewIntent.ParseAndMatch -> parseAndMatch()
-            is ViewIntent.OpenResolve -> openResolve(intent.index)
-            ViewIntent.CloseResolve -> closeResolve()
-            is ViewIntent.ResolveCandidate -> resolveCandidate(intent.index, intent.variant)
-            ViewIntent.ExportCsv -> exportCsv()
-            ViewIntent.ExportWizardResults -> exportWizardResults()
-            is ViewIntent.SetShowPreferences -> setShowPreferences(intent.show)
-            is ViewIntent.SetShowCatalogWindow -> setShowCatalogWindow(intent.show)
-            is ViewIntent.SetShowMatchesWindow -> setShowMatchesWindow(intent.show)
-            is ViewIntent.SetShowResultsWindow -> setShowResultsWindow(intent.show)
-            is ViewIntent.SavePreferences -> savePreferences(
-                intent.variantPriority,
-                intent.setPriority,
-                intent.fuzzyEnabled
-            )
-            is ViewIntent.Log -> log(intent.message, intent.level)
-            is ViewIntent.UpdateVariantPriority -> updateVariantPriority(intent.value)
-            is ViewIntent.CompleteWizardStep -> completeWizardStep(intent.step)
-            ViewIntent.ToggleTheme -> toggleTheme()
-            is ViewIntent.SetShowSavedImportsWindow -> setShowSavedImportsWindow(intent.show)
-            is ViewIntent.SaveCurrentImport -> saveCurrentImport()
-            is ViewIntent.LoadSavedImport -> loadSavedImport(intent.importId)
-            is ViewIntent.DeleteSavedImport -> deleteSavedImport(intent.importId)
-            is ViewIntent.EnrichVariantWithImage -> enrichVariantWithImage(intent.variant)
-            ViewIntent.LoadAllCatalogs -> loadAllCatalogs()
-            ViewIntent.RunMultiMatch -> runMultiMatch()
-            ViewIntent.OptimizeShoppingPlan -> optimizeShoppingPlan()
-            is ViewIntent.OverrideCardSeller -> overrideCardSeller(intent.matchIndex, intent.seller)
+            is ViewIntent.UpdateDeckText -> { updateDeckText(intent.text); return }
+            is ViewIntent.OpenResolve -> { openResolve(intent.index); return }
+            is ViewIntent.CloseResolve -> { closeResolve(); return }
+            is ViewIntent.SetShowPreferences -> { setShowPreferences(intent.show); return }
+            is ViewIntent.SetShowCatalogWindow -> { setShowCatalogWindow(intent.show); return }
+            is ViewIntent.SetShowMatchesWindow -> { setShowMatchesWindow(intent.show); return }
+            is ViewIntent.SetShowResultsWindow -> { setShowResultsWindow(intent.show); return }
+            is ViewIntent.SetShowSavedImportsWindow -> { setShowSavedImportsWindow(intent.show); return }
+            is ViewIntent.CompleteWizardStep -> { completeWizardStep(intent.step); return }
+            is ViewIntent.ToggleTheme -> { toggleTheme(); return }
+            is ViewIntent.Log -> { log(intent.message, intent.level); return }
+            else -> {} // fall through to async
+        }
+        // Async intents — single launch per intent
+        scope.launch {
+            when (intent) {
+                is ViewIntent.Init -> initHandler()
+                is ViewIntent.ToggleIncludeSideboard -> toggleIncludeSideboard(intent.value)
+                is ViewIntent.ToggleIncludeCommanders -> toggleIncludeCommanders(intent.value)
+                is ViewIntent.ToggleIncludeTokens -> toggleIncludeTokens(intent.value)
+                is ViewIntent.LoadCatalog -> loadCatalog()
+                ViewIntent.ParseDeck -> parseDeck()
+                ViewIntent.RunMatch -> runMatch()
+                ViewIntent.ParseAndMatch -> parseAndMatch()
+                is ViewIntent.ResolveCandidate -> resolveCandidate(intent.index, intent.variant)
+                ViewIntent.ExportCsv -> exportCsv()
+                ViewIntent.ExportWizardResults -> exportWizardResults()
+                is ViewIntent.SavePreferences -> savePreferences(
+                    intent.variantPriority, intent.setPriority, intent.fuzzyEnabled
+                )
+                is ViewIntent.UpdateVariantPriority -> updateVariantPriority(intent.value)
+                is ViewIntent.SaveCurrentImport -> saveCurrentImport()
+                is ViewIntent.LoadSavedImport -> loadSavedImport(intent.importId)
+                is ViewIntent.DeleteSavedImport -> deleteSavedImport(intent.importId)
+                is ViewIntent.EnrichVariantWithImage -> enrichVariantWithImage(intent.variant)
+                ViewIntent.LoadAllCatalogs -> loadAllCatalogs()
+                ViewIntent.RunMultiMatch -> runMultiMatch()
+                ViewIntent.OptimizeShoppingPlan -> optimizeShoppingPlan()
+                is ViewIntent.OverrideCardSeller -> overrideCardSeller(intent.matchIndex, intent.seller)
+                // Composite wizard intents — sequential steps in one coroutine
+                ViewIntent.WizardImportToPreferences -> wizardImportToPreferences()
+                ViewIntent.WizardPreferencesToResults -> wizardPreferencesToResults()
+                ViewIntent.WizardResultsToExport -> wizardResultsToExport()
+                // Sync intents already handled above — exhaustive match requires listing them
+                is ViewIntent.UpdateDeckText,
+                is ViewIntent.OpenResolve,
+                is ViewIntent.CloseResolve,
+                is ViewIntent.SetShowPreferences,
+                is ViewIntent.SetShowCatalogWindow,
+                is ViewIntent.SetShowMatchesWindow,
+                is ViewIntent.SetShowResultsWindow,
+                is ViewIntent.SetShowSavedImportsWindow,
+                is ViewIntent.CompleteWizardStep,
+                is ViewIntent.ToggleTheme,
+                is ViewIntent.Log -> {}
+            }
         }
     }
 
     // -----------------------------------------------------------------------
-    // Intent handlers — thin wrappers that delegate to use cases
+    // Intent handlers — suspend functions called from processIntent's
+    // single coroutine launch site
     // -----------------------------------------------------------------------
 
-    private fun init() {
-        scope.launch(Dispatchers.IO) {
+    private suspend fun initHandler() {
+        withContext(Dispatchers.IO) {
             log("Initializing MVI ViewModel...", "INFO")
             try {
                 val variantCount = catalogUseCase.getVariantCount()
@@ -191,41 +226,35 @@ class MviViewModel(
         _localState.update { it.copy(deckText = text) }
     }
 
-    private fun toggleIncludeSideboard(value: Boolean) {
-        scope.launch {
-            preferencesUseCase.setIncludeSideboard(value).onFailure {
-                log("Failed to save sideboard preference: ${it.message}", "ERROR")
-                _viewEffects.emit(ViewEffect.ShowError("Failed to save sideboard preference"))
-            }.onSuccess {
-                log("Include sideboard: $value", "INFO")
-            }
+    private suspend fun toggleIncludeSideboard(value: Boolean) {
+        preferencesUseCase.setIncludeSideboard(value).onFailure {
+            log("Failed to save sideboard preference: ${it.message}", "ERROR")
+            _viewEffects.emit(ViewEffect.ShowError("Failed to save sideboard preference"))
+        }.onSuccess {
+            log("Include sideboard: $value", "INFO")
         }
     }
 
-    private fun toggleIncludeCommanders(value: Boolean) {
-        scope.launch {
-            preferencesUseCase.setIncludeCommanders(value).onFailure {
-                log("Failed to save commanders preference: ${it.message}", "ERROR")
-                _viewEffects.emit(ViewEffect.ShowError("Failed to save commanders preference"))
-            }.onSuccess {
-                log("Include commanders: $value", "INFO")
-            }
+    private suspend fun toggleIncludeCommanders(value: Boolean) {
+        preferencesUseCase.setIncludeCommanders(value).onFailure {
+            log("Failed to save commanders preference: ${it.message}", "ERROR")
+            _viewEffects.emit(ViewEffect.ShowError("Failed to save commanders preference"))
+        }.onSuccess {
+            log("Include commanders: $value", "INFO")
         }
     }
 
-    private fun toggleIncludeTokens(value: Boolean) {
-        scope.launch {
-            preferencesUseCase.setIncludeTokens(value).onFailure {
-                log("Failed to save tokens preference: ${it.message}", "ERROR")
-                _viewEffects.emit(ViewEffect.ShowError("Failed to save tokens preference"))
-            }.onSuccess {
-                log("Include tokens: $value", "INFO")
-            }
+    private suspend fun toggleIncludeTokens(value: Boolean) {
+        preferencesUseCase.setIncludeTokens(value).onFailure {
+            log("Failed to save tokens preference: ${it.message}", "ERROR")
+            _viewEffects.emit(ViewEffect.ShowError("Failed to save tokens preference"))
+        }.onSuccess {
+            log("Include tokens: $value", "INFO")
         }
     }
 
-    private fun loadCatalog() {
-        scope.launch(Dispatchers.IO) {
+    private suspend fun loadCatalog() {
+        withContext(Dispatchers.IO) {
             _localState.update { it.copy(loadingCatalog = true, catalogError = null) }
             try {
                 val result = catalogUseCase.loadCatalog { msg, level -> log(msg, level) }
@@ -239,43 +268,39 @@ class MviViewModel(
         }
     }
 
-    private fun parseDeck() {
-        scope.launch {
-            val state = _localState.value
-            val preferences = _viewState.value.preferences
-
-            val entries = matchingUseCase.parseDeck(
-                state.deckText,
-                preferences.includeSideboard,
-                preferences.includeCommanders
-            )
-
-            logParsedEntries(entries)
-            _localState.update { it.copy(deckEntries = entries, matches = emptyList()) }
-        }
-    }
-
-    private fun runMatch() {
-        scope.launch {
-            val state = _localState.value
-            val catalog = _viewState.value.catalog
-
-            if (catalog == null) {
-                log("No catalog available for matching", "ERROR")
-                return@launch
-            }
-            if (state.deckEntries.isEmpty()) {
-                log("No deck entries to match", "WARNING")
-                return@launch
-            }
-
-            runMatchInternal(state.deckEntries, catalog)
-        }
-    }
-
-    private suspend fun runMatchInternal(entries: List<DeckEntry>, catalog: Catalog) {
-        _localState.update { it.copy(isMatching = true) }
+    private suspend fun parseDeck() {
+        val state = _localState.value
         val preferences = _viewState.value.preferences
+
+        val entries = matchingUseCase.parseDeck(
+            state.deckText,
+            preferences.includeSideboard,
+            preferences.includeCommanders
+        )
+
+        logParsedEntries(entries)
+        _localState.update { it.copy(deckEntries = entries, matches = emptyList()) }
+    }
+
+    private suspend fun runMatch() {
+        val state = _localState.value
+        val catalog = _viewState.value.catalog
+        val preferences = _viewState.value.preferences
+
+        if (catalog == null) {
+            log("No catalog available for matching", "ERROR")
+            return
+        }
+        if (state.deckEntries.isEmpty()) {
+            log("No deck entries to match", "WARNING")
+            return
+        }
+
+        runMatchInternal(state.deckEntries, catalog, preferences)
+    }
+
+    private suspend fun runMatchInternal(entries: List<DeckEntry>, catalog: Catalog, preferences: Preferences) {
+        _localState.update { it.copy(isMatching = true) }
 
         val matches = matchingUseCase.matchEntries(
             entries,
@@ -287,43 +312,36 @@ class MviViewModel(
             )
         )
 
-        val counts = matchingUseCase.calculateMatchCounts(matches)
-
+        // Counts are derived reactively via matchCountsFlow in init
         _localState.update {
             it.copy(
                 matches = matches,
                 showResultsWindow = true,
-                isMatching = false,
-                matchedCount = counts.matched,
-                unmatchedCount = counts.unmatched,
-                ambiguousCount = counts.ambiguous,
-                totalPriceCents = counts.totalPrice
+                isMatching = false
             )
         }
         log("Matched ${matches.size} entries", "INFO")
     }
 
-    private fun parseAndMatch() {
-        scope.launch {
-            val state = _localState.value
-            val preferences = _viewState.value.preferences
-            val catalog = _viewState.value.catalog
+    private suspend fun parseAndMatch() {
+        val state = _localState.value
+        val preferences = _viewState.value.preferences
+        val catalog = _viewState.value.catalog
 
-            if (catalog == null) {
-                log("No catalog available for matching", "ERROR")
-                return@launch
-            }
-
-            val entries = matchingUseCase.parseDeck(
-                state.deckText,
-                preferences.includeSideboard,
-                preferences.includeCommanders
-            )
-
-            logParsedEntries(entries)
-            _localState.update { it.copy(deckEntries = entries) }
-            runMatchInternal(entries, catalog)
+        if (catalog == null) {
+            log("No catalog available for matching", "ERROR")
+            return
         }
+
+        val entries = matchingUseCase.parseDeck(
+            state.deckText,
+            preferences.includeSideboard,
+            preferences.includeCommanders
+        )
+
+        logParsedEntries(entries)
+        _localState.update { it.copy(deckEntries = entries) }
+        runMatchInternal(entries, catalog, preferences)
     }
 
     private fun openResolve(index: Int) {
@@ -334,61 +352,48 @@ class MviViewModel(
         _localState.update { it.copy(showCandidatesFor = null) }
     }
 
-    private fun resolveCandidate(index: Int, variant: CardVariant) {
-        scope.launch {
-            _localState.update { state ->
-                if (index !in state.matches.indices) return@update state
+    private suspend fun resolveCandidate(index: Int, variant: CardVariant) {
+        // Counts are derived reactively via matchCountsFlow in init
+        _localState.update { state ->
+            if (index !in state.matches.indices) return@update state
 
-                val match = state.matches[index]
-                val updated = match.copy(
-                    status = MatchStatus.MANUAL_SELECTED,
-                    selectedVariant = variant
-                )
-                val newMatches = state.matches.toMutableList()
-                newMatches[index] = updated
-                state.copy(matches = newMatches, showCandidatesFor = null)
-            }
+            val match = state.matches[index]
+            val updated = match.copy(
+                status = MatchStatus.MANUAL_SELECTED,
+                selectedVariant = variant
+            )
+            val newMatches = state.matches.toMutableList()
+            newMatches[index] = updated
+            state.copy(matches = newMatches, showCandidatesFor = null)
+        }
+        log("Resolved card variant at index $index", "INFO")
+    }
 
-            val counts = matchingUseCase.calculateMatchCounts(_localState.value.matches)
-            _localState.update {
-                it.copy(
-                    matchedCount = counts.matched,
-                    unmatchedCount = counts.unmatched,
-                    ambiguousCount = counts.ambiguous,
-                    totalPriceCents = counts.totalPrice
-                )
+    private suspend fun exportCsv(
+        matches: List<DeckEntryMatch> = _localState.value.matches
+    ) {
+        if (matches.isNotEmpty()) {
+            importExportUseCase.exportCsv(matches) { path ->
+                log("CSV exported to: $path", "INFO")
+                scope.launch {
+                    _viewEffects.emit(ViewEffect.ShowMessage("CSV exported to: $path"))
+                }
             }
-            log("Resolved card variant at index $index", "INFO")
+        } else {
+            log("No matches to export", "WARNING")
         }
     }
 
-    private fun exportCsv() {
-        scope.launch {
-            val matches = _localState.value.matches
-            if (matches.isNotEmpty()) {
-                importExportUseCase.exportCsv(matches) { path ->
-                    log("CSV exported to: $path", "INFO")
-                    scope.launch {
-                        _viewEffects.emit(ViewEffect.ShowMessage("CSV exported to: $path"))
-                    }
-                }
-            } else {
-                log("No matches to export", "WARNING")
+    private suspend fun exportWizardResults(
+        matches: List<DeckEntryMatch> = _localState.value.matches
+    ) {
+        if (matches.isNotEmpty()) {
+            importExportUseCase.exportWizardResults(matches) { foundPath, unfoundPath ->
+                foundPath?.let { log("Found cards exported to: $it", "INFO") }
+                unfoundPath?.let { log("Unfound cards exported to: $it", "INFO") }
             }
-        }
-    }
-
-    private fun exportWizardResults() {
-        scope.launch {
-            val matches = _localState.value.matches
-            if (matches.isNotEmpty()) {
-                importExportUseCase.exportWizardResults(matches) { foundPath, unfoundPath ->
-                    foundPath?.let { log("Found cards exported to: $it", "INFO") }
-                    unfoundPath?.let { log("Unfound cards exported to: $it", "INFO") }
-                }
-            } else {
-                log("No matches to export", "WARNING")
-            }
+        } else {
+            log("No matches to export", "WARNING")
         }
     }
 
@@ -408,29 +413,25 @@ class MviViewModel(
         _localState.update { it.copy(showResultsWindow = show) }
     }
 
-    private fun savePreferences(variantPriority: List<String>, setPriority: List<String>, fuzzyEnabled: Boolean) {
-        scope.launch {
-            preferencesUseCase.savePreferences(variantPriority, setPriority, fuzzyEnabled)
-                .onSuccess {
-                    log("Preferences saved", "INFO")
-                    _localState.update { it.copy(showPreferences = false) }
-                }
-                .onFailure {
-                    log("Failed to save preferences: ${it.message}", "ERROR")
-                    _viewEffects.emit(ViewEffect.ShowError("Failed to save preferences"))
-                }
-        }
+    private suspend fun savePreferences(variantPriority: List<String>, setPriority: List<String>, fuzzyEnabled: Boolean) {
+        preferencesUseCase.savePreferences(variantPriority, setPriority, fuzzyEnabled)
+            .onSuccess {
+                log("Preferences saved", "INFO")
+                _localState.update { it.copy(showPreferences = false) }
+            }
+            .onFailure {
+                log("Failed to save preferences: ${it.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to save preferences"))
+            }
     }
 
-    private fun updateVariantPriority(newPriority: List<String>) {
-        scope.launch {
-            preferencesUseCase.updateVariantPriority(newPriority)
-                .onSuccess { log("Variant priority updated", "INFO") }
-                .onFailure {
-                    log("Failed to update variant priority: ${it.message}", "ERROR")
-                    _viewEffects.emit(ViewEffect.ShowError("Failed to update variant priority"))
-                }
-        }
+    private suspend fun updateVariantPriority(newPriority: List<String>) {
+        preferencesUseCase.updateVariantPriority(newPriority)
+            .onSuccess { log("Variant priority updated", "INFO") }
+            .onFailure {
+                log("Failed to update variant priority: ${it.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to update variant priority"))
+            }
     }
 
     private fun completeWizardStep(step: Int) {
@@ -449,73 +450,73 @@ class MviViewModel(
         _localState.update { it.copy(showSavedImportsWindow = show) }
     }
 
-    private fun saveCurrentImport() {
-        scope.launch {
-            val state = _localState.value
-            val preferences = _viewState.value.preferences
-            val savedImports = _viewState.value.savedImports
-
-            importExportUseCase.saveCurrentImport(
-                state.deckText, state.deckEntries, preferences, savedImports
-            ).onSuccess { msg -> log(msg, "INFO") }
-                .onFailure {
-                    log("Failed to save import: ${it.message}", "ERROR")
-                    _viewEffects.emit(ViewEffect.ShowError("Failed to save import"))
-                }
-        }
+    private suspend fun saveCurrentImport(
+        deckText: String = _localState.value.deckText,
+        deckEntries: List<DeckEntry> = _localState.value.deckEntries,
+        preferences: Preferences = _viewState.value.preferences,
+        savedImports: List<SavedImport> = _viewState.value.savedImports
+    ) {
+        importExportUseCase.saveCurrentImport(
+            deckText, deckEntries, preferences, savedImports
+        ).onSuccess { msg -> log(msg, "INFO") }
+            .onFailure {
+                log("Failed to save import: ${it.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to save import"))
+            }
     }
 
-    private fun loadSavedImport(importId: String) {
-        scope.launch {
-            importExportUseCase.loadSavedImport(importId, _viewState.value.savedImports)
-                .onSuccess { import ->
-                    _localState.update {
-                        it.copy(
-                            deckText = import.deckText,
-                            showSavedImportsWindow = false,
-                            showResultsWindow = true
-                        )
-                    }
-                    log("Loaded import: ${import.name}", "INFO")
+    private suspend fun loadSavedImport(
+        importId: String,
+        savedImports: List<SavedImport> = _viewState.value.savedImports
+    ) {
+        importExportUseCase.loadSavedImport(importId, savedImports)
+            .onSuccess { import ->
+                _localState.update {
+                    it.copy(
+                        deckText = import.deckText,
+                        showSavedImportsWindow = false,
+                        showResultsWindow = true
+                    )
                 }
-                .onFailure {
-                    log("Failed to load import: ${it.message}", "ERROR")
-                    _viewEffects.emit(ViewEffect.ShowError("Failed to load saved import"))
-                }
-        }
+                log("Loaded import: ${import.name}", "INFO")
+            }
+            .onFailure {
+                log("Failed to load import: ${it.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to load saved import"))
+            }
     }
 
-    private fun deleteSavedImport(importId: String) {
-        scope.launch {
-            importExportUseCase.deleteSavedImport(importId)
-                .onSuccess { log("Import deleted", "INFO") }
-                .onFailure {
-                    log("Failed to delete import: ${it.message}", "ERROR")
-                    _viewEffects.emit(ViewEffect.ShowError("Failed to delete import"))
-                }
-        }
+    private suspend fun deleteSavedImport(importId: String) {
+        importExportUseCase.deleteSavedImport(importId)
+            .onSuccess { log("Import deleted", "INFO") }
+            .onFailure {
+                log("Failed to delete import: ${it.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to delete import"))
+            }
     }
 
-    private fun enrichVariantWithImage(variant: CardVariant) {
+    private suspend fun enrichVariantWithImage(variant: CardVariant) {
         if (variant.imageUrl != null) return
-        scope.launch {
-            catalogUseCase.enrichVariantWithImage(variant) { msg, level -> log(msg, level) }
-        }
+        catalogUseCase.enrichVariantWithImage(variant) { msg, level -> log(msg, level) }
     }
 
     // -----------------------------------------------------------------------
     // Multi-catalog intent handlers
     // -----------------------------------------------------------------------
 
-    private fun loadAllCatalogs() {
-        scope.launch(Dispatchers.IO) {
+    private suspend fun loadAllCatalogs() {
+        withContext(Dispatchers.IO) {
             _localState.update { it.copy(loadingMultiCatalogs = true) }
             try {
                 val loadedSellers = catalogUseCase.loadAllCatalogs { msg, level -> log(msg, level) }
                 _localState.update { it.copy(availableSellers = loadedSellers) }
-                // Auto-trigger multi-match after catalogs load
+                // Auto-trigger multi-match after catalogs load — now sequential, not racing!
                 if (loadedSellers.isNotEmpty()) {
-                    runMultiMatch()
+                    // Read catalog fresh from DB (viewState flow may not have propagated yet)
+                    val catalog = database.observeCatalog().first()
+                    val preferences = database.observePreferences().first() ?: Preferences()
+                    val entries = _localState.value.deckEntries
+                    runMultiMatch(entries, catalog, preferences)
                 }
             } catch (e: Exception) {
                 log("Failed to load multi-catalogs: ${e.message}", "ERROR")
@@ -526,62 +527,60 @@ class MviViewModel(
         }
     }
 
-    private fun runMultiMatch() {
-        scope.launch(Dispatchers.IO) {
-            val state = _localState.value
-            val catalog = _viewState.value.catalog
-            val preferences = _viewState.value.preferences
+    private suspend fun runMultiMatch(
+        entries: List<DeckEntry> = _localState.value.deckEntries,
+        catalog: Catalog = _viewState.value.catalog ?: Catalog(emptyList()),
+        preferences: Preferences = _viewState.value.preferences
+    ) {
+        if (catalog.variants.isEmpty()) {
+            log("No catalog available for multi-matching", "ERROR")
+            return
+        }
+        if (entries.isEmpty()) {
+            log("No deck entries to multi-match", "WARNING")
+            return
+        }
 
-            if (catalog == null || catalog.variants.isEmpty()) {
-                log("No catalog available for multi-matching", "ERROR")
-                return@launch
-            }
-            if (state.deckEntries.isEmpty()) {
-                log("No deck entries to multi-match", "WARNING")
-                return@launch
-            }
+        _localState.update { it.copy(isMatching = true) }
+        try {
+            val perSellerCatalogs = catalog.variants
+                .groupBy { it.seller }
+                .mapValues { (_, variants) -> Catalog(variants) }
 
-            _localState.update { it.copy(isMatching = true) }
-            try {
-                // Build per-seller catalogs from all variants in the database
-                val perSellerCatalogs = catalog.variants
-                    .groupBy { it.seller }
-                    .mapValues { (_, variants) -> Catalog(variants) }
+            val config = MultiCatalogMatcher.Config(
+                variantPriority = preferences.variantPriority,
+                setPriority = preferences.setPriority,
+                fuzzyEnabled = preferences.fuzzyEnabled,
+            )
 
-                val config = MultiCatalogMatcher.Config(
-                    variantPriority = preferences.variantPriority,
-                    setPriority = preferences.setPriority,
-                    fuzzyEnabled = preferences.fuzzyEnabled,
+            val multiMatches = matchingUseCase.matchEntriesMulti(
+                entries,
+                perSellerCatalogs,
+                config
+            )
+
+            _localState.update {
+                it.copy(
+                    multiMatches = multiMatches,
+                    isMatching = false,
+                    showResultsWindow = true,
                 )
-
-                val multiMatches = matchingUseCase.matchEntriesMulti(
-                    state.deckEntries,
-                    perSellerCatalogs,
-                    config
-                )
-
-                _localState.update {
-                    it.copy(
-                        multiMatches = multiMatches,
-                        isMatching = false,
-                        showResultsWindow = true,
-                    )
-                }
-                log("Multi-matched ${multiMatches.size} entries across ${perSellerCatalogs.size} seller(s)", "INFO")
-            } catch (e: Exception) {
-                log("Multi-match failed: ${e.message}", "ERROR")
-                _localState.update { it.copy(isMatching = false) }
-                _viewEffects.emit(ViewEffect.ShowError("Multi-catalog matching failed"))
             }
+            log("Multi-matched ${multiMatches.size} entries across ${perSellerCatalogs.size} seller(s)", "INFO")
+        } catch (e: Exception) {
+            log("Multi-match failed: ${e.message}", "ERROR")
+            _localState.update { it.copy(isMatching = false) }
+            _viewEffects.emit(ViewEffect.ShowError("Multi-catalog matching failed"))
         }
     }
 
-    private fun optimizeShoppingPlan() {
-        scope.launch(Dispatchers.IO) {
-            val multiMatches = _localState.value.multiMatches
+    private suspend fun optimizeShoppingPlan(
+        multiMatches: List<MultiMatch> = _localState.value.multiMatches
+    ) {
+        withContext(Dispatchers.IO) {
             if (multiMatches.isEmpty()) {
                 log("No multi-matches available for optimization", "WARNING")
-                return@launch
+                return@withContext
             }
 
             try {
@@ -599,28 +598,50 @@ class MviViewModel(
         }
     }
 
-    private fun overrideCardSeller(matchIndex: Int, seller: Seller) {
-        scope.launch {
-            _localState.update { state ->
-                if (matchIndex !in state.multiMatches.indices) return@update state
+    private suspend fun overrideCardSeller(matchIndex: Int, seller: Seller) {
+        _localState.update { state ->
+            if (matchIndex !in state.multiMatches.indices) return@update state
 
-                val match = state.multiMatches[matchIndex]
-                val newBest = match.alternatives.firstOrNull { it.seller == seller }
-                    ?: return@update state
+            val match = state.multiMatches[matchIndex]
+            val newBest = match.alternatives.firstOrNull { it.seller == seller }
+                ?: return@update state
 
-                val updated = match.copy(bestOption = newBest)
-                val newMatches = state.multiMatches.toMutableList()
-                newMatches[matchIndex] = updated
-                state.copy(multiMatches = newMatches)
-            }
-            log("Overrode seller for match at index $matchIndex to ${seller.displayName}", "INFO")
+            val updated = match.copy(bestOption = newBest)
+            val newMatches = state.multiMatches.toMutableList()
+            newMatches[matchIndex] = updated
+            state.copy(multiMatches = newMatches)
         }
+        log("Overrode seller for match at index $matchIndex to ${seller.displayName}", "INFO")
+    }
+
+    // -----------------------------------------------------------------------
+    // Composite wizard handlers — sequential steps in one coroutine
+    // -----------------------------------------------------------------------
+
+    /** Step 1 → 2: Save import, parse deck, mark step complete */
+    private suspend fun wizardImportToPreferences() {
+        saveCurrentImport()
+        parseDeck()
+        completeWizardStep(1)
+    }
+
+    /** Step 2 → 3: Mark step complete, load catalogs (which chains into multi-match) */
+    private suspend fun wizardPreferencesToResults() {
+        completeWizardStep(2)
+        loadAllCatalogs()
+    }
+
+    /** Step 3 → 4: Mark step complete, optimize shopping plan */
+    private suspend fun wizardResultsToExport() {
+        completeWizardStep(3)
+        optimizeShoppingPlan()
     }
 
     // -----------------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------------
 
+    /** Fire-and-forget logging — intentionally launches independently */
     private fun log(message: String, level: String = "INFO") {
         scope.launch {
             platformServices.addLog(LogEntry(level, message, Clock.System.now().toString()))
@@ -694,11 +715,7 @@ private data class LocalUiState(
     val wizardCompletedSteps: Set<Int> = emptySet(),
     val isDarkTheme: Boolean = true,
     val isMatching: Boolean = false,
-    // Pre-calculated counts for performance (calculated on background threads)
-    val matchedCount: Int = 0,
-    val unmatchedCount: Int = 0,
-    val ambiguousCount: Int = 0,
-    val totalPriceCents: Int = 0,
+    // Match counts are derived reactively in init via matchCountsFlow
     // Multi-catalog matching and shopping optimization
     val multiMatches: List<MultiMatch> = emptyList(),
     val shoppingPlan: ShoppingPlan? = null,
@@ -749,6 +766,11 @@ sealed class ViewIntent {
     data object RunMultiMatch : ViewIntent()
     data object OptimizeShoppingPlan : ViewIntent()
     data class OverrideCardSeller(val matchIndex: Int, val seller: Seller) : ViewIntent()
+
+    // Composite wizard intents — atomic multi-step transitions
+    data object WizardImportToPreferences : ViewIntent()
+    data object WizardPreferencesToResults : ViewIntent()
+    data object WizardResultsToExport : ViewIntent()
 }
 
 /**

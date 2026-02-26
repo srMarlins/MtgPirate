@@ -119,9 +119,7 @@ fun IosNavigationHost(
                 deckText = state.deckText,
                 onDeckTextChange = { viewModel.processIntent(ViewIntent.UpdateDeckText(it)) },
                 onNext = {
-                    viewModel.processIntent(ViewIntent.SaveCurrentImport)
-                    viewModel.processIntent(ViewIntent.ParseDeck)
-                    viewModel.processIntent(ViewIntent.CompleteWizardStep(1))
+                    viewModel.processIntent(ViewIntent.WizardImportToPreferences)
                     navigateTo(IosScreen.PREFERENCES)
                 },
                 onShowSavedImports = {
@@ -143,9 +141,7 @@ fun IosNavigationHost(
                 onVariantPriorityChange = { viewModel.processIntent(ViewIntent.UpdateVariantPriority(it)) },
                 onBack = { navigateTo(IosScreen.IMPORT) },
                 onNext = {
-                    viewModel.processIntent(ViewIntent.CompleteWizardStep(2))
-                    viewModel.processIntent(ViewIntent.RunMatch)
-                    viewModel.processIntent(ViewIntent.LoadAllCatalogs)
+                    viewModel.processIntent(ViewIntent.WizardPreferencesToResults)
                     navigateTo(IosScreen.RESULTS)
                 },
                 isDarkTheme = state.isDarkTheme,
@@ -160,9 +156,7 @@ fun IosNavigationHost(
                 },
                 onBack = { navigateTo(IosScreen.PREFERENCES) },
                 onNext = {
-                    viewModel.processIntent(ViewIntent.CompleteWizardStep(3))
-                    viewModel.processIntent(ViewIntent.SaveCurrentImport)
-                    viewModel.processIntent(ViewIntent.OptimizeShoppingPlan)
+                    viewModel.processIntent(ViewIntent.WizardResultsToExport)
                     navigateTo(IosScreen.EXPORT)
                 },
                 onEnrichVariant = { variant ->
