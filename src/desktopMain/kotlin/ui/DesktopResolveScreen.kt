@@ -154,7 +154,7 @@ fun DesktopResolveScreen(
                                             selectedImageUrl = variant.imageUrl
                                             selectedCardName = variant.nameOriginal
                                             selectedSetCode = variant.setCode
-                                            selectedVariantType = variant.variantType
+                                            selectedVariantType = variant.variantType.displayName
                                         }
                                     )
                                     Spacer(Modifier.width(12.dp))
@@ -186,7 +186,7 @@ fun DesktopResolveScreen(
                                     
                                     // Variant Type
                                     Text(
-                                        variant.variantType,
+                                        variant.variantType.displayName,
                                         Modifier.width(100.dp),
                                         style = MaterialTheme.typography.body2
                                     )
