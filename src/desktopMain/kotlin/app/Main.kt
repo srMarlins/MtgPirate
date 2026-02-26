@@ -26,8 +26,6 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.window.WindowDraggableArea
-import androidx.compose.ui.res.loadSvgPainter
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.navigation.compose.NavHost
@@ -39,17 +37,12 @@ import database.DatabaseDriverFactory
 import database.ImportsStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.onEach
 import platform.DesktopMviPlatformServices
 import state.MviViewModel
 import state.ViewIntent
 import state.ViewState
 import ui.*
-import util.Logging
 import java.awt.Cursor
-import kotlin.div
-import kotlin.text.matches
 
 /**
  * Unified custom title bar with window controls and app navigation
