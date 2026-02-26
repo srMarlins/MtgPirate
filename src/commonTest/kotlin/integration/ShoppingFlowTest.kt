@@ -3,7 +3,13 @@ package integration
 import deck.DecklistParser
 import match.MultiCatalogMatcher
 import match.NameNormalizer
-import model.*
+import model.CardVariant
+import model.Catalog
+import model.DeckEntry
+import model.Section
+import model.Seller
+import model.ShoppingPlan
+import model.VariantType
 import optimizer.ShoppingOptimizer
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -128,9 +134,11 @@ class ShoppingFlowTest {
 
     @Test
     fun thresholdOptimizationFlow() {
-        // Test that optimizer moves cards to hit better discount tiers
-        // USEA: Needs 60_00 for 5% discount.
-        // Let's say we have 55_00 at USEA and 10_00 at BM for a card available at both.
+        // Test that optimizer moves cards to hit better discount tier.
+        // USEA needs 100_00 for 15% discount + free shipping.
+        // Naive: USEA 95_00 + $10 ship = 105_00, BM 5_00 = 5_00. Total 110_00.
+        // Optimized: Move Shared Card to USEA -> 105_00, 15% discount -> 89_25 + $10 ship = 99_25.
+        // 99_25 < 110_00 so optimization should fire.
 
         val deckText = """
             1 Expensive USEA Card
@@ -139,71 +147,23 @@ class ShoppingFlowTest {
         val entries = DecklistParser.parse(deckText, includeSideboard = true, includeCommanders = true)
 
         val useaCatalog = catalogOf(
-            testVariant("Expensive USEA Card", Seller.USEA, 55_00),
+            testVariant("Expensive USEA Card", Seller.USEA, 95_00),
             testVariant("Shared Card", Seller.USEA, 10_00),
         )
         val bmCatalog = catalogOf(
             testVariant("Shared Card", Seller.BOOTLEG_MAGE, 5_00),
         )
 
-        val catalogs = mapOf(
-            Seller.USEA to useaCatalog,
-            Seller.BOOTLEG_MAGE to bmCatalog,
-        )
-
         val matches = MultiCatalogMatcher.match(
             entries = entries,
-            catalogs = catalogs,
+            catalogs = mapOf(Seller.USEA to useaCatalog, Seller.BOOTLEG_MAGE to bmCatalog),
             config = MultiCatalogMatcher.Config(proxyFirst = true)
         )
 
-        // Naive match would pick BM for Shared Card (5_00 vs 10_00)
-        // USEA: 55_00. Discount 0%. Total 55_00 + 10_00 ship = 65_00.
-        // BM: 5_00. Total 5_00.
-        // Naive Total: 70_00.
-
-        // Optimized: Move Shared Card to USEA.
-        // USEA: 55_00 + 10_00 = 65_00. Discount 5% -> 61_75. Shipping 0 (since > 60_00 after discount? No, shipping free if > 100_00).
-        // Wait, USEA shipping config:
-        // ShippingTier(10000, 0, "Normal Free"),
-        // ShippingTier(0, 1000, "Normal $10"),
-        // 61_75 is < 100_00, so shipping is 10_00. Total 71_75.
-
-        // Hmm, let's adjust the numbers to make optimization actually better.
-        // If we hit $100 tier: 15% discount AND free shipping.
-        // USEA: 95_00. Naive: 95_00 + 10_00 ship = 105_00.
-        // Shared Card: BM 5_00.
-        // Naive Total: 110_00.
-
-        // Move Shared Card (10_00 at USEA) to USEA.
-        // USEA: 95_00 + 10_00 = 105_00. 15% discount -> 89_25.
-        // Shipping free if > 100_00 after discount. 89_25 < 100_00. So still 10_00 ship. Total 99_25.
-        // 99_25 < 110_00. Optimization should happen.
-
-        val deckText2 = """
-            1 Expensive USEA Card
-            1 Shared Card
-        """.trimIndent()
-        val entries2 = DecklistParser.parse(deckText2, includeSideboard = true, includeCommanders = true)
-
-        val useaCatalog2 = catalogOf(
-            testVariant("Expensive USEA Card", Seller.USEA, 95_00),
-            testVariant("Shared Card", Seller.USEA, 10_00),
-        )
-        val bmCatalog2 = catalogOf(
-            testVariant("Shared Card", Seller.BOOTLEG_MAGE, 5_00),
-        )
-
-        val matches2 = MultiCatalogMatcher.match(
-            entries = entries2,
-            catalogs = mapOf(Seller.USEA to useaCatalog2, Seller.BOOTLEG_MAGE to bmCatalog2),
-            config = MultiCatalogMatcher.Config(proxyFirst = true)
-        )
-
-        val plan = ShoppingOptimizer.optimize(matches2)
+        val plan = ShoppingOptimizer.optimize(matches)
 
         val useaOrder = plan.orders.find { it.seller == Seller.USEA }!!
-        // It should have pulled the shared card to USEA
+        // Optimizer should have pulled the shared card to USEA to hit the $100 discount tier
         assertTrue(useaOrder.items.any { it.variant.nameOriginal == "Shared Card" }, "Shared Card should be in USEA order to hit discount tier")
         assertEquals(105_00, useaOrder.subtotalCents)
         assertEquals(15, useaOrder.discountPercent)

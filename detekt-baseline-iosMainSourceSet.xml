@@ -35,6 +35,7 @@
     <ID>MaxLineLength:MobileResultsScreen.kt:if</ID>
     <ID>MaxLineLength:MobileResultsScreen.kt:if (filterMode == 0) MaterialTheme.colors.primary.copy(alpha = 0.2f) else MaterialTheme.colors.surface</ID>
     <ID>SwallowedException:IosHapticFeedback.kt:IosHapticFeedback$e: Exception</ID>
+    <ID>SwallowedException:IosMviPlatformServices.kt:IosMviPlatformServices$e: Exception</ID>
     <ID>SwallowedException:IosSavedImportsDialog.kt:e: Exception</ID>
     <ID>TooGenericExceptionCaught:IosHapticFeedback.kt:IosHapticFeedback$e: Exception</ID>
     <ID>TooGenericExceptionCaught:IosMviPlatformServices.kt:IosMviPlatformServices$e: Exception</ID>

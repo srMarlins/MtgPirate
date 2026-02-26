@@ -1,7 +1,11 @@
 package catalog
 
-import model.*
 import match.NameNormalizer
+import model.CardVariant
+import model.OrderItem
+import model.Seller
+import model.VariantType
+import kotlin.math.roundToInt
 
 /**
  * Catalog source that fetches pricing and card data from Scryfall API.
@@ -49,7 +53,7 @@ class ScryfallPricingSource(
                 setCode = card.set.uppercase(),
                 sku = "SCRY-${card.set}-${card.collectorNumber}",
                 variantType = VariantType.REGULAR,
-                priceInCents = (usdPrice * 100).toInt(),
+                priceInCents = (usdPrice * 100).roundToInt(),
                 collectorNumber = card.collectorNumber,
                 imageUrl = extractImageUrl(card),
                 seller = Seller.TCGPLAYER,
@@ -63,7 +67,7 @@ class ScryfallPricingSource(
                 setCode = card.set.uppercase(),
                 sku = "SCRY-${card.set}-${card.collectorNumber}-FOIL",
                 variantType = VariantType.FOIL,
-                priceInCents = (usdFoilPrice * 100).toInt(),
+                priceInCents = (usdFoilPrice * 100).roundToInt(),
                 collectorNumber = card.collectorNumber,
                 imageUrl = extractImageUrl(card),
                 seller = Seller.TCGPLAYER,

@@ -1,7 +1,12 @@
 package optimizer
 
-import model.*
 import match.NameNormalizer
+import model.MatchOption
+import model.MultiMatch
+import model.OrderItem
+import model.Seller
+import model.SellerOrder
+import model.ShoppingPlan
 
 /**
  * Optimizer that assigns card matches to sellers to minimize the total order cost.
@@ -46,6 +51,7 @@ object ShoppingOptimizer {
         val config = getDiscountConfig(seller)
         val subtotal = items.sumOf { it.variant.priceInCents * it.qty }
 
+        // >= so hitting exactly the threshold qualifies (e.g., $400.00 gets 50%)
         val discountPercent = config.discountTiers
             .sortedByDescending { it.minCents }
             .firstOrNull { subtotal >= it.minCents }?.discountPercent ?: 0
@@ -74,7 +80,7 @@ object ShoppingOptimizer {
 
         // For each seller, check if pulling cards from other sellers
         // would push it to a better discount tier
-        for (seller in Seller.entries) {
+        for (seller in naiveAssignment.keys) {
             val config = getDiscountConfig(seller)
             val currentSubtotal = bestPlan[seller]?.sumOf {
                 it.variant.priceInCents * it.qty

@@ -10,7 +10,13 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 
 /**
  * Scryfall API client for fetching card images.
@@ -202,7 +208,7 @@ object ScryfallApi {
                     }
                 }
             } catch (e: Exception) {
-                // Log or handle error if needed
+                println("ScryfallApi.getCollection chunk failed: ${e.message}")
             }
         }
         return allCards
