@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.Ksoup
 import kotlin.math.roundToInt
 import model.CardVariant
 import model.Catalog
+import model.VariantType
 import match.NameNormalizer
 
 object CatalogParser {
@@ -21,19 +22,8 @@ object CatalogParser {
         "number" to "collectornumber"
     )
 
-    private val typePriceMap = mapOf(
-        "Regular" to 220,
-        "Holo" to 300,
-        "Foil" to 350
-    )
-
-    private fun canonicalType(raw: String): String {
-        val t = raw.trim().lowercase()
-        return when {
-            "foil" in t -> "Foil"
-            "holo" in t -> "Holo"
-            else -> "Regular"
-        }
+    private val typePriceMap = VariantType.entries.associate {
+        it to it.defaultPriceInCents
     }
 
     fun parse(html: String): Catalog {
@@ -64,7 +54,7 @@ object CatalogParser {
                 val name = extractValue("Card Name:") ?: return@mapNotNull null
                 val set = extractValue("Set:") ?: return@mapNotNull null
                 val typeRaw = extractValue("Card Type:") ?: return@mapNotNull null
-                val type = canonicalType(typeRaw)
+                val type = VariantType.fromString(typeRaw)
                 val priceRaw = extractValue("Base Price:") ?: ""
                 val collectorNumber = extractValue("Collector Number:")?.takeIf { it.isNotBlank() }
                 var priceCents = parsePrice(priceRaw)
@@ -107,7 +97,7 @@ object CatalogParser {
             val set = cells[setIdx].text().trim()
             val sku = cells[skuIdx].text().trim()
             val typeRaw = cells[typeIdx].text().trim()
-            val type = canonicalType(typeRaw)
+            val type = VariantType.fromString(typeRaw)
             val priceRaw = cells[priceIdx].text()
             val collectorNumber = if (collectorNumberIdx >= 0 && collectorNumberIdx < cells.size) {
                 cells[collectorNumberIdx].text().trim().takeIf { it.isNotBlank() }
