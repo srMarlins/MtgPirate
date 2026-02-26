@@ -1,12 +1,62 @@
 package state
 
+import catalog.BootlegMageCatalogSource
+import catalog.CatalogSource
 import catalog.ScryfallImageEnricher
+import catalog.ScryfallPricingSource
+import catalog.ScryfallApi
 import database.CatalogStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import model.CardVariant
 import model.Catalog
+import model.Seller
+
+/**
+ * Registry that holds all available [CatalogSource] instances.
+ * Coordinates loading catalogs from all sources with independent error handling.
+ */
+class CatalogSourceRegistry(
+    private val sources: List<CatalogSource>
+) {
+    /** All registered sources. */
+    val allSources: List<CatalogSource> get() = sources
+
+    /**
+     * Load catalogs from all sources in parallel.
+     * Each source loads independently -- a failure in one does not block others.
+     *
+     * @param log callback for progress/error messages
+     * @return map of successfully loaded catalogs keyed by [Seller]
+     */
+    suspend fun loadAll(
+        log: (String, String) -> Unit
+    ): Map<Seller, List<CardVariant>> = coroutineScope {
+        val results = sources.map { source ->
+            async {
+                try {
+                    log("Loading catalog from ${source.seller.displayName}...", "INFO")
+                    val variants = source.fetchCatalog { msg -> log(msg, "INFO") }
+                    if (variants.isNotEmpty()) {
+                        log("${source.seller.displayName}: loaded ${variants.size} variants", "INFO")
+                        source.seller to variants
+                    } else {
+                        log("${source.seller.displayName}: returned empty catalog, skipping", "WARNING")
+                        null
+                    }
+                } catch (e: Exception) {
+                    log("${source.seller.displayName}: failed to load catalog -- ${e.message}", "ERROR")
+                    null
+                }
+            }
+        }
+        results.awaitAll().filterNotNull().toMap()
+    }
+}
 
 /**
  * Use case for catalog loading, caching, and image enrichment.
@@ -18,6 +68,18 @@ class CatalogUseCase(
     private val catalogStore: CatalogStore,
     private val platformServices: MviPlatformServices
 ) {
+    /**
+     * Registry of multi-seller catalog sources.
+     * BootlegMageCatalogSource and ScryfallPricingSource are pure Ktor-based and
+     * can be instantiated directly. UseaCatalogSource uses the existing
+     * platformServices.fetchCatalogFromRemote() path and is handled separately.
+     */
+    val sourceRegistry = CatalogSourceRegistry(
+        listOf(
+            BootlegMageCatalogSource(),
+            ScryfallPricingSource(ScryfallApi),
+        )
+    )
     /**
      * Check how many variants are currently stored in the database.
      */
@@ -47,6 +109,52 @@ class CatalogUseCase(
                 log("Catalog load exception: ${e.message}", "ERROR")
                 Result.failure(e)
             }
+        }
+
+    /**
+     * Load catalogs from all registered sources in parallel and persist per-seller.
+     *
+     * The USEA catalog is loaded via the existing platformServices path.
+     * Other sources (BootlegMage, ScryfallPricing) are loaded through the registry.
+     * Each source is independent -- failures are logged and skipped.
+     *
+     * @param log callback for progress/error messages
+     * @return list of [Seller]s that successfully loaded catalogs
+     */
+    suspend fun loadAllCatalogs(log: (String, String) -> Unit): List<Seller> =
+        withContext(Dispatchers.IO) {
+            val loadedSellers = mutableListOf<Seller>()
+
+            // Load USEA via existing platform path
+            try {
+                log("Loading USEA catalog via platform services...", "INFO")
+                val useaCatalog = platformServices.fetchCatalogFromRemote { msg -> log(msg, "INFO") }
+                if (useaCatalog != null && useaCatalog.variants.isNotEmpty()) {
+                    val taggedVariants = useaCatalog.variants.map { it.copy(seller = Seller.USEA) }
+                    catalogStore.replaceCatalogForSeller(Seller.USEA, taggedVariants)
+                    log("USEA: stored ${taggedVariants.size} variants", "INFO")
+                    loadedSellers.add(Seller.USEA)
+                } else {
+                    log("USEA: returned empty catalog, skipping", "WARNING")
+                }
+            } catch (e: Exception) {
+                log("USEA: failed to load catalog -- ${e.message}", "ERROR")
+            }
+
+            // Load all registry sources in parallel
+            val registryResults = sourceRegistry.loadAll(log)
+            for ((seller, variants) in registryResults) {
+                try {
+                    catalogStore.replaceCatalogForSeller(seller, variants)
+                    log("${seller.displayName}: stored ${variants.size} variants in database", "INFO")
+                    loadedSellers.add(seller)
+                } catch (e: Exception) {
+                    log("${seller.displayName}: failed to store catalog -- ${e.message}", "ERROR")
+                }
+            }
+
+            log("Loaded catalogs from ${loadedSellers.size} seller(s): ${loadedSellers.joinToString { it.displayName }}", "INFO")
+            loadedSellers
         }
 
     /**
