@@ -43,6 +43,15 @@ object ScryfallApi {
         }.also { httpClient = it }
     }
 
+    /**
+     * Close the underlying HttpClient to release resources.
+     * Should be called when the API is no longer needed.
+     */
+    fun close() {
+        httpClient?.close()
+        httpClient = null
+    }
+
     @Serializable
     data class ImageUris(
         val small: String? = null,
