@@ -34,6 +34,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import kotlin.math.max
 
 // ========================================
 // PIXEL SHAPE (for matching border clipping)
@@ -482,7 +483,7 @@ fun Modifier.pixelBorder(
         val innerPath = createPixelPath(
             width = size.width - strokeWidth * 2,
             height = size.height - strokeWidth * 2,
-            cornerSize = maxOf(0f, cornerPx - strokeWidth)
+            cornerSize = max(0f, cornerPx - strokeWidth)
         )
         innerPath.translate(Offset(strokeWidth, strokeWidth))
         
