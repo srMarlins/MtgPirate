@@ -106,4 +106,22 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
     suspend fun updateVariantImageUrl(sku: String, imageUrl: String) {
         db.cardVariantQueries.updateImageUrl(imageUrl = imageUrl, sku = sku)
     }
+
+    fun replaceCatalogTransaction(variants: List<CardVariant>) {
+        db.transaction {
+            db.cardVariantQueries.deleteAll()
+            variants.forEach { variant ->
+                db.cardVariantQueries.insertVariant(
+                    nameOriginal = variant.nameOriginal,
+                    nameNormalized = variant.nameNormalized,
+                    setCode = variant.setCode,
+                    sku = variant.sku,
+                    variantType = variant.variantType,
+                    priceInCents = variant.priceInCents.toLong(),
+                    collectorNumber = variant.collectorNumber,
+                    imageUrl = variant.imageUrl
+                )
+            }
+        }
+    }
 }
