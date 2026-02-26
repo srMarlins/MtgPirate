@@ -107,7 +107,7 @@ fun ExportScreen(
                                     Text(first.nameOriginal, Modifier.weight(0.40f), style = MaterialTheme.typography.body2)
                                     Text(first.setCode, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
                                     Text(first.sku, Modifier.weight(0.20f), style = MaterialTheme.typography.body2)
-                                    Text(first.variantType, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
+                                    Text(first.variantType.displayName, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
                                     Text(qtyTotal.toString(), Modifier.weight(0.07f), style = MaterialTheme.typography.body2)
                                     Text(formatPrice(first.priceInCents), Modifier.weight(0.09f), style = MaterialTheme.typography.body2)
                                 }

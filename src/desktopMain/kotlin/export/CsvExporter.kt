@@ -1,6 +1,7 @@
 package export
 
 import model.DeckEntryMatch
+import model.VariantType
 import platform.AppDirectories
 import util.formatPrice
 import java.nio.file.Path
@@ -40,16 +41,16 @@ object CsvExporter {
                 first.nameOriginal,
                 first.setCode,
                 first.sku,
-                first.variantType,
+                first.variantType.displayName,
                 qtyTotal.toString(),
                 formatPrice(first.priceInCents)
             ).joinToString(",") { escapeCsvField(it) }
         }
         lines += ""
         // Summary
-        val regular = resolved.count { it.selectedVariant!!.variantType.equals("Regular", true) }
-        val holo = resolved.count { it.selectedVariant!!.variantType.equals("Holo", true) }
-        val foil = resolved.count { it.selectedVariant!!.variantType.equals("Foil", true) }
+        val regular = resolved.count { it.selectedVariant!!.variantType == VariantType.REGULAR }
+        val holo = resolved.count { it.selectedVariant!!.variantType == VariantType.HOLO }
+        val foil = resolved.count { it.selectedVariant!!.variantType == VariantType.FOIL }
         val totalCents = resolved.sumOf { it.selectedVariant!!.priceInCents * it.deckEntry.qty }
         lines += "${escapeCsvField("--- Summary ---")}"
         lines += "${escapeCsvField("Regular Cards")},${escapeCsvField(regular.toString())}"
@@ -82,7 +83,7 @@ object CsvExporter {
                     first.nameOriginal,
                     first.setCode,
                     first.sku,
-                    first.variantType,
+                    first.variantType.displayName,
                     qtyTotal.toString(),
                     formatPrice(first.priceInCents)
                 ).joinToString(",") { escapeCsvField(it) }
@@ -90,9 +91,9 @@ object CsvExporter {
 
             lines += ""
             lines += "${escapeCsvField("--- Summary ---")}"
-            val regular = resolved.count { it.selectedVariant!!.variantType.equals("Regular", true) }
-            val holo = resolved.count { it.selectedVariant!!.variantType.equals("Holo", true) }
-            val foil = resolved.count { it.selectedVariant!!.variantType.equals("Foil", true) }
+            val regular = resolved.count { it.selectedVariant!!.variantType == VariantType.REGULAR }
+            val holo = resolved.count { it.selectedVariant!!.variantType == VariantType.HOLO }
+            val foil = resolved.count { it.selectedVariant!!.variantType == VariantType.FOIL }
             val totalCents = resolved.sumOf { it.selectedVariant!!.priceInCents * it.deckEntry.qty }
             lines += "${escapeCsvField("Regular Cards")},${escapeCsvField(regular.toString())}"
             lines += "${escapeCsvField("Holo Cards")},${escapeCsvField(holo.toString())}"

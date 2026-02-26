@@ -551,7 +551,7 @@ fun IosResolveScreen(
                                                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
                                                     )
                                                     PixelBadge(
-                                                        text = variant.variantType,
+                                                        text = variant.variantType.displayName,
                                                         color = MaterialTheme.colors.primary
                                                     )
                                                 }
@@ -593,7 +593,7 @@ fun IosResolveScreen(
                                                 imageUrl = variant.imageUrl,
                                                 cardName = variant.nameOriginal,
                                                 setCode = variant.setCode,
-                                                variantType = variant.variantType,
+                                                variantType = variant.variantType.displayName,
                                                 onDismiss = { showImageModal = false }
                                             )
                                         }

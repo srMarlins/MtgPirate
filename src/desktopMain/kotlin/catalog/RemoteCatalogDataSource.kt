@@ -4,6 +4,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import model.Catalog
+import model.VariantType
 import platform.AppDirectories
 import java.nio.file.Files
 import java.nio.file.Path
@@ -25,27 +26,12 @@ class RemoteCatalogDataSource : CatalogDataSource {
     private val urlApi = "https://www.usmtgproxy.com/wp-content/uploads/single-card-list.csv"
     private val cacheFile: Path = AppDirectories.dataDir.resolve("catalog.json")
 
-    private fun canonicalType(raw: String): String {
-        val t = raw.trim().lowercase()
-        return when {
-            "foil" in t -> "Foil"
-            "holo" in t -> "Holo"
-            else -> "Regular"
-        }
-    }
-
     private fun fillZeroPrices(catalog: Catalog): Catalog {
-        val centsMap = mapOf(
-            "Regular" to 220,
-            "Holo" to 300,
-            "Foil" to 350
-        )
         val updated = catalog.variants.map { v ->
-            val t = canonicalType(v.variantType)
             if (v.priceInCents <= 0) {
-                v.copy(priceInCents = centsMap[t] ?: 0, variantType = t)
+                v.copy(priceInCents = v.variantType.defaultPriceInCents)
             } else {
-                v.copy(variantType = t)
+                v
             }
         }
         return Catalog(updated)
@@ -147,8 +133,7 @@ class RemoteCatalogDataSource : CatalogDataSource {
     private fun canonicalizePriceMap(map: Map<String, Double>): Map<String, Double> {
         val out = mutableMapOf<String, Double>()
         for ((k, v) in map) {
-            val t = canonicalType(k)
-            // prefer larger value if duplicates, but any non-zero is fine
+            val t = VariantType.fromString(k).displayName
             val existing = out[t]
             if (existing == null || v > existing) out[t] = v
         }
@@ -176,11 +161,9 @@ class RemoteCatalogDataSource : CatalogDataSource {
         return runCatching { CatalogParser.parse(html) }.onSuccess { /* no-op */ }.onFailure { log("Table parse failed: ${it.message}") }.getOrNull()?.let { fillZeroPrices(it) }
     }
 
-    private fun jsPriceMapFallback(): Map<String, Double> = mapOf(
-        "Regular" to 2.2,
-        "Holo" to 3.0,
-        "Foil" to 3.5
-    )
+    private fun jsPriceMapFallback(): Map<String, Double> = VariantType.entries.associate {
+        it.displayName to it.defaultPriceInCents / 100.0
+    }
 
     private fun fetchRaw(urlStr: String, log: (String) -> Unit): String {
         val url = URL(urlStr)

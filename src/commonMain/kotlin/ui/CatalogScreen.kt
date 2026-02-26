@@ -25,10 +25,10 @@ fun CatalogScreen(
     var query by remember { mutableStateOf("") }
     var variantFilter by remember { mutableStateOf("All") }
     val variants = catalog.variants
-    val variantTypes = remember { listOf("All") + variants.map { it.variantType }.distinct().sorted() }
+    val variantTypes = remember { listOf("All") + variants.map { it.variantType.displayName }.distinct().sorted() }
 
     val filtered = variants.filter { v ->
-        (variantFilter == "All" || v.variantType.equals(variantFilter, true)) &&
+        (variantFilter == "All" || v.variantType.displayName.equals(variantFilter, true)) &&
         (query.isBlank() || v.nameOriginal.contains(query, true) || v.setCode.contains(query, true) || v.sku.contains(query, true))
     }
 
@@ -129,7 +129,7 @@ fun CatalogScreen(
                                     }
                                 }
                                 Text(v.setCode, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
-                                Text(v.variantType, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
+                                Text(v.variantType.displayName, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
                                 Text(v.sku, Modifier.weight(0.18f), style = MaterialTheme.typography.body2)
                                 Text(
                                     formatPrice(v.priceInCents),

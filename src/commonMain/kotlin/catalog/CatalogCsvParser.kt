@@ -4,6 +4,7 @@ import kotlin.math.roundToInt
 import match.NameNormalizer
 import model.CardVariant
 import model.Catalog
+import model.VariantType
 
 /**
  * Parse the upstream CSV format used by the React inventory app (headers: SKU, Card Name, Set, Card Type, ...).
@@ -28,24 +29,12 @@ object CatalogCsvParser {
         "number" to "collectornumber"
     )
 
-    private val typePriceMapDefault = mapOf(
-        "Regular" to 2.2,
-        "Holo" to 3.0,
-        "Foil" to 3.5
-    )
+    private val typePriceMapDefault = VariantType.entries.associate {
+        it.displayName.lowercase() to it.defaultPriceInCents / 100.0
+    }
 
     private val htmlTagRegex = Regex("<[^>]+>")
     private val setCodeRegex = Regex("^[A-Z0-9]{2,5}$")
-
-    /** Canonicalize various representations of type into one of Regular/Holo/Foil */
-    private fun canonicalType(raw: String): String {
-        val t = raw.trim().lowercase()
-        return when {
-            "foil" in t -> "Foil"
-            "holo" in t -> "Holo"
-            else -> "Regular"
-        }
-    }
 
     private fun isTypeCell(raw: String): Boolean {
         val t = raw.lowercase()
@@ -84,7 +73,7 @@ object CatalogCsvParser {
             var name = aligned[idxName].trim()
             var set = aligned[idxSet].trim()
             val typeRaw = aligned[idxType].trim()
-            val type = canonicalType(typeRaw)
+            val type = VariantType.fromString(typeRaw)
             // Extract set code from name if present at end (e.g., 'An Offer You Can't Refuse SLP')
             var setCodeFromName: String? = null
             val setCodeMatch = Regex(" ([A-Z0-9]{2,5})$").find(name)
@@ -114,7 +103,7 @@ object CatalogCsvParser {
             if (sku.isBlank() || name.isBlank() || set.isBlank()) return@forEach
             val dollarsFromCell = if (idxPrice >= 0 && idxPrice < aligned.size) parsePriceCell(aligned[idxPrice]) else 0.0
             val priceDollars = if (dollarsFromCell > 0.0) dollarsFromCell else {
-                val key = type.lowercase()
+                val key = type.displayName.lowercase()
                 mapLower[key] ?: defaultsLower[key] ?: 0.0
             }
             val priceCents = (priceDollars * 100.0).roundToInt()
