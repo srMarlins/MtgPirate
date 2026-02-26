@@ -2,9 +2,9 @@ package state
 
 import catalog.BootlegMageCatalogSource
 import catalog.CatalogSource
+import catalog.ScryfallApi
 import catalog.ScryfallImageEnricher
 import catalog.ScryfallPricingSource
-import catalog.ScryfallApi
 import database.CatalogStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -74,12 +74,13 @@ class CatalogUseCase(
      * can be instantiated directly. UseaCatalogSource uses the existing
      * platformServices.fetchCatalogFromRemote() path and is handled separately.
      */
-    val sourceRegistry = CatalogSourceRegistry(
+    private val sourceRegistry = CatalogSourceRegistry(
         listOf(
             BootlegMageCatalogSource(),
             ScryfallPricingSource(ScryfallApi),
         )
     )
+
     /**
      * Check how many variants are currently stored in the database.
      */

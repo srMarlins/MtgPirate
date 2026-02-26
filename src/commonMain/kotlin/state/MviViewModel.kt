@@ -537,11 +537,16 @@ class MviViewModel(
                 return@launch
             }
 
+            // Verify catalog contains multi-seller data before proceeding
+            val sellerGroups = catalog.variants.groupBy { it.seller }
+            if (sellerGroups.size < 2) {
+                log("Catalog only contains ${sellerGroups.size} seller(s) -- load all catalogs first", "WARNING")
+            }
+
             _localState.update { it.copy(isMatching = true) }
             try {
                 // Build per-seller catalogs from all variants in the database
-                val perSellerCatalogs = catalog.variants
-                    .groupBy { it.seller }
+                val perSellerCatalogs = sellerGroups
                     .mapValues { (_, variants) -> Catalog(variants) }
 
                 val config = MultiCatalogMatcher.Config(
@@ -559,6 +564,7 @@ class MviViewModel(
                 _localState.update {
                     it.copy(
                         multiMatches = multiMatches,
+                        shoppingPlan = null, // invalidate stale plan
                         isMatching = false,
                         showResultsWindow = true,
                     )
@@ -573,7 +579,7 @@ class MviViewModel(
     }
 
     private fun optimizeShoppingPlan() {
-        scope.launch(Dispatchers.IO) {
+        scope.launch(Dispatchers.Default) {
             val multiMatches = _localState.value.multiMatches
             if (multiMatches.isEmpty()) {
                 log("No multi-matches available for optimization", "WARNING")
@@ -607,7 +613,7 @@ class MviViewModel(
                 val updated = match.copy(bestOption = newBest)
                 val newMatches = state.multiMatches.toMutableList()
                 newMatches[matchIndex] = updated
-                state.copy(multiMatches = newMatches)
+                state.copy(multiMatches = newMatches, shoppingPlan = null)
             }
             log("Overrode seller for match at index $matchIndex to ${seller.displayName}", "INFO")
         }
