@@ -12,6 +12,7 @@ import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import model.Catalog
+import model.VariantType
 
 /**
  * Multiplatform remote catalog data source implemented with Ktor.
