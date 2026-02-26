@@ -21,12 +21,16 @@ object Matcher {
     private fun matchEntry(entry: DeckEntry, catalog: Catalog, config: MatchConfig): DeckEntryMatch {
         if (!entry.include) return DeckEntryMatch(entry, MatchStatus.UNRESOLVED, null, emptyList(), "Excluded")
         val normalized = NameNormalizer.normalize(entry.cardName)
-        // If user supplied a set code hint, restrict candidates early by set
-        val initialPool = if (entry.setCodeHint != null) {
-            catalog.variants.filter { it.setCode.equals(entry.setCodeHint, true) }
-        } else catalog.variants
 
-        val exactNameMatches = initialPool.filter { it.nameOriginal == entry.cardName }
+        // O(1) lookup in the index (keyed by nameNormalized) to get candidates,
+        // then apply set code hint filter. This replaces three O(N) linear scans.
+        val indexHits = catalog.indexByName[normalized].orEmpty()
+        val poolFromIndex = if (entry.setCodeHint != null) {
+            indexHits.filter { it.setCode.equals(entry.setCodeHint, true) }
+        } else indexHits
+
+        // Pass 1 – Exact name match (nameOriginal == cardName)
+        val exactNameMatches = poolFromIndex.filter { it.nameOriginal == entry.cardName }
         if (exactNameMatches.size == 1) {
             return DeckEntryMatch(entry, MatchStatus.AUTO_MATCHED, exactNameMatches.first())
         }
@@ -36,24 +40,33 @@ object Matcher {
                 DeckEntryMatch(entry, MatchStatus.AUTO_MATCHED, selected, exactNameMatches.map { MatchCandidate(it, 0, "exact") })
             } else DeckEntryMatch(entry, MatchStatus.AMBIGUOUS, null, exactNameMatches.map { MatchCandidate(it, 0, "exact") })
         }
-        // Case-insensitive
-        val ci = initialPool.filter { it.nameOriginal.equals(entry.cardName, true) }
+
+        // Pass 2 – Case-insensitive match (nameOriginal equalsIgnoreCase cardName)
+        val ci = poolFromIndex.filter { it.nameOriginal.equals(entry.cardName, true) }
         if (ci.size == 1) return DeckEntryMatch(entry, MatchStatus.AUTO_MATCHED, ci.first())
         if (ci.size > 1) {
             val selected = selectByPriority(ci, config, entry)
             return if (selected != null) DeckEntryMatch(entry, MatchStatus.AUTO_MATCHED, selected, ci.map { MatchCandidate(it, 0, "ci") })
             else DeckEntryMatch(entry, MatchStatus.AMBIGUOUS, null, ci.map { MatchCandidate(it, 0, "ci") })
         }
-        // Normalized
-        val norm = initialPool.filter { it.nameNormalized == normalized }
+
+        // Pass 3 – Normalized match (nameNormalized == normalized)
+        // poolFromIndex already contains only variants whose nameNormalized == normalized,
+        // so all remaining entries are normalized matches.
+        val norm = poolFromIndex
         if (norm.size == 1) return DeckEntryMatch(entry, MatchStatus.AUTO_MATCHED, norm.first())
         if (norm.size > 1) {
             val selected = selectByPriority(norm, config, entry)
             return if (selected != null) DeckEntryMatch(entry, MatchStatus.AUTO_MATCHED, selected, norm.map { MatchCandidate(it, 0, "normalized") })
             else DeckEntryMatch(entry, MatchStatus.AMBIGUOUS, null, norm.map { MatchCandidate(it, 0, "normalized") })
         }
+
+        // Pass 4 – Fuzzy matching (linear scan required for Levenshtein distance)
         if (config.fuzzyEnabled) {
-            val fuzzyCandidates = fuzzy(normalized, Catalog(initialPool))
+            val fuzzyPool = if (entry.setCodeHint != null) {
+                catalog.variants.filter { it.setCode.equals(entry.setCodeHint, true) }
+            } else catalog.variants
+            val fuzzyCandidates = fuzzy(normalized, Catalog(fuzzyPool))
             return if (fuzzyCandidates.isEmpty()) DeckEntryMatch(entry, MatchStatus.NOT_FOUND)
             else DeckEntryMatch(entry, MatchStatus.AMBIGUOUS, null, fuzzyCandidates)
         }
