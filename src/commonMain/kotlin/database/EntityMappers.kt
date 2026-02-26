@@ -1,6 +1,7 @@
 package database
 
 import model.SavedImport
+import model.Seller
 import model.VariantType
 
 /**
@@ -31,7 +32,9 @@ fun CardVariantEntity.toDomain(): model.CardVariant {
         variantType = VariantType.fromString(this.variantType),
         priceInCents = this.priceInCents.toInt(),
         collectorNumber = this.collectorNumber,
-        imageUrl = this.imageUrl
+        imageUrl = this.imageUrl,
+        seller = Seller.valueOf(this.seller),
+        purchaseUri = this.purchaseUri,
     )
 }
 

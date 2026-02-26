@@ -7,20 +7,24 @@ CREATE TABLE CardVariantEntity (
     variantType TEXT NOT NULL,
     priceInCents INTEGER NOT NULL,
     collectorNumber TEXT,
-    imageUrl TEXT
+    imageUrl TEXT,
+    seller TEXT NOT NULL DEFAULT 'USEA',
+    purchaseUri TEXT
 );
 
 CREATE INDEX idx_nameNormalized ON CardVariantEntity(nameNormalized);
 
 CREATE UNIQUE INDEX idx_variant_sku ON CardVariantEntity(sku);
 
+CREATE INDEX idx_seller ON CardVariantEntity(seller);
+
 selectAll:
 SELECT * FROM CardVariantEntity;
 
 insertVariant:
 INSERT INTO CardVariantEntity (
-    nameOriginal, nameNormalized, setCode, sku, variantType, priceInCents, collectorNumber, imageUrl
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+    nameOriginal, nameNormalized, setCode, sku, variantType, priceInCents, collectorNumber, imageUrl, seller, purchaseUri
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 getByName:
 SELECT * FROM CardVariantEntity WHERE nameNormalized = ?;
@@ -33,3 +37,9 @@ SELECT COUNT(*) FROM CardVariantEntity;
 
 updateImageUrl:
 UPDATE CardVariantEntity SET imageUrl = ? WHERE sku = ?;
+
+selectBySeller:
+SELECT * FROM CardVariantEntity WHERE seller = ?;
+
+deleteAllBySeller:
+DELETE FROM CardVariantEntity WHERE seller = ?;

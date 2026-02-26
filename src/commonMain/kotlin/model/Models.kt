@@ -19,6 +19,12 @@ enum class VariantType(val displayName: String, val defaultPriceInCents: Int) {
     }
 }
 
+enum class Seller(val displayName: String, val isProxy: Boolean) {
+    USEA("USEA MTG Proxy", true),
+    BOOTLEG_MAGE("Bootleg Mage", true),
+    TCGPLAYER("TCGPlayer", false);
+}
+
 @Serializable
 data class CardVariant(
     val nameOriginal: String,
@@ -28,7 +34,9 @@ data class CardVariant(
     val variantType: VariantType,
     val priceInCents: Int,
     val collectorNumber: String? = null,
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
+    val seller: Seller = Seller.USEA,
+    val purchaseUri: String? = null,
 ) {
     val uniqueIdentifier: String get() = sku
 }
@@ -112,3 +120,39 @@ data class SavedImport(
 ) {
     val uniqueIdentifier: String get() = id
 }
+
+data class MatchOption(
+    val variant: CardVariant,
+    val seller: Seller,
+    val priceCents: Int,
+    val isProxy: Boolean,
+    val matchScore: Int,
+)
+
+data class MultiMatch(
+    val deckEntry: DeckEntry,
+    val bestOption: MatchOption?,
+    val alternatives: List<MatchOption>,
+    val realCardFallback: MatchOption?,
+)
+
+data class OrderItem(
+    val variant: CardVariant,
+    val qty: Int,
+    val isProxy: Boolean,
+)
+
+data class SellerOrder(
+    val seller: Seller,
+    val items: List<OrderItem>,
+    val subtotalCents: Int,
+    val discountPercent: Int,
+    val shippingCents: Int,
+    val totalCents: Int,
+)
+
+data class ShoppingPlan(
+    val orders: List<SellerOrder>,
+    val totalPriceCents: Int,
+    val savingsVsSingleSeller: Int,
+)
