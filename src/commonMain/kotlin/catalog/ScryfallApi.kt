@@ -7,11 +7,10 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.*
 
 /**
  * Scryfall API client for fetching card images.
@@ -72,6 +71,19 @@ object ScryfallApi {
     )
 
     @Serializable
+    data class ScryfallPrices(
+        val usd: String? = null,
+        @SerialName("usd_foil") val usdFoil: String? = null,
+    )
+
+    @Serializable
+    data class ScryfallPurchaseUris(
+        val tcgplayer: String? = null,
+        val cardmarket: String? = null,
+        val cardhoarder: String? = null,
+    )
+
+    @Serializable
     data class ScryfallCard(
         val id: String,
         val name: String,
@@ -82,6 +94,9 @@ object ScryfallApi {
         val imageUris: ImageUris? = null,
         @SerialName("card_faces")
         val cardFaces: List<CardFace>? = null,
+        val prices: ScryfallPrices? = null,
+        @SerialName("purchase_uris")
+        val purchaseUris: ScryfallPurchaseUris? = null,
         val lang: String? = "en"
     )
 
@@ -149,6 +164,48 @@ object ScryfallApi {
         } catch (e: Exception) {
             null
         }
+    }
+
+    /**
+     * Fetch multiple cards from Scryfall using their identifiers.
+     * Supports names, set/collector number, or Scryfall IDs.
+     * Max 75 identifiers per request as per Scryfall API.
+     *
+     * @param identifiers List of identifier maps (e.g., mapOf("name" to "Lightning Bolt"))
+     * @return List of Scryfall cards found
+     */
+    suspend fun getCollection(identifiers: List<Map<String, String>>): List<ScryfallCard> {
+        val allCards = mutableListOf<ScryfallCard>()
+        val client = getClient()
+
+        identifiers.chunked(75).forEach { chunk ->
+            try {
+                delay(75) // Respect Scryfall rate limit (50-100ms)
+                val response = client.post("$BASE_URL/cards/collection") {
+                    contentType(ContentType.Application.Json)
+                    setBody(buildJsonObject {
+                        putJsonArray("identifiers") {
+                            chunk.forEach { id ->
+                                addJsonObject {
+                                    id.forEach { (k, v) -> put(k, v) }
+                                }
+                            }
+                        }
+                    })
+                }
+
+                if (response.status.isSuccess()) {
+                    val body = json.parseToJsonElement(response.bodyAsText()).jsonObject
+                    val data = body["data"]?.jsonArray
+                    data?.forEach {
+                        allCards.add(json.decodeFromJsonElement(ScryfallCard.serializer(), it))
+                    }
+                }
+            } catch (e: Exception) {
+                // Log or handle error if needed
+            }
+        }
+        return allCards
     }
 
     /**
