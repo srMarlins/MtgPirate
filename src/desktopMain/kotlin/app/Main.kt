@@ -692,6 +692,8 @@ fun main() = application {
                                     // Step 3: Results (Wizard End)
                                     ResultsScreen(
                                         matches = state.matches,
+                                        multiMatches = state.multiMatches,
+                                        availableSellers = state.availableSellers,
                                         onResolve = { idx ->
                                             viewModel.processIntent(ViewIntent.OpenResolve(idx))
                                             navController.navigate("resolve") {
@@ -703,6 +705,9 @@ fun main() = application {
                                             navController.navigate("resolve") {
                                                 launchSingleTop = true
                                             }
+                                        },
+                                        onOverrideSeller = { index, seller ->
+                                            viewModel.processIntent(ViewIntent.OverrideCardSeller(index, seller))
                                         },
                                         onClose = { navController.navigateUp() },
                                         onExport = {
