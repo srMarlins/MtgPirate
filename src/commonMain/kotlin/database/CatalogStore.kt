@@ -56,6 +56,6 @@ class CatalogStore(private val database: Database) {
      * Deletes all existing variants for the seller, then inserts the new ones.
      */
     suspend fun replaceCatalogForSeller(seller: Seller, variants: List<CardVariant>) {
-        database.replaceCatalogForSellerTransaction(seller.name, variants)
+        database.replaceCatalogForSellerTransaction(seller.name, variants.map { it.copy(seller = seller) })
     }
 }

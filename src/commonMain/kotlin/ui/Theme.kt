@@ -68,7 +68,7 @@ val PixelYellow = Color(0xFFFFEB3B)
 // Seller Colors
 val SellerUsea = Color(0xFFB794F6)        // Purple — proxy seller
 val SellerBootlegMage = Color(0xFF63B3ED)  // Blue — proxy seller
-val SellerTcgplayer = Color(0xFFFBD38D)    // Gold — real card marketplace
+val SellerTcgPlayer = Color(0xFFFBD38D)    // Gold — real card marketplace
 
 // Brand / UI Colors
 val Slate100 = Color(0xFFF1F5F9)
