@@ -5,6 +5,8 @@ CREATE TABLE LogEntryEntity (
     timestamp TEXT NOT NULL
 );
 
+CREATE INDEX idx_log_timestamp ON LogEntryEntity(timestamp);
+
 selectAll:
 SELECT * FROM LogEntryEntity;
 

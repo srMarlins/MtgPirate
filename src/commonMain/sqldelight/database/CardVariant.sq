@@ -12,6 +12,8 @@ CREATE TABLE CardVariantEntity (
 
 CREATE INDEX idx_nameNormalized ON CardVariantEntity(nameNormalized);
 
+CREATE UNIQUE INDEX idx_variant_sku ON CardVariantEntity(sku);
+
 selectAll:
 SELECT * FROM CardVariantEntity;
 
