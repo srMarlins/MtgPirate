@@ -61,16 +61,15 @@ class KtorRemoteCatalogDataSource(private val client: HttpClient? = null) : Cata
             "Holo" to 300,
             "Foil" to 350
         )
-        var changed = false
         val updated = catalog.variants.map { v ->
+            val t = canonicalType(v.variantType)
             if (v.priceInCents <= 0) {
-                changed = true
-                val t = canonicalType(v.variantType)
                 v.copy(priceInCents = centsMap[t] ?: 0, variantType = t)
-            } else v.copy(variantType = canonicalType(v.variantType))
+            } else {
+                v.copy(variantType = t)
+            }
         }
-        val fixed = Catalog(updated)
-        return if (changed) fixed else fixed
+        return Catalog(updated)
     }
 
     private fun canonicalType(raw: String): String {

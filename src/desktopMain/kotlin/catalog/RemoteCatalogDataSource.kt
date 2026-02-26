@@ -41,17 +41,15 @@ class RemoteCatalogDataSource : CatalogDataSource {
             "Holo" to 300,
             "Foil" to 350
         )
-        var changed = false
         val updated = catalog.variants.map { v ->
+            val t = canonicalType(v.variantType)
             if (v.priceInCents <= 0) {
-                changed = true
-                val t = canonicalType(v.variantType)
                 v.copy(priceInCents = centsMap[t] ?: 0, variantType = t)
-            } else v.copy(variantType = canonicalType(v.variantType))
+            } else {
+                v.copy(variantType = t)
+            }
         }
-        val fixed = Catalog(updated)
-        // Keep same structure
-        return if (changed) fixed else fixed
+        return Catalog(updated)
     }
 
     override suspend fun load(forceRefresh: Boolean, log: (String) -> Unit): Catalog? = withContext(Dispatchers.IO) {
