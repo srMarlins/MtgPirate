@@ -67,6 +67,7 @@ import ui.PixelToggle
 import ui.ScanlineEffect
 import ui.pixelBorder
 import ui.sellerColor
+import util.encodeUrlParameter
 import util.formatPrice
 
 /**
@@ -1117,7 +1118,7 @@ private fun MobileSellerActionButtons(
                         platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
                         val exportText = formatForExport(Seller.USEA, order.items)
                         val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
-                        val mailtoUrl = "mailto:?subject=$subject&body=$exportText"
+                        val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&body=${encodeUrlParameter(exportText)}"
                         onOpenUrl(mailtoUrl)
                     },
                     variant = PixelButtonVariant.SECONDARY,
