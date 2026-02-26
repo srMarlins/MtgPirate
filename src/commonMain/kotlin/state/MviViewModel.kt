@@ -155,7 +155,6 @@ class MviViewModel(
             is ViewIntent.CompleteWizardStep -> completeWizardStep(intent.step)
             ViewIntent.ToggleTheme -> toggleTheme()
             is ViewIntent.SetShowSavedImportsWindow -> setShowSavedImportsWindow(intent.show)
-            ViewIntent.LoadSavedImports -> loadSavedImports()
             is ViewIntent.SaveCurrentImport -> saveCurrentImport()
             is ViewIntent.LoadSavedImport -> loadSavedImport(intent.importId)
             is ViewIntent.DeleteSavedImport -> deleteSavedImport(intent.importId)
@@ -474,11 +473,6 @@ class MviViewModel(
         _localState.update { it.copy(showSavedImportsWindow = show) }
     }
 
-    private fun loadSavedImports() {
-        // Saved imports are automatically loaded from database via Flow
-        log("Saved imports loaded from database", "INFO")
-    }
-
     private fun saveCurrentImport() {
         scope.launch {
             val state = _localState.value
@@ -723,7 +717,6 @@ sealed class ViewIntent {
     data class CompleteWizardStep(val step: Int) : ViewIntent()
     data object ToggleTheme : ViewIntent()
     data class SetShowSavedImportsWindow(val show: Boolean) : ViewIntent()
-    data object LoadSavedImports : ViewIntent()
     data object SaveCurrentImport : ViewIntent()
     data class LoadSavedImport(val importId: String) : ViewIntent()
     data class DeleteSavedImport(val importId: String) : ViewIntent()

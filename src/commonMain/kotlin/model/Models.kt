@@ -17,12 +17,7 @@ data class CardVariant(
 @Serializable
 data class Catalog(
     val variants: List<CardVariant>
-) {
-    // Simple index built on demand
-    val indexByName: Map<String, List<CardVariant>> by lazy {
-        variants.groupBy { it.nameNormalized }
-    }
-}
+)
 
 enum class Section { MAIN, SIDEBOARD, COMMANDER }
 
