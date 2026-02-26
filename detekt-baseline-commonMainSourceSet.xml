@@ -313,6 +313,11 @@
     <ID>MaxLineLength:ResultsScreen.kt:color = if (ambiguous &gt; 0) PixelOrange else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)</ID>
     <ID>MaxLineLength:ResultsScreen.kt:if</ID>
     <ID>MaxLineLength:ResultsScreen.kt:if (filterMode == 0) MaterialTheme.colors.primary.copy(alpha = 0.2f) else MaterialTheme.colors.surface</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:if (sortOption == SortOption.NAME_DESC) Text(" \u25bc", style = MaterialTheme.typography.caption)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:if (sortOption == SortOption.PRICE_ASC) Text(" \u25b2", style = MaterialTheme.typography.caption)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:if (sortOption == SortOption.PRICE_DESC) Text(" \u25bc", style = MaterialTheme.typography.caption)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:if (sortOption == SortOption.STATUS_ASC) Text(" \u25b2", style = MaterialTheme.typography.caption)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:if (sortOption == SortOption.STATUS_DESC) Text(" \u25bc", style = MaterialTheme.typography.caption)</ID>
     <ID>MaxLineLength:SavedImportQueries.kt:SavedImportQueries$)</ID>
     <ID>MaxLineLength:SavedImportQueries.kt:SavedImportQueries.GetByIdQuery$override</ID>
     <ID>MaxLineLength:ScryfallImageEnricher.kt:ScryfallImageEnricher$log?.invoke("Fetching image for ${variant.nameOriginal} (${variant.setCode} #${variant.collectorNumber})")</ID>
@@ -359,8 +364,6 @@
     <ID>WildcardImport:PreferencesWizardScreen.kt:import androidx.compose.runtime.*</ID>
     <ID>WildcardImport:ResolveScreen.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:ResolveScreen.kt:import androidx.compose.material.*</ID>
-    <ID>WildcardImport:ResultsScreen.kt:import androidx.compose.foundation.layout.*</ID>
-    <ID>WildcardImport:ResultsScreen.kt:import androidx.compose.runtime.*</ID>
     <ID>WildcardImport:ScryfallApi.kt:import io.ktor.client.*</ID>
     <ID>WildcardImport:ScryfallApi.kt:import io.ktor.client.plugins.contentnegotiation.*</ID>
     <ID>WildcardImport:ScryfallApi.kt:import io.ktor.client.plugins.logging.*</ID>
