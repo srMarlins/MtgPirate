@@ -11,14 +11,19 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.*
 import match.Matcher
+import match.MultiCatalogMatcher
 import model.CardVariant
 import model.Catalog
 import model.DeckEntry
 import model.DeckEntryMatch
 import model.LogEntry
 import model.MatchStatus
+import model.MultiMatch
 import model.Preferences
 import model.SavedImport
+import model.Seller
+import model.ShoppingPlan
+import optimizer.ShoppingOptimizer
 import kotlin.time.Clock
 
 /**
@@ -103,7 +108,11 @@ class MviViewModel(
                     matchedCount = localState.matchedCount,
                     unmatchedCount = localState.unmatchedCount,
                     ambiguousCount = localState.ambiguousCount,
-                    totalPriceCents = localState.totalPriceCents
+                    totalPriceCents = localState.totalPriceCents,
+                    multiMatches = localState.multiMatches,
+                    shoppingPlan = localState.shoppingPlan,
+                    availableSellers = localState.availableSellers,
+                    loadingMultiCatalogs = localState.loadingMultiCatalogs
                 )
             }.onEach { newState ->
                 _viewState.update { newState }
@@ -149,6 +158,10 @@ class MviViewModel(
             is ViewIntent.LoadSavedImport -> loadSavedImport(intent.importId)
             is ViewIntent.DeleteSavedImport -> deleteSavedImport(intent.importId)
             is ViewIntent.EnrichVariantWithImage -> enrichVariantWithImage(intent.variant)
+            ViewIntent.LoadAllCatalogs -> loadAllCatalogs()
+            ViewIntent.RunMultiMatch -> runMultiMatch()
+            ViewIntent.OptimizeShoppingPlan -> optimizeShoppingPlan()
+            is ViewIntent.OverrideCardSeller -> overrideCardSeller(intent.matchIndex, intent.seller)
         }
     }
 
@@ -491,6 +504,116 @@ class MviViewModel(
     }
 
     // -----------------------------------------------------------------------
+    // Multi-catalog intent handlers
+    // -----------------------------------------------------------------------
+
+    private fun loadAllCatalogs() {
+        scope.launch(Dispatchers.IO) {
+            _localState.update { it.copy(loadingMultiCatalogs = true) }
+            try {
+                val loadedSellers = catalogUseCase.loadAllCatalogs { msg, level -> log(msg, level) }
+                _localState.update { it.copy(availableSellers = loadedSellers) }
+            } catch (e: Exception) {
+                log("Failed to load multi-catalogs: ${e.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to load catalogs from sellers"))
+            } finally {
+                _localState.update { it.copy(loadingMultiCatalogs = false) }
+            }
+        }
+    }
+
+    private fun runMultiMatch() {
+        scope.launch(Dispatchers.IO) {
+            val state = _localState.value
+            val catalog = _viewState.value.catalog
+            val preferences = _viewState.value.preferences
+
+            if (catalog == null || catalog.variants.isEmpty()) {
+                log("No catalog available for multi-matching", "ERROR")
+                return@launch
+            }
+            if (state.deckEntries.isEmpty()) {
+                log("No deck entries to multi-match", "WARNING")
+                return@launch
+            }
+
+            _localState.update { it.copy(isMatching = true) }
+            try {
+                // Build per-seller catalogs from all variants in the database
+                val perSellerCatalogs = catalog.variants
+                    .groupBy { it.seller }
+                    .mapValues { (_, variants) -> Catalog(variants) }
+
+                val config = MultiCatalogMatcher.Config(
+                    variantPriority = preferences.variantPriority,
+                    setPriority = preferences.setPriority,
+                    fuzzyEnabled = preferences.fuzzyEnabled,
+                )
+
+                val multiMatches = matchingUseCase.matchEntriesMulti(
+                    state.deckEntries,
+                    perSellerCatalogs,
+                    config
+                )
+
+                _localState.update {
+                    it.copy(
+                        multiMatches = multiMatches,
+                        isMatching = false,
+                        showResultsWindow = true,
+                    )
+                }
+                log("Multi-matched ${multiMatches.size} entries across ${perSellerCatalogs.size} seller(s)", "INFO")
+            } catch (e: Exception) {
+                log("Multi-match failed: ${e.message}", "ERROR")
+                _localState.update { it.copy(isMatching = false) }
+                _viewEffects.emit(ViewEffect.ShowError("Multi-catalog matching failed"))
+            }
+        }
+    }
+
+    private fun optimizeShoppingPlan() {
+        scope.launch(Dispatchers.IO) {
+            val multiMatches = _localState.value.multiMatches
+            if (multiMatches.isEmpty()) {
+                log("No multi-matches available for optimization", "WARNING")
+                return@launch
+            }
+
+            try {
+                val plan = ShoppingOptimizer.optimize(multiMatches)
+                _localState.update { it.copy(shoppingPlan = plan) }
+                log(
+                    "Shopping plan optimized: ${plan.orders.size} seller(s), " +
+                        "total ${plan.totalPriceCents} cents, savings ${plan.savingsVsSingleSeller} cents",
+                    "INFO"
+                )
+            } catch (e: Exception) {
+                log("Shopping plan optimization failed: ${e.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to optimize shopping plan"))
+            }
+        }
+    }
+
+    private fun overrideCardSeller(matchIndex: Int, seller: Seller) {
+        scope.launch {
+            _localState.update { state ->
+                if (matchIndex !in state.multiMatches.indices) return@update state
+
+                val match = state.multiMatches[matchIndex]
+                val newBest = match.alternatives.firstOrNull { it.seller == seller }
+                    ?: return@update state
+
+                val updated = match.copy(bestOption = newBest)
+                val newMatches = state.multiMatches.toMutableList()
+                newMatches[matchIndex] = updated
+                state.copy(multiMatches = newMatches)
+            }
+            log("Overrode seller for match at index $matchIndex to ${seller.displayName}", "INFO")
+        }
+    }
+
+    // -----------------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------------
 
@@ -541,7 +664,12 @@ data class ViewState(
     val matchedCount: Int = 0,
     val unmatchedCount: Int = 0,
     val ambiguousCount: Int = 0,
-    val totalPriceCents: Int = 0
+    val totalPriceCents: Int = 0,
+    // Multi-catalog matching and shopping optimization
+    val multiMatches: List<MultiMatch> = emptyList(),
+    val shoppingPlan: ShoppingPlan? = null,
+    val availableSellers: List<Seller> = emptyList(),
+    val loadingMultiCatalogs: Boolean = false
 )
 
 /**
@@ -566,7 +694,12 @@ private data class LocalUiState(
     val matchedCount: Int = 0,
     val unmatchedCount: Int = 0,
     val ambiguousCount: Int = 0,
-    val totalPriceCents: Int = 0
+    val totalPriceCents: Int = 0,
+    // Multi-catalog matching and shopping optimization
+    val multiMatches: List<MultiMatch> = emptyList(),
+    val shoppingPlan: ShoppingPlan? = null,
+    val availableSellers: List<Seller> = emptyList(),
+    val loadingMultiCatalogs: Boolean = false
 )
 
 /**
@@ -606,6 +739,12 @@ sealed class ViewIntent {
     data class LoadSavedImport(val importId: String) : ViewIntent()
     data class DeleteSavedImport(val importId: String) : ViewIntent()
     data class EnrichVariantWithImage(val variant: CardVariant) : ViewIntent()
+
+    // Multi-catalog and shopping optimization intents
+    data object LoadAllCatalogs : ViewIntent()
+    data object RunMultiMatch : ViewIntent()
+    data object OptimizeShoppingPlan : ViewIntent()
+    data class OverrideCardSeller(val matchIndex: Int, val seller: Seller) : ViewIntent()
 }
 
 /**

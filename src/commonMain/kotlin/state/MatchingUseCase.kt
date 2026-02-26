@@ -4,10 +4,13 @@ import deck.DecklistParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import match.Matcher
+import match.MultiCatalogMatcher
 import model.Catalog
 import model.DeckEntry
 import model.DeckEntryMatch
 import model.MatchStatus
+import model.MultiMatch
+import model.Seller
 
 /**
  * Use case for deck parsing and card matching.
@@ -37,6 +40,25 @@ class MatchingUseCase {
         config: Matcher.MatchConfig
     ): List<DeckEntryMatch> = withContext(Dispatchers.Default) {
         Matcher.matchAll(entries, catalog, config)
+    }
+
+    /**
+     * Match deck entries against catalogs from multiple sellers.
+     *
+     * Builds per-seller [Catalog] objects from the full catalog (all variants
+     * grouped by their [Seller] tag) and delegates to [MultiCatalogMatcher].
+     *
+     * @param entries parsed deck entries to match
+     * @param catalogs per-seller catalogs to match against
+     * @param config multi-catalog matching configuration
+     * @return list of [MultiMatch] results with options from all sellers
+     */
+    suspend fun matchEntriesMulti(
+        entries: List<DeckEntry>,
+        catalogs: Map<Seller, Catalog>,
+        config: MultiCatalogMatcher.Config
+    ): List<MultiMatch> = withContext(Dispatchers.Default) {
+        MultiCatalogMatcher.match(entries, catalogs, config)
     }
 
     /**

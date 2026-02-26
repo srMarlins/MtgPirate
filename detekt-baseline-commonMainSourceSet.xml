@@ -249,6 +249,7 @@
     <ID>MaxLineLength:CatalogScreen.kt:Text("SKU", modifier = Modifier.weight(0.18f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:CatalogScreen.kt:Text("TYPE", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:CatalogScreen.kt:Text(v.variantType.displayName, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:CatalogUseCase.kt:CatalogUseCase$log("Loaded catalogs from ${loadedSellers.size} seller(s): ${loadedSellers.joinToString { it.displayName }}", "INFO")</ID>
     <ID>MaxLineLength:DecklistParser.kt:DecklistParser$// Heuristic: if we saw a blank line after sideboard marker and now a new card line, treat as commander section</ID>
     <ID>MaxLineLength:DecklistParser.kt:DecklistParser$// If remainder still contains an embedded " Set " fragment (without colon) at end due to partial copy, attempt to remove</ID>
     <ID>MaxLineLength:ExportScreen.kt:"Normal (15-40 days) — " + if (normalShippingCost == 0) "Free" else formatPrice(normalShippingCost)</ID>
@@ -323,6 +324,7 @@
     <ID>SwallowedException:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$e: Exception</ID>
     <ID>SwallowedException:ScryfallApi.kt:ScryfallApi$e: Exception</ID>
     <ID>TooGenericExceptionCaught:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogSourceRegistry$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ImportExportUseCase.kt:ImportExportUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$e: Exception</ID>
