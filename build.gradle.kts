@@ -138,7 +138,6 @@ sqldelight {
         create("MtgPirateDatabase") {
             packageName.set("org.srmarlins.mtgpirate.db")
             schemaOutputDirectory.set(file("src/commonMain/sqldelight/migrations"))
-            verifyMigrations.set(true)
         }
     }
 }

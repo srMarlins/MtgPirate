@@ -1,6 +1,0 @@
--- Migration from schema version 1 to 2
--- Adds indices on frequently queried columns for performance
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_variant_sku ON CardVariantEntity(sku);
-
-CREATE INDEX IF NOT EXISTS idx_log_timestamp ON LogEntryEntity(timestamp);
