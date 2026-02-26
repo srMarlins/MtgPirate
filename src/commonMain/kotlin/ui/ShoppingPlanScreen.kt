@@ -58,7 +58,7 @@ fun sellerColor(seller: Seller): Color = when (seller) {
  * Duplicates the logic from CatalogSource implementations so the UI layer
  * can generate export text without needing a CatalogSource reference.
  */
-private fun formatForExport(seller: Seller, items: List<OrderItem>): String = when (seller) {
+internal fun formatForExport(seller: Seller, items: List<OrderItem>): String = when (seller) {
     Seller.USEA -> {
         // CSV format: "Card Name,Set,SKU,Type,Qty,Price"
         val header = "Card Name,Set,SKU,Type,Qty,Price"

@@ -45,6 +45,7 @@ import ui.AnimatedLoadingDots
 import ui.BlinkingCursor
 import ui.CatalogScreen
 import ui.CompactPixelImagePreview
+import ui.formatForExport
 import ui.HybridVariantPriorityItem
 import ui.InlineLoadingCard
 import ui.LazyListScrollIndicators
@@ -689,27 +690,6 @@ fun IosResolveScreen(
 private const val TCGPLAYER_MASS_ENTRY_URL = "https://www.tcgplayer.com/massentry?productline=Magic"
 private const val BOOTLEG_MAGE_DECK_IMPORT_URL = "https://bootlegmage.com/deck-import/"
 
-/**
- * Format order items for export to a given seller.
- */
-private fun formatSellerExport(seller: Seller, items: List<OrderItem>): String = when (seller) {
-    Seller.USEA -> {
-        val header = "Card Name,Set,SKU,Type,Qty,Price"
-        val rows = items.joinToString("\n") { item ->
-            val v = item.variant
-            "${v.nameOriginal},${v.setCode},${v.sku},${v.variantType.displayName},${item.qty},${formatPrice(v.priceInCents)}"
-        }
-        "$header\n$rows"
-    }
-    Seller.BOOTLEG_MAGE -> {
-        items.joinToString("\n") { "${it.qty} ${it.variant.nameOriginal}" }
-    }
-    Seller.TCGPLAYER -> {
-        items.joinToString("\n") {
-            "${it.qty} ${it.variant.nameOriginal} [${it.variant.setCode}]"
-        }
-    }
-}
 
 /**
  * iOS Shopping Plan Screen - Step 4 of the wizard.
@@ -1125,7 +1105,7 @@ private fun MobileSellerActionButtons(
                     text = "Copy CSV",
                     onClick = {
                         platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
-                        val exportText = formatSellerExport(Seller.USEA, order.items)
+                        val exportText = formatForExport(Seller.USEA, order.items)
                         onCopyToClipboard(exportText)
                     },
                     variant = PixelButtonVariant.PRIMARY,
@@ -1134,7 +1114,8 @@ private fun MobileSellerActionButtons(
                 PixelButton(
                     text = "Email",
                     onClick = {
-                        val exportText = formatSellerExport(Seller.USEA, order.items)
+                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        val exportText = formatForExport(Seller.USEA, order.items)
                         val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
                         val mailtoUrl = "mailto:?subject=$subject&body=$exportText"
                         onOpenUrl(mailtoUrl)
@@ -1168,7 +1149,7 @@ private fun MobileSellerActionButtons(
                     text = "Copy List",
                     onClick = {
                         platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
-                        val exportText = formatSellerExport(Seller.TCGPLAYER, order.items)
+                        val exportText = formatForExport(Seller.TCGPLAYER, order.items)
                         onCopyToClipboard(exportText)
                     },
                     variant = PixelButtonVariant.SECONDARY,
