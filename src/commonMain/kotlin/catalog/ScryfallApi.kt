@@ -82,7 +82,22 @@ object ScryfallApi {
         val imageUris: ImageUris? = null,
         @SerialName("card_faces")
         val cardFaces: List<CardFace>? = null,
-        val lang: String? = "en"
+        val lang: String? = "en",
+        val prices: ScryfallPrices? = null,
+        @SerialName("purchase_uris") val purchaseUris: ScryfallPurchaseUris? = null,
+    )
+
+    @Serializable
+    data class ScryfallPrices(
+        val usd: String? = null,
+        @SerialName("usd_foil") val usdFoil: String? = null,
+    )
+
+    @Serializable
+    data class ScryfallPurchaseUris(
+        val tcgplayer: String? = null,
+        val cardmarket: String? = null,
+        val cardhoarder: String? = null,
     )
 
     /**
