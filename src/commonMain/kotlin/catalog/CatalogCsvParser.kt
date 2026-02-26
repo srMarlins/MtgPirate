@@ -1,5 +1,6 @@
 package catalog
 
+import kotlin.math.roundToInt
 import match.NameNormalizer
 import model.CardVariant
 import model.Catalog
@@ -116,7 +117,7 @@ object CatalogCsvParser {
                 val key = type.lowercase()
                 mapLower[key] ?: defaultsLower[key] ?: 0.0
             }
-            val priceCents = (priceDollars * 100.0).toInt()
+            val priceCents = (priceDollars * 100.0).roundToInt()
             variants += CardVariant(
                 nameOriginal = name,
                 nameNormalized = NameNormalizer.normalize(name),

@@ -1,6 +1,7 @@
 package catalog
 
 import com.fleeksoft.ksoup.Ksoup
+import kotlin.math.roundToInt
 import model.CardVariant
 import model.Catalog
 import match.NameNormalizer
@@ -142,7 +143,7 @@ object CatalogParser {
         val cleaned = raw.replace("[^0-9.]".toRegex(), "")
         if (cleaned.isBlank()) return 0
         return try {
-            (cleaned.toDouble() * 100).toInt()
+            (cleaned.toDouble() * 100).roundToInt()
         } catch (_: NumberFormatException) {
             0
         }
