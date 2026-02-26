@@ -123,7 +123,7 @@ fun ResolveScreen(
                     val listState = rememberLazyListState()
                     Box(Modifier.fillMaxSize()) {
                         LazyColumn(Modifier.fillMaxSize(), state = listState) {
-                            items(sorted) { cand: MatchCandidate ->
+                            items(sorted, key = { it.uniqueIdentifier }) { cand: MatchCandidate ->
                                 val variant = cand.variant
                                 
                                 // Trigger image enrichment when variant comes into view

@@ -109,7 +109,7 @@ fun CatalogScreen(
                 val listState = rememberLazyListState()
                 Box(Modifier.fillMaxSize()) {
                     LazyColumn(Modifier.fillMaxSize(), state = listState) {
-                        items(filtered) { v ->
+                        items(filtered, key = { it.uniqueIdentifier }) { v ->
                             // Trigger image enrichment when variant comes into view
                             androidx.compose.runtime.LaunchedEffect(v.sku) {
                                 if (v.imageUrl == null) {

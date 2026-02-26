@@ -144,7 +144,7 @@ actual fun SavedImportsDialog(
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                                 state = listState
                             ) {
-                                items(savedImports) { import ->
+                                items(savedImports, key = { it.uniqueIdentifier }) { import ->
                                     SavedImportCard(
                                         import = import,
                                         onSelect = { onSelectImport(import.id) },
