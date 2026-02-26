@@ -1,0 +1,342 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:CatalogCsvParser.kt:CatalogCsvParser$cells.size &gt; headers.size &amp;&amp; idxSku &gt;= 0 &amp;&amp; idxName &gt;= 0 &amp;&amp; idxSet &gt;= 0 &amp;&amp; idxType &gt;= 0</ID>
+    <ID>CyclomaticComplexMethod:CatalogCsvParser.kt:CatalogCsvParser$fun parse: Catalog</ID>
+    <ID>CyclomaticComplexMethod:CatalogParser.kt:CatalogParser$fun parse: Catalog</ID>
+    <ID>CyclomaticComplexMethod:DecklistParser.kt:DecklistParser$fun parse: List&lt;DeckEntry&gt;</ID>
+    <ID>CyclomaticComplexMethod:ExportScreen.kt:@Composable fun ExportScreen</ID>
+    <ID>CyclomaticComplexMethod:Matcher.kt:Matcher$private fun matchEntry: DeckEntryMatch</ID>
+    <ID>CyclomaticComplexMethod:MatchesScreen.kt:@Composable fun MatchesScreen</ID>
+    <ID>CyclomaticComplexMethod:MviViewModel.kt:MviViewModel$fun processIntent</ID>
+    <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt:@Composable fun DraggableVariantItem</ID>
+    <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt:@Composable fun PreferencesWizardScreen</ID>
+    <ID>CyclomaticComplexMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
+    <ID>CyclomaticComplexMethod:StepperComponent.kt:@Composable fun PixelStepNode</ID>
+    <ID>LongMethod:CatalogCsvParser.kt:CatalogCsvParser$fun parse: Catalog</ID>
+    <ID>LongMethod:CatalogParser.kt:CatalogParser$fun parse: Catalog</ID>
+    <ID>LongMethod:CatalogScreen.kt:@Composable fun CatalogScreen</ID>
+    <ID>LongMethod:DecklistParser.kt:DecklistParser$fun parse: List&lt;DeckEntry&gt;</ID>
+    <ID>LongMethod:ExportScreen.kt:@Composable fun ExportScreen</ID>
+    <ID>LongMethod:MatchesScreen.kt:@Composable fun MatchesScreen</ID>
+    <ID>LongMethod:MobilePixelImageComponents.kt:@Composable fun MobilePixelImageModal</ID>
+    <ID>LongMethod:PixelComponents.kt:@Composable fun FantasyStarIcon</ID>
+    <ID>LongMethod:PixelComponents.kt:@Composable fun PixelProgressAnimation</ID>
+    <ID>LongMethod:PixelComponents.kt:@Composable private fun PixelDraggableItem</ID>
+    <ID>LongMethod:PreferencesWizardScreen.kt:@Composable fun DraggableVariantItem</ID>
+    <ID>LongMethod:PreferencesWizardScreen.kt:@Composable fun PreferencesWizardScreen</ID>
+    <ID>LongMethod:ResolveScreen.kt:@Composable fun ResolveScreen</ID>
+    <ID>LongMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
+    <ID>LongMethod:StepperComponent.kt:@Composable fun PixelStepNode</ID>
+    <ID>LongMethod:StepperComponent.kt:@Composable fun RowScope.PixelStepConnector</ID>
+    <ID>LoopWithTooManyJumpStatements:DecklistParser.kt:DecklistParser$for</ID>
+    <ID>LoopWithTooManyJumpStatements:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$while</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$184_426_222</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_434_682_742</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_541_692_383</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$3</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$4</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$5</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$578_940_584</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$6</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$7</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$704_294_497</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$8</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries.GetByNameQuery$495_182_740</ID>
+    <ID>MagicNumber:CatalogCsvParser.kt:CatalogCsvParser$100.0</ID>
+    <ID>MagicNumber:CatalogParser.kt:CatalogParser$100</ID>
+    <ID>MagicNumber:CatalogScreen.kt:0.10f</ID>
+    <ID>MagicNumber:CatalogScreen.kt:0.12f</ID>
+    <ID>MagicNumber:CatalogScreen.kt:0.18f</ID>
+    <ID>MagicNumber:CatalogScreen.kt:0.40f</ID>
+    <ID>MagicNumber:CatalogUtils.kt:CatalogUtils$100.0</ID>
+    <ID>MagicNumber:CsvGenerator.kt:CsvGenerator$100</ID>
+    <ID>MagicNumber:DecklistParser.kt:DecklistParser$5</ID>
+    <ID>MagicNumber:ExportScreen.kt:0.07f</ID>
+    <ID>MagicNumber:ExportScreen.kt:0.09f</ID>
+    <ID>MagicNumber:ExportScreen.kt:0.12f</ID>
+    <ID>MagicNumber:ExportScreen.kt:0.20f</ID>
+    <ID>MagicNumber:ExportScreen.kt:0.40f</ID>
+    <ID>MagicNumber:ExportScreen.kt:0.9f</ID>
+    <ID>MagicNumber:ExportScreen.kt:100_00</ID>
+    <ID>MagicNumber:ExportScreen.kt:10_00</ID>
+    <ID>MagicNumber:ExportScreen.kt:300_00</ID>
+    <ID>MagicNumber:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$10</ID>
+    <ID>MagicNumber:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$200</ID>
+    <ID>MagicNumber:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$21</ID>
+    <ID>MagicNumber:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$299</ID>
+    <ID>MagicNumber:LogEntryQueries.kt:LogEntryQueries$150_059_626</ID>
+    <ID>MagicNumber:LogEntryQueries.kt:LogEntryQueries$1_481_580_848</ID>
+    <ID>MagicNumber:LogEntryQueries.kt:LogEntryQueries$1_507_325_787</ID>
+    <ID>MagicNumber:LogEntryQueries.kt:LogEntryQueries$3</ID>
+    <ID>MagicNumber:LogEntryQueries.kt:LogEntryQueries$407_997_744</ID>
+    <ID>MagicNumber:Logging.kt:Logging$300</ID>
+    <ID>MagicNumber:Matcher.kt:Matcher$15</ID>
+    <ID>MagicNumber:Matcher.kt:Matcher$3</ID>
+    <ID>MagicNumber:MatchesScreen.kt:0.10f</ID>
+    <ID>MagicNumber:MatchesScreen.kt:0.12f</ID>
+    <ID>MagicNumber:MatchesScreen.kt:0.18f</ID>
+    <ID>MagicNumber:MatchesScreen.kt:0.35f</ID>
+    <ID>MagicNumber:MobilePixelImageComponents.kt:0.715f</ID>
+    <ID>MagicNumber:MobilePixelImageComponents.kt:0.95f</ID>
+    <ID>MagicNumber:Models.kt:VariantType.FOIL$350</ID>
+    <ID>MagicNumber:Models.kt:VariantType.HOLO$300</ID>
+    <ID>MagicNumber:Models.kt:VariantType.REGULAR$220</ID>
+    <ID>MagicNumber:PixelComponents.kt:0.2f</ID>
+    <ID>MagicNumber:PixelComponents.kt:0.4f</ID>
+    <ID>MagicNumber:PixelComponents.kt:0.7f</ID>
+    <ID>MagicNumber:PixelComponents.kt:0xFF63B3ED</ID>
+    <ID>MagicNumber:PixelComponents.kt:0xFF68D391</ID>
+    <ID>MagicNumber:PixelComponents.kt:0xFF6B7280</ID>
+    <ID>MagicNumber:PixelComponents.kt:0xFFB794F6</ID>
+    <ID>MagicNumber:PixelComponents.kt:0xFFFBD38D</ID>
+    <ID>MagicNumber:PixelComponents.kt:1.2f</ID>
+    <ID>MagicNumber:PixelComponents.kt:1000</ID>
+    <ID>MagicNumber:PixelComponents.kt:1000f</ID>
+    <ID>MagicNumber:PixelComponents.kt:10f</ID>
+    <ID>MagicNumber:PixelComponents.kt:1500</ID>
+    <ID>MagicNumber:PixelComponents.kt:180.0</ID>
+    <ID>MagicNumber:PixelComponents.kt:180f</ID>
+    <ID>MagicNumber:PixelComponents.kt:2000</ID>
+    <ID>MagicNumber:PixelComponents.kt:3</ID>
+    <ID>MagicNumber:PixelComponents.kt:300</ID>
+    <ID>MagicNumber:PixelComponents.kt:3000</ID>
+    <ID>MagicNumber:PixelComponents.kt:360f</ID>
+    <ID>MagicNumber:PixelComponents.kt:3f</ID>
+    <ID>MagicNumber:PixelComponents.kt:4</ID>
+    <ID>MagicNumber:PixelComponents.kt:400</ID>
+    <ID>MagicNumber:PixelComponents.kt:4000</ID>
+    <ID>MagicNumber:PixelComponents.kt:4f</ID>
+    <ID>MagicNumber:PixelComponents.kt:5</ID>
+    <ID>MagicNumber:PixelComponents.kt:500</ID>
+    <ID>MagicNumber:PixelComponents.kt:60</ID>
+    <ID>MagicNumber:PixelComponents.kt:600</ID>
+    <ID>MagicNumber:PixelComponents.kt:7</ID>
+    <ID>MagicNumber:PixelComponents.kt:8</ID>
+    <ID>MagicNumber:PixelComponents.kt:9</ID>
+    <ID>MagicNumber:PixelComponents.kt:90</ID>
+    <ID>MagicNumber:PixelComponents.kt:900</ID>
+    <ID>MagicNumber:PixelComponents.kt:90f</ID>
+    <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$3</ID>
+    <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$4</ID>
+    <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$5</ID>
+    <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$6</ID>
+    <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$7</ID>
+    <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$757_506_398</ID>
+    <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$933_600_296</ID>
+    <ID>MagicNumber:PreferencesWizardScreen.kt:0.2f</ID>
+    <ID>MagicNumber:PreferencesWizardScreen.kt:10f</ID>
+    <ID>MagicNumber:PreferencesWizardScreen.kt:50</ID>
+    <ID>MagicNumber:PreferencesWizardScreen.kt:600</ID>
+    <ID>MagicNumber:PreferencesWizardScreen.kt:64f</ID>
+    <ID>MagicNumber:Price.kt:100.0</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$100</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$100_00</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$10_00</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$15</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$160_00</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$200_00</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$25</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$30</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$300_00</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$35</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$400_00</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$5</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$50</ID>
+    <ID>MagicNumber:Promotions.kt:Promotions$60_00</ID>
+    <ID>MagicNumber:ResolveScreen.kt:0.3f</ID>
+    <ID>MagicNumber:ResultsScreen.kt:0.15f</ID>
+    <ID>MagicNumber:ResultsScreen.kt:0.35f</ID>
+    <ID>MagicNumber:ResultsScreen.kt:3</ID>
+    <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries$150_500_298</ID>
+    <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries$1_448_056_615</ID>
+    <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries$3</ID>
+    <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries$4</ID>
+    <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries$5</ID>
+    <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries$503_838_728</ID>
+    <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries$6</ID>
+    <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries$7</ID>
+    <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries$8</ID>
+    <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries.GetByIdQuery$757_582_413</ID>
+    <ID>MagicNumber:ScryfallImageEnricher.kt:ScryfallImageEnricher$10</ID>
+    <ID>MagicNumber:StepperComponent.kt:1200</ID>
+    <ID>MagicNumber:StepperComponent.kt:12f</ID>
+    <ID>MagicNumber:StepperComponent.kt:4f</ID>
+    <ID>MagicNumber:StepperComponent.kt:800</ID>
+    <ID>MagicNumber:StepperComponent.kt:8f</ID>
+    <ID>MagicNumber:Theme.kt:0xFF06B6D4</ID>
+    <ID>MagicNumber:Theme.kt:0xFF10B981</ID>
+    <ID>MagicNumber:Theme.kt:0xFF1A0F2E</ID>
+    <ID>MagicNumber:Theme.kt:0xFF1A202C</ID>
+    <ID>MagicNumber:Theme.kt:0xFF1A365D</ID>
+    <ID>MagicNumber:Theme.kt:0xFF1E293B</ID>
+    <ID>MagicNumber:Theme.kt:0xFF2196F3</ID>
+    <ID>MagicNumber:Theme.kt:0xFF2D1B4E</ID>
+    <ID>MagicNumber:Theme.kt:0xFF2F855A</ID>
+    <ID>MagicNumber:Theme.kt:0xFF334155</ID>
+    <ID>MagicNumber:Theme.kt:0xFF38A169</ID>
+    <ID>MagicNumber:Theme.kt:0xFF4299E1</ID>
+    <ID>MagicNumber:Theme.kt:0xFF475569</ID>
+    <ID>MagicNumber:Theme.kt:0xFF4CAF50</ID>
+    <ID>MagicNumber:Theme.kt:0xFF63B3ED</ID>
+    <ID>MagicNumber:Theme.kt:0xFF64748B</ID>
+    <ID>MagicNumber:Theme.kt:0xFF68D391</ID>
+    <ID>MagicNumber:Theme.kt:0xFF76E4F7</ID>
+    <ID>MagicNumber:Theme.kt:0xFF805AD5</ID>
+    <ID>MagicNumber:Theme.kt:0xFF8B5CF6</ID>
+    <ID>MagicNumber:Theme.kt:0xFF94A3B8</ID>
+    <ID>MagicNumber:Theme.kt:0xFF9E9E9E</ID>
+    <ID>MagicNumber:Theme.kt:0xFFB794F6</ID>
+    <ID>MagicNumber:Theme.kt:0xFFC53030</ID>
+    <ID>MagicNumber:Theme.kt:0xFFDD6B20</ID>
+    <ID>MagicNumber:Theme.kt:0xFFE6FFFA</ID>
+    <ID>MagicNumber:Theme.kt:0xFFE9D8FD</ID>
+    <ID>MagicNumber:Theme.kt:0xFFED8936</ID>
+    <ID>MagicNumber:Theme.kt:0xFFEF4444</ID>
+    <ID>MagicNumber:Theme.kt:0xFFF0FFF4</ID>
+    <ID>MagicNumber:Theme.kt:0xFFF1F5F9</ID>
+    <ID>MagicNumber:Theme.kt:0xFFF44336</ID>
+    <ID>MagicNumber:Theme.kt:0xFFF7FAFC</ID>
+    <ID>MagicNumber:Theme.kt:0xFFFBB6CE</ID>
+    <ID>MagicNumber:Theme.kt:0xFFFBBF24</ID>
+    <ID>MagicNumber:Theme.kt:0xFFFBD38D</ID>
+    <ID>MagicNumber:Theme.kt:0xFFFC8181</ID>
+    <ID>MagicNumber:Theme.kt:0xFFFF9800</ID>
+    <ID>MagicNumber:Theme.kt:0xFFFFEB3B</ID>
+    <ID>MagicNumber:Theme.kt:0xFFFFF5F5</ID>
+    <ID>MatchingDeclarationName:ResultsScreen.kt:SortOption</ID>
+    <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$)</ID>
+    <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public</ID>
+    <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public fun getByName: Query&lt;CardVariantEntity&gt;</ID>
+    <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries.GetByNameQuery$override</ID>
+    <ID>MaxLineLength:CatalogCsvParser.kt:CatalogCsvParser$private</ID>
+    <ID>MaxLineLength:CatalogCsvParser.kt:CatalogCsvParser$val dollarsFromCell = if (idxPrice &gt;= 0 &amp;&amp; idxPrice &lt; aligned.size) parsePriceCell(aligned[idxPrice]) else 0.0</ID>
+    <ID>MaxLineLength:CatalogScreen.kt:(query.isBlank() || v.nameOriginal.contains(query, true) || v.setCode.contains(query, true) || v.sku.contains(query, true))</ID>
+    <ID>MaxLineLength:CatalogScreen.kt:.</ID>
+    <ID>MaxLineLength:CatalogScreen.kt:Text("NAME", modifier = Modifier.weight(0.40f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:CatalogScreen.kt:Text("PRICE", modifier = Modifier.weight(0.10f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:CatalogScreen.kt:Text("SET", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:CatalogScreen.kt:Text("SKU", modifier = Modifier.weight(0.18f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:CatalogScreen.kt:Text("TYPE", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:CatalogScreen.kt:Text(v.variantType.displayName, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:DecklistParser.kt:DecklistParser$// Heuristic: if we saw a blank line after sideboard marker and now a new card line, treat as commander section</ID>
+    <ID>MaxLineLength:DecklistParser.kt:DecklistParser$// If remainder still contains an embedded " Set " fragment (without colon) at end due to partial copy, attempt to remove</ID>
+    <ID>MaxLineLength:ExportScreen.kt:"Normal (15-40 days) — " + if (normalShippingCost == 0) "Free" else formatPrice(normalShippingCost)</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Modifier.fillMaxWidth().background(MaterialTheme.colors.surface.copy(alpha = 0.6f)).padding(horizontal = 12.dp, vertical = 8.dp)</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Promotions.ShippingType.EXPRESS -&gt; if (selectedShippingCost == 0) "Express Free Shipping (3-7 days)" else "Express Shipping"</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Promotions.ShippingType.NORMAL -&gt; if (selectedShippingCost == 0) "Normal Free Shipping (15-40 days)" else "Normal Shipping"</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Row</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Text("Card Name", Modifier.weight(0.40f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Text("Price", Modifier.weight(0.09f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Text("Qty", Modifier.weight(0.07f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Text("SKU", Modifier.weight(0.20f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Text("Set", Modifier.weight(0.12f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Text("Shipping Options", style = MaterialTheme.typography.subtitle2, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Text("Type", Modifier.weight(0.12f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Text(expressLabel, style = MaterialTheme.typography.body2, color = if (expressEligible) MaterialTheme.colors.onSurface else MaterialTheme.colors.onSurface.copy(alpha = 0.6f))</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Text(first.nameOriginal, Modifier.weight(0.40f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Text(first.variantType.displayName, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Text(formatPrice(first.priceInCents), Modifier.weight(0.09f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Text(if (selectedShippingCost == 0) shippingText else "$shippingText: ${formatPrice(selectedShippingCost)}")</ID>
+    <ID>MaxLineLength:ExportScreen.kt:Text(qtyTotal.toString(), Modifier.weight(0.07f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:ExportScreen.kt:items</ID>
+    <ID>MaxLineLength:ExportScreen.kt:onClick = { if (expressEligible) selectedShipping = Promotions.ShippingType.EXPRESS }</ID>
+    <ID>MaxLineLength:LogEntryQueries.kt:LogEntryQueries$)</ID>
+    <ID>MaxLineLength:Logging.kt:Logging$return "${ldt.date} ${ldt.hour.toString().padStart(2,'0')}:${ldt.minute.toString().padStart(2,'0')}:${ldt.second.toString().padStart(2,'0')}"</ID>
+    <ID>MaxLineLength:Matcher.kt:Matcher$DeckEntryMatch(entry, MatchStatus.AUTO_MATCHED, selected, exactNameMatches.map { MatchCandidate(it, 0, "exact") })</ID>
+    <ID>MaxLineLength:Matcher.kt:Matcher$return</ID>
+    <ID>MaxLineLength:Matcher.kt:Matcher$val filtered = entry.setCodeHint?.let { code -&gt; list.filter { it.setCode.equals(code, true) } }.orEmpty().ifEmpty { list }</ID>
+    <ID>MaxLineLength:Matcher.kt:Matcher$}</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:"Showing ${filtered.size} of ${matches.size} | Matched: ${matches.count { it.selectedVariant != null }} | Unmatched: $unmatchedCount"</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:.</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:Text("${m.deckEntry.qty}", modifier = Modifier.width(40.dp), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:Text("NAME", modifier = Modifier.weight(0.35f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:Text("PRICE", modifier = Modifier.width(70.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:Text("QTY", modifier = Modifier.width(40.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:Text("SET", modifier = Modifier.weight(0.10f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:Text("SKU", modifier = Modifier.weight(0.18f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:Text("STATUS", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:Text("TOTAL", modifier = Modifier.width(70.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:Text("VARIANT", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:Text(m.deckEntry.cardName, modifier = Modifier.weight(0.35f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:Text(v?.setCode ?: "-", modifier = Modifier.weight(0.10f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:Text(v?.sku ?: "-", modifier = Modifier.weight(0.18f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:Text(v?.variantType?.displayName ?: "-", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:color = if (price != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:color = if (rowTotal != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)</ID>
+    <ID>MaxLineLength:MatchesScreen.kt:val content = unmatched.joinToString("\n") { "${it.deckEntry.qty} ${it.deckEntry.cardName}" }</ID>
+    <ID>MaxLineLength:MobilePixelImageComponents.kt:var loadState by remember { mutableStateOf&lt;AsyncImagePainter.State&gt;(AsyncImagePainter.State.Empty) }</ID>
+    <ID>MaxLineLength:PreferencesQueries.kt:PreferencesQueries$)</ID>
+    <ID>MaxLineLength:PreferencesWizardScreen.kt:.</ID>
+    <ID>MaxLineLength:PreferencesWizardScreen.kt:Text("VARIANT PREFERENCES", style = MaterialTheme.typography.h6, fontWeight = FontWeight.Bold, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:PreferencesWizardScreen.kt:draggedCurrentIndex &lt; targetIndex &amp;&amp; index &gt; draggedCurrentIndex &amp;&amp; index &lt;= targetIndex -&gt; -64f</ID>
+    <ID>MaxLineLength:PreferencesWizardScreen.kt:draggedCurrentIndex &gt; targetIndex &amp;&amp; index &gt;= targetIndex &amp;&amp; index &lt; draggedCurrentIndex -&gt; 64f</ID>
+    <ID>MaxLineLength:ResolveScreen.kt:.</ID>
+    <ID>MaxLineLength:ResolveScreen.kt:Text("ACTION", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResolveScreen.kt:Text("CARD NAME", Modifier.weight(0.3f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResolveScreen.kt:Text("MATCH INFO", Modifier.weight(0.3f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResolveScreen.kt:Text("PRICE", Modifier.width(80.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResolveScreen.kt:Text("SET", Modifier.width(70.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResolveScreen.kt:Text("VARIANT", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:Text("${m.deckEntry.qty}", Modifier.width(50.dp), style = MaterialTheme.typography.body1)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:color = if (ambiguous &gt; 0) PixelOrange else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:if</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:if (filterMode == 0) MaterialTheme.colors.primary.copy(alpha = 0.2f) else MaterialTheme.colors.surface</ID>
+    <ID>MaxLineLength:SavedImportQueries.kt:SavedImportQueries$)</ID>
+    <ID>MaxLineLength:SavedImportQueries.kt:SavedImportQueries.GetByIdQuery$override</ID>
+    <ID>MaxLineLength:ScryfallImageEnricher.kt:ScryfallImageEnricher$log?.invoke("Fetching image for ${variant.nameOriginal} (${variant.setCode} #${variant.collectorNumber})")</ID>
+    <ID>PackageNaming:MtgPirateDatabaseImpl.kt:package org.srmarlins.mtgpirate.db.MtgPirate</ID>
+    <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun extractValue: String?</ID>
+    <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun parse: Catalog</ID>
+    <ID>ReturnCount:Levenshtein.kt:Levenshtein$fun distance: Int</ID>
+    <ID>ReturnCount:Matcher.kt:Matcher$private fun matchEntry: DeckEntryMatch</ID>
+    <ID>SwallowedException:ScryfallApi.kt:ScryfallApi$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogUseCase$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ImportExportUseCase.kt:ImportExportUseCase$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MviViewModel.kt:MviViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:PreferencesUseCase.kt:PreferencesUseCase$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ScryfallApi.kt:ScryfallApi$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ScryfallImageEnricher.kt:ScryfallImageEnricher$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:ScryfallApi.kt:ScryfallApi$throw Exception("HTTP ${response.status.value}: ${response.status.description}")</ID>
+    <ID>TooManyFunctions:MviViewModel.kt:MviViewModel</ID>
+    <ID>TooManyFunctions:PixelComponents.kt:ui.PixelComponents.kt</ID>
+    <ID>UnusedParameter:PixelComponents.kt:index: Int</ID>
+    <ID>UnusedParameter:ResultsScreen.kt:matchedCount: Int = 0</ID>
+    <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.material.*</ID>
+    <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:ExportScreen.kt:import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:ExportScreen.kt:import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:MatchesScreen.kt:import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:MatchesScreen.kt:import androidx.compose.material.*</ID>
+    <ID>WildcardImport:MatchesScreen.kt:import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:MobilePixelImageComponents.kt:import androidx.compose.animation.core.*</ID>
+    <ID>WildcardImport:MobilePixelImageComponents.kt:import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:MobilePixelImageComponents.kt:import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:MviViewModel.kt:import kotlinx.coroutines.flow.*</ID>
+    <ID>WildcardImport:PixelComponents.kt:import androidx.compose.animation.core.*</ID>
+    <ID>WildcardImport:PixelComponents.kt:import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:PixelComponents.kt:import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:PixelComponents.kt:import androidx.compose.ui.graphics.*</ID>
+    <ID>WildcardImport:PreferencesWizardScreen.kt:import androidx.compose.animation.core.*</ID>
+    <ID>WildcardImport:PreferencesWizardScreen.kt:import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:PreferencesWizardScreen.kt:import androidx.compose.material.*</ID>
+    <ID>WildcardImport:PreferencesWizardScreen.kt:import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:ResolveScreen.kt:import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:ResolveScreen.kt:import androidx.compose.material.*</ID>
+    <ID>WildcardImport:ResultsScreen.kt:import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:ResultsScreen.kt:import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:ScryfallApi.kt:import io.ktor.client.*</ID>
+    <ID>WildcardImport:ScryfallApi.kt:import io.ktor.client.plugins.contentnegotiation.*</ID>
+    <ID>WildcardImport:ScryfallApi.kt:import io.ktor.client.plugins.logging.*</ID>
+    <ID>WildcardImport:ScryfallApi.kt:import io.ktor.client.request.*</ID>
+    <ID>WildcardImport:ScryfallApi.kt:import io.ktor.client.statement.*</ID>
+    <ID>WildcardImport:ScryfallApi.kt:import io.ktor.http.*</ID>
+    <ID>WildcardImport:ScryfallApi.kt:import io.ktor.serialization.kotlinx.json.*</ID>
+    <ID>WildcardImport:StepperComponent.kt:import androidx.compose.animation.core.*</ID>
+    <ID>WildcardImport:StepperComponent.kt:import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:StepperComponent.kt:import androidx.compose.runtime.*</ID>
+  </CurrentIssues>
+</SmellBaseline>
