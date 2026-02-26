@@ -56,8 +56,6 @@ object CatalogCsvParser {
      *                      the CSV does not include a Price/Base Price column.
      */
     fun parse(csv: String, typePriceMap: Map<String, Double> = emptyMap()): Catalog {
-            // DEBUG: Print values before skip
-            // (moved inside forEach below)
         val preprocessed = preprocess(csv)
         val rawLines = preprocessed.trim().split('\n').filter { it.isNotBlank() }
         if (rawLines.isEmpty()) return Catalog(emptyList())

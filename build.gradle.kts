@@ -27,11 +27,9 @@ version = appVersion
 repositories {
     mavenCentral()
     google()
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
 kotlin {
-    compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
     jvmToolchain(17)
     jvm("desktop")
     iosX64 {
