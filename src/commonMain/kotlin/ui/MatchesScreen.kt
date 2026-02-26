@@ -163,6 +163,7 @@ fun MatchesScreen(
                                         MatchStatus.AMBIGUOUS -> "AMBIG(${m.candidates.size})"
                                         MatchStatus.NOT_FOUND -> "NOT FOUND"
                                         MatchStatus.UNRESOLVED -> "UNRESOLVED"
+                                        MatchStatus.FUZZY_RECHECK -> "RECHECK(${m.candidates.size})"
                                     }
                                     val statusColor = when (m.status) {
                                         MatchStatus.AUTO_MATCHED -> PixelGreen
@@ -170,6 +171,7 @@ fun MatchesScreen(
                                         MatchStatus.AMBIGUOUS -> PixelOrange
                                         MatchStatus.NOT_FOUND -> PixelRed
                                         MatchStatus.UNRESOLVED -> PixelGrey
+                                        MatchStatus.FUZZY_RECHECK -> PixelYellow
                                     }
                                     PixelBadge(text = statusText, color = statusColor)
                                 }

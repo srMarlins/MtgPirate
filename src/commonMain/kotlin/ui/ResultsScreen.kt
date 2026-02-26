@@ -446,6 +446,7 @@ fun ResultsScreen(
                                     MatchStatus.AMBIGUOUS -> "Ambiguous" to PixelOrange
                                     MatchStatus.NOT_FOUND -> "Not Found" to PixelRed
                                     MatchStatus.UNRESOLVED -> "Pending" to PixelGrey
+                                    MatchStatus.FUZZY_RECHECK -> "Recheck" to PixelYellow
                                 }
                                 Box(Modifier.weight(0.15f).padding(end = 8.dp)) {
                                     PixelBadge(
@@ -467,7 +468,7 @@ fun ResultsScreen(
                                     style = MaterialTheme.typography.body2)
 
                                 Row(Modifier.width(180.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    if (m.status == MatchStatus.AMBIGUOUS || m.status == MatchStatus.NOT_FOUND) {
+                                    if (m.status == MatchStatus.AMBIGUOUS || m.status == MatchStatus.NOT_FOUND || m.status == MatchStatus.FUZZY_RECHECK) {
                                         PixelButton(
                                             text = "Resolve",
                                             onClick = { onResolve(globalIndex) },

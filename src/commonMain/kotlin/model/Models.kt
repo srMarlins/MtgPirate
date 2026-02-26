@@ -65,7 +65,7 @@ data class DeckEntry(
     val uniqueIdentifier: String get() = id
 }
 
-enum class MatchStatus { UNRESOLVED, AUTO_MATCHED, AMBIGUOUS, NOT_FOUND, MANUAL_SELECTED }
+enum class MatchStatus { UNRESOLVED, AUTO_MATCHED, AMBIGUOUS, NOT_FOUND, MANUAL_SELECTED, FUZZY_RECHECK }
 
 data class MatchCandidate(
     val variant: CardVariant,
