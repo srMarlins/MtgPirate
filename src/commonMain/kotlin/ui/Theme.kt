@@ -63,6 +63,7 @@ val PixelRed = Color(0xFFF44336)
 val PixelOrange = Color(0xFFFF9800)
 val PixelGrey = Color(0xFF9E9E9E)
 val PixelBlue = Color(0xFF2196F3)
+val PixelYellow = Color(0xFFFFEB3B)
 
 // Brand / UI Colors
 val Slate100 = Color(0xFFF1F5F9)

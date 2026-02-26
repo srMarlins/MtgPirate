@@ -15,7 +15,17 @@ object Matcher {
     )
 
     fun matchAll(entries: List<DeckEntry>, catalog: Catalog, config: MatchConfig): List<DeckEntryMatch> {
-        return entries.map { matchEntry(it, catalog, config) }
+        val initial = entries.map { matchEntry(it, catalog, config) }
+        if (!config.fuzzyEnabled) return initial
+
+        // Recheck pass: retry NOT_FOUND entries with a relaxed Levenshtein threshold
+        return initial.map { match ->
+            if (match.status == MatchStatus.NOT_FOUND) {
+                recheckEntry(match, catalog)
+            } else {
+                match
+            }
+        }
     }
 
     private fun matchEntry(entry: DeckEntry, catalog: Catalog, config: MatchConfig): DeckEntryMatch {
@@ -96,6 +106,41 @@ object Matcher {
             val threshold = if (targetNorm.length <= 15) 2 else 3
             if (dist <= threshold) {
                 results += MatchCandidate(variant, dist, "lev:$dist")
+            }
+        }
+        return results.sortedWith(compareBy<MatchCandidate> { it.score }.thenBy { it.variant.priceInCents })
+    }
+
+    /**
+     * Re-attempt matching for a NOT_FOUND entry using a relaxed Levenshtein threshold.
+     * The relaxed threshold is the standard threshold + 2, giving more room for typos.
+     */
+    private fun recheckEntry(match: DeckEntryMatch, catalog: Catalog): DeckEntryMatch {
+        val entry = match.deckEntry
+        val normalized = NameNormalizer.normalize(entry.cardName)
+        val fuzzyPool = if (entry.setCodeHint != null) {
+            catalog.variants.filter { it.setCode.equals(entry.setCodeHint, true) }
+        } else catalog.variants
+        val candidates = fuzzyRecheck(normalized, Catalog(fuzzyPool))
+        return if (candidates.isEmpty()) {
+            match
+        } else {
+            DeckEntryMatch(entry, MatchStatus.FUZZY_RECHECK, null, candidates)
+        }
+    }
+
+    /**
+     * Fuzzy match with a relaxed threshold (standard + 2) for the recheck pass.
+     * Only returns candidates that would NOT have been found by the standard fuzzy pass.
+     */
+    private fun fuzzyRecheck(targetNorm: String, catalog: Catalog): List<MatchCandidate> {
+        val results = mutableListOf<MatchCandidate>()
+        val standardThreshold = if (targetNorm.length <= 15) 2 else 3
+        val relaxedThreshold = standardThreshold + 2
+        for (variant in catalog.variants) {
+            val dist = Levenshtein.distance(targetNorm, variant.nameNormalized)
+            if (dist in (standardThreshold + 1)..relaxedThreshold) {
+                results += MatchCandidate(variant, dist, "recheck:$dist")
             }
         }
         return results.sortedWith(compareBy<MatchCandidate> { it.score }.thenBy { it.variant.priceInCents })
