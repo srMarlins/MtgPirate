@@ -1,6 +1,7 @@
 package export
 
 import model.DeckEntryMatch
+import model.VariantType
 import platform.AppDirectories
 import java.nio.file.Path
 import java.nio.file.Files
