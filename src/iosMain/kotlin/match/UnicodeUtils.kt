@@ -8,7 +8,7 @@ package match
 actual fun stripDiacritics(input: String): String {
     val sb = StringBuilder(input.length)
     for (ch in input) {
-        sb.append(DIACRITIC_MAP.getOrDefault(ch, ch))
+        sb.append(DIACRITIC_MAP[ch] ?: ch)
     }
     return sb.toString()
 }
