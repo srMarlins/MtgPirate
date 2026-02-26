@@ -32,9 +32,15 @@
     <ID>LongMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
     <ID>LongMethod:StepperComponent.kt:@Composable fun PixelStepNode</ID>
     <ID>LongMethod:StepperComponent.kt:@Composable fun RowScope.PixelStepConnector</ID>
+    <ID>LoopWithTooManyJumpStatements:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$for</ID>
+    <ID>LoopWithTooManyJumpStatements:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$while</ID>
     <ID>LoopWithTooManyJumpStatements:DecklistParser.kt:DecklistParser$for</ID>
     <ID>LoopWithTooManyJumpStatements:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$while</ID>
     <ID>LoopWithTooManyJumpStatements:MultiCatalogMatcher.kt:MultiCatalogMatcher$for</ID>
+    <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$100</ID>
+    <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$3</ID>
+    <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$401</ID>
+    <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$403</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$10</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$184_426_222</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_386_511_848</ID>
@@ -314,7 +320,9 @@
     <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun parse: Catalog</ID>
     <ID>ReturnCount:Levenshtein.kt:Levenshtein$fun distance: Int</ID>
     <ID>ReturnCount:Matcher.kt:Matcher$private fun matchEntry: DeckEntryMatch</ID>
+    <ID>SwallowedException:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$e: Exception</ID>
     <ID>SwallowedException:ScryfallApi.kt:ScryfallApi$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ImportExportUseCase.kt:ImportExportUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$e: Exception</ID>
