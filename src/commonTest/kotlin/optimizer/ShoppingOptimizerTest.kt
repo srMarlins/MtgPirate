@@ -1,10 +1,11 @@
 package optimizer
 
 import model.CardVariant
-import model.OrderItem
+import model.DeckEntry
+import model.MatchOption
+import model.MultiMatch
+import model.Section
 import model.Seller
-import model.SellerOrder
-import model.ShoppingPlan
 import model.VariantType
 import match.NameNormalizer
 import kotlin.test.Ignore
@@ -29,35 +30,41 @@ class ShoppingOptimizerTest {
             seller = seller,
         )
 
-    private fun orderItem(name: String, seller: Seller, priceCents: Int, qty: Int = 1) =
-        OrderItem(
-            variant = variant(name, seller, priceCents),
+    private fun entry(name: String, qty: Int = 1): DeckEntry =
+        DeckEntry(
+            id = "test_${name.replace(" ", "_")}",
+            originalLine = "$qty $name",
             qty = qty,
-            isProxy = seller.isProxy
+            cardName = name,
+            section = Section.MAIN,
+            include = true,
+        )
+
+    private fun matchOption(name: String, seller: Seller, priceCents: Int) =
+        MatchOption(
+            variant = variant(name, seller, priceCents),
+            seller = seller,
+            priceCents = priceCents,
+            isProxy = seller.isProxy,
+            matchScore = 100
+        )
+
+    private fun multiMatch(name: String, seller: Seller, priceCents: Int, qty: Int = 1) =
+        MultiMatch(
+            deckEntry = entry(name, qty),
+            bestOption = matchOption(name, seller, priceCents),
+            alternatives = listOf(matchOption(name, seller, priceCents)),
+            realCardFallback = if (seller.isProxy) matchOption(name, Seller.TCGPLAYER, priceCents * 2) else null
         )
 
     @Ignore
     @Test
     fun `single seller order applies correct discount tier`() {
-        val items = listOf(
-            orderItem("Card A", Seller.USEA, 10000) // $100
-        )
-        val initialPlan = ShoppingPlan(
-            orders = listOf(
-                SellerOrder(
-                    seller = Seller.USEA,
-                    items = items,
-                    subtotalCents = 10000,
-                    discountPercent = 0,
-                    shippingCents = 1000,
-                    totalCents = 11000
-                )
-            ),
-            totalPriceCents = 11000,
-            savingsVsSingleSeller = 0
+        val matches = listOf(
+            multiMatch("Card A", Seller.USEA, 10000, 1) // $100
         )
 
-        val optimized = ShoppingOptimizer.optimize(initialPlan)
+        val optimized = ShoppingOptimizer.optimize(matches)
 
         val useaOrder = optimized.orders.find { it.seller == Seller.USEA }!!
         // $100 is the 15% tier for USEA
@@ -72,19 +79,25 @@ class ShoppingOptimizerTest {
     fun `threshold optimization moves cards to reach better tier`() {
         // USEA subtotal $380 (30% tier), BM $40
         // Moving $20 from BM to USEA hits $400 (50% tier)
-        val useaItems = (1..38).map { orderItem("USEA Card $it", Seller.USEA, 1000) }
-        val bmItems = (1..4).map { orderItem("BM Card $it", Seller.BOOTLEG_MAGE, 1000) }
 
-        val initialPlan = ShoppingPlan(
-            orders = listOf(
-                SellerOrder(Seller.USEA, useaItems, 38000, 30, 0, 26600),
-                SellerOrder(Seller.BOOTLEG_MAGE, bmItems, 4000, 0, 1000, 5000)
+        val sharedMatch = MultiMatch(
+            deckEntry = entry("Shared Card", 2),
+            bestOption = matchOption("Shared Card", Seller.BOOTLEG_MAGE, 1000),
+            alternatives = listOf(
+                matchOption("Shared Card", Seller.USEA, 1000),
+                matchOption("Shared Card", Seller.BOOTLEG_MAGE, 1000)
             ),
-            totalPriceCents = 31600,
-            savingsVsSingleSeller = 0
+            realCardFallback = null
         )
 
-        val optimized = ShoppingOptimizer.optimize(initialPlan)
+        val useaMatches = (1..38).map { multiMatch("USEA Card $it", Seller.USEA, 1000) }
+        val bmMatches = listOf(
+            multiMatch("BM Card 1", Seller.BOOTLEG_MAGE, 1000),
+            multiMatch("BM Card 2", Seller.BOOTLEG_MAGE, 1000),
+            sharedMatch
+        )
+
+        val optimized = ShoppingOptimizer.optimize(useaMatches + bmMatches)
 
         val useaOrder = optimized.orders.find { it.seller == Seller.USEA }!!
         assertEquals(50, useaOrder.discountPercent)
@@ -102,25 +115,11 @@ class ShoppingOptimizerTest {
     @Ignore
     @Test
     fun `shipping included when below free shipping threshold`() {
-        val items = listOf(
-            orderItem("Cheap Card", Seller.USEA, 2000) // $20
-        )
-        val initialPlan = ShoppingPlan(
-            orders = listOf(
-                SellerOrder(
-                    seller = Seller.USEA,
-                    items = items,
-                    subtotalCents = 2000,
-                    discountPercent = 0,
-                    shippingCents = 0,
-                    totalCents = 2000
-                )
-            ),
-            totalPriceCents = 2000,
-            savingsVsSingleSeller = 0
+        val matches = listOf(
+            multiMatch("Cheap Card", Seller.USEA, 2000) // $20
         )
 
-        val optimized = ShoppingOptimizer.optimize(initialPlan)
+        val optimized = ShoppingOptimizer.optimize(matches)
 
         val useaOrder = optimized.orders.find { it.seller == Seller.USEA }!!
         assertEquals(1000, useaOrder.shippingCents)

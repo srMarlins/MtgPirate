@@ -322,6 +322,7 @@
     <ID>TooManyFunctions:PixelComponents.kt:ui.PixelComponents.kt</ID>
     <ID>UnusedParameter:PixelComponents.kt:index: Int</ID>
     <ID>UnusedParameter:ResultsScreen.kt:matchedCount: Int = 0</ID>
+    <ID>UnusedParameter:ShoppingOptimizer.kt:ShoppingOptimizer$matches: List&lt;MultiMatch&gt;</ID>
     <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.material.*</ID>
     <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.runtime.*</ID>
