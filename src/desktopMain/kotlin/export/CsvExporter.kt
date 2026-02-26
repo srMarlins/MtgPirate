@@ -1,9 +1,7 @@
 package export
 
 import model.DeckEntryMatch
-import model.VariantType
 import platform.AppDirectories
-import util.formatPrice
 import java.nio.file.Path
 import java.nio.file.Files
 import java.time.LocalDateTime
@@ -14,108 +12,40 @@ data class ExportResult(
     val unfoundCardsPath: Path?
 )
 
+/**
+ * Desktop-only file I/O wrapper around the shared [CsvGenerator].
+ *
+ * All CSV content generation (aggregation, escaping, formatting) lives in
+ * commonMain [CsvGenerator]. This class is responsible only for writing
+ * that content to disk and opening files.
+ */
 object CsvExporter {
-    private const val HEADER = "Card Name,Set,SKU,Card Type,Quantity,Base Price"
-    private val FORMULA_PREFIX_CHARS = charArrayOf('=', '+', '-', '@')
-
-    private fun escapeCsvField(field: String): String {
-        val escaped = field.replace("\"", "\"\"")
-        val safe = if (escaped.isNotEmpty() && escaped.first() in FORMULA_PREFIX_CHARS) "\t$escaped" else escaped
-        return "\"$safe\""
-    }
 
     fun export(matches: List<DeckEntryMatch>, target: Path? = null): Path {
         val file = target ?: AppDirectories.exportsDir.resolve("export-${timestamp()}.csv")
-        val resolved = matches.filter { it.selectedVariant != null }
-        // Aggregate identical selected variants
-        val grouped = resolved.groupBy {
-            val variant = it.selectedVariant!!
-            Triple(variant.nameOriginal, variant.setCode, variant.sku)
-        }
-        val lines = mutableListOf<String>()
-        lines += HEADER
-        grouped.values.forEach { group ->
-            val first = group.first().selectedVariant!!
-            val qtyTotal = group.sumOf { it.deckEntry.qty }
-            lines += listOf(
-                first.nameOriginal,
-                first.setCode,
-                first.sku,
-                first.variantType.displayName,
-                qtyTotal.toString(),
-                formatPrice(first.priceInCents)
-            ).joinToString(",") { escapeCsvField(it) }
-        }
-        lines += ""
-        // Summary
-        val regular = resolved.count { it.selectedVariant!!.variantType == VariantType.REGULAR }
-        val holo = resolved.count { it.selectedVariant!!.variantType == VariantType.HOLO }
-        val foil = resolved.count { it.selectedVariant!!.variantType == VariantType.FOIL }
-        val totalCents = resolved.sumOf { it.selectedVariant!!.priceInCents * it.deckEntry.qty }
-        lines += "${escapeCsvField("--- Summary ---")}"
-        lines += "${escapeCsvField("Regular Cards")},${escapeCsvField(regular.toString())}"
-        lines += "${escapeCsvField("Holo Cards")},${escapeCsvField(holo.toString())}"
-        lines += "${escapeCsvField("Foil Cards")},${escapeCsvField(foil.toString())}"
-        lines += "${escapeCsvField("Total Price")},${escapeCsvField(formatPrice(totalCents))}"
-        Files.write(file, lines)
+        val content = CsvGenerator.generateFoundCardsCsv(matches)
+        Files.write(file, content.toByteArray())
         return file
     }
 
     fun exportWizardResults(matches: List<DeckEntryMatch>): ExportResult {
         val timestamp = timestamp()
 
-        // Create found cards file
-        val resolved = matches.filter { it.selectedVariant != null }
-        val foundCardsPath = if (resolved.isNotEmpty()) {
+        // Found cards
+        val foundCsv = CsvGenerator.generateFoundCardsCsv(matches)
+        val foundCardsPath = if (foundCsv.isNotEmpty()) {
             val file = AppDirectories.exportsDir.resolve("found-cards-${timestamp}.csv")
-            val lines = mutableListOf<String>()
-            lines += HEADER
-
-            // Aggregate identical selected variants
-            val grouped = resolved.groupBy {
-                val variant = it.selectedVariant!!
-                Triple(variant.nameOriginal, variant.setCode, variant.sku)
-            }
-            grouped.values.forEach { group ->
-                val first = group.first().selectedVariant!!
-                val qtyTotal = group.sumOf { it.deckEntry.qty }
-                lines += listOf(
-                    first.nameOriginal,
-                    first.setCode,
-                    first.sku,
-                    first.variantType.displayName,
-                    qtyTotal.toString(),
-                    formatPrice(first.priceInCents)
-                ).joinToString(",") { escapeCsvField(it) }
-            }
-
-            lines += ""
-            lines += "${escapeCsvField("--- Summary ---")}"
-            val regular = resolved.count { it.selectedVariant!!.variantType == VariantType.REGULAR }
-            val holo = resolved.count { it.selectedVariant!!.variantType == VariantType.HOLO }
-            val foil = resolved.count { it.selectedVariant!!.variantType == VariantType.FOIL }
-            val totalCents = resolved.sumOf { it.selectedVariant!!.priceInCents * it.deckEntry.qty }
-            lines += "${escapeCsvField("Regular Cards")},${escapeCsvField(regular.toString())}"
-            lines += "${escapeCsvField("Holo Cards")},${escapeCsvField(holo.toString())}"
-            lines += "${escapeCsvField("Foil Cards")},${escapeCsvField(foil.toString())}"
-            lines += "${escapeCsvField("Total Price")},${escapeCsvField(formatPrice(totalCents))}"
-
-            Files.write(file, lines)
+            Files.write(file, foundCsv.toByteArray())
             file
         } else {
             null
         }
 
-        // Create unfound cards file
-        val unfound = matches.filter { it.selectedVariant == null && it.deckEntry.include }
-        val unfoundCardsPath = if (unfound.isNotEmpty()) {
+        // Unfound cards
+        val unfoundTxt = CsvGenerator.generateUnfoundCardsTxt(matches)
+        val unfoundCardsPath = if (unfoundTxt.isNotEmpty()) {
             val file = AppDirectories.exportsDir.resolve("unfound-cards-${timestamp}.txt")
-            val lines = mutableListOf<String>()
-            unfound.forEach { match ->
-                lines += "${match.deckEntry.qty} ${match.deckEntry.cardName}"
-            }
-
-            Files.write(file, lines)
+            Files.write(file, unfoundTxt.toByteArray())
             file
         } else {
             null
@@ -124,6 +54,6 @@ object CsvExporter {
         return ExportResult(foundCardsPath, unfoundCardsPath)
     }
 
-    private fun timestamp(): String = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+    private fun timestamp(): String =
+        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
 }
-
