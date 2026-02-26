@@ -1,15 +1,15 @@
 [versions]
-kotlin = "2.2.21"
-compose = "1.9.3"
-serialization = "1.9.0"
+kotlin = "2.3.10"
+compose = "1.10.1"
+serialization = "1.10.0"
 datetime = "0.7.1"
-ksoup = "0.2.5"
+ksoup = "0.2.6"
 coroutines = "1.10.2"
 navigation = "2.9.1"
-coil = "3.3.0"
-ktor = "3.3.2"
+coil = "3.4.0"
+ktor = "3.4.0"
 sqldelight = "2.2.1"
-detekt = "1.23.8"
+detekt = "2.0.0-alpha.2"
 
 [libraries]
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
@@ -38,4 +38,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }

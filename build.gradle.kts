@@ -158,6 +158,19 @@ tasks.matching { it.name.contains("verifyCommonMain") && it.name.contains("Migra
 
 detekt {
     config.setFrom(files("detekt.yml"))
-    baseline = file("detekt-baseline.xml")
     buildUponDefaultConfig = true
+}
+
+// detekt 2.0 KMP: the lifecycle `detekt` task is empty; wire it to main source sets.
+// Also declare explicit baseline dependencies to satisfy Gradle configuration cache.
+tasks.named("detekt") {
+    dependsOn(tasks.matching {
+        it.name.startsWith("detekt") && it.name.endsWith("SourceSet") && it.name.contains("Main")
+    })
+}
+tasks.matching { it.name.matches(Regex("detekt\\w+SourceSet")) && !it.name.contains("Baseline") }.configureEach {
+    val baselineTaskName = name.replace("detekt", "detektBaseline")
+    if (tasks.names.contains(baselineTaskName)) {
+        mustRunAfter(baselineTaskName)
+    }
 }

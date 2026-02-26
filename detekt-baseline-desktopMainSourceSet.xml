@@ -1,0 +1,55 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:Main.kt:fun main</ID>
+    <ID>LongMethod:DesktopResolveScreen.kt:@Composable fun DesktopResolveScreen</ID>
+    <ID>LongMethod:DesktopSavedImportsDialog.kt:@Composable actual fun SavedImportsDialog</ID>
+    <ID>LongMethod:DesktopSavedImportsDialog.kt:@Composable fun SavedImportCard</ID>
+    <ID>LongMethod:Main.kt:@Composable fun FrameWindowScope.CustomTitleBar</ID>
+    <ID>LongMethod:Main.kt:fun main</ID>
+    <ID>LongMethod:PixelImageComponents.kt:@Composable fun PixelImageModal</ID>
+    <ID>LongMethod:PixelImageComponents.kt:@Composable fun PixelImagePreview</ID>
+    <ID>MagicNumber:DesktopResolveScreen.kt:0.3f</ID>
+    <ID>MagicNumber:DesktopSavedImportsDialog.kt:200</ID>
+    <ID>MagicNumber:DesktopSavedImportsDialog.kt:3</ID>
+    <ID>MagicNumber:Main.kt:3</ID>
+    <ID>MagicNumber:Main.kt:4</ID>
+    <ID>MagicNumber:Main.kt:400</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt:.</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt:Text("ACTION", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt:Text("CARD NAME", Modifier.weight(0.3f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt:Text("IMAGE", Modifier.width(70.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt:Text("MATCH INFO", Modifier.weight(0.3f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt:Text("PRICE", Modifier.width(80.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt:Text("SET", Modifier.width(70.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:DesktopResolveScreen.kt:Text("VARIANT", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:Main.kt:// Coming from results -&gt; resolve: slide up from bottom and fade in (vertical twin of stepper)</ID>
+    <ID>MaxLineLength:Main.kt:// Going back to results: slide down to bottom and fade out (vertical twin of stepper)</ID>
+    <ID>MaxLineLength:Main.kt:val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry)</ID>
+    <ID>MaxLineLength:PixelImageComponents.kt:var loadState by remember { mutableStateOf&lt;AsyncImagePainter.State&gt;(AsyncImagePainter.State.Empty) }</ID>
+    <ID>SwallowedException:DesktopMviPlatformServices.kt:DesktopMviPlatformServices$e: Exception</ID>
+    <ID>SwallowedException:DesktopSavedImportsDialog.kt:e: Exception</ID>
+    <ID>SwallowedException:PlatformUtils.kt:e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DesktopMviPlatformServices.kt:DesktopMviPlatformServices$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DesktopSavedImportsDialog.kt:e: Exception</ID>
+    <ID>TooGenericExceptionCaught:PlatformUtils.kt:e: Exception</ID>
+    <ID>UnusedParameter:Main.kt:hasCatalog: Boolean</ID>
+    <ID>WildcardImport:DesktopResolveScreen.kt:import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:DesktopResolveScreen.kt:import androidx.compose.material.*</ID>
+    <ID>WildcardImport:DesktopResolveScreen.kt:import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:DesktopSavedImportsDialog.kt:import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:DesktopSavedImportsDialog.kt:import androidx.compose.material.*</ID>
+    <ID>WildcardImport:DesktopSavedImportsDialog.kt:import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:Main.kt:import androidx.compose.animation.*</ID>
+    <ID>WildcardImport:Main.kt:import androidx.compose.animation.core.*</ID>
+    <ID>WildcardImport:Main.kt:import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:Main.kt:import androidx.compose.material.*</ID>
+    <ID>WildcardImport:Main.kt:import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:Main.kt:import ui.*</ID>
+    <ID>WildcardImport:PixelImageComponents.kt:import androidx.compose.animation.*</ID>
+    <ID>WildcardImport:PixelImageComponents.kt:import androidx.compose.animation.core.*</ID>
+    <ID>WildcardImport:PixelImageComponents.kt:import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:PixelImageComponents.kt:import androidx.compose.runtime.*</ID>
+  </CurrentIssues>
+</SmellBaseline>
