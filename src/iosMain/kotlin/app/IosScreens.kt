@@ -2,6 +2,7 @@ package app
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ui.*
@@ -32,14 +34,23 @@ fun IosImportScreen(
     isDarkTheme: Boolean = false,
     onToggleTheme: () -> Unit = {}
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    // Dismiss keyboard when tapping outside the text field
+    val focusManager = LocalFocusManager.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { focusManager.clearFocus() }
+    ) {
         // Scanline effect overlay
         ScanlineEffect(alpha = 0.03f)
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .safeDrawingPadding(),
+                .fillMaxSize(),
             verticalArrangement = Arrangement.Top
         ) {
             // Inline header with MTG PIRATE branding, stepper, and theme toggle
@@ -156,7 +167,6 @@ fun IosPreferencesScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .safeDrawingPadding()
         ) {
             // Inline header with MTG PIRATE branding, stepper, and theme toggle
             IosInlineHeader(
@@ -369,7 +379,7 @@ fun IosResultsScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
         
-        Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+        Column(modifier = Modifier.fillMaxSize()) {
             // Inline header with MTG PIRATE branding, stepper, and theme toggle
             IosInlineHeader(
                 currentStep = 3,
@@ -413,7 +423,6 @@ fun IosResolveScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .safeDrawingPadding()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             // Compact header with back button
@@ -671,7 +680,6 @@ fun IosExportScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .safeDrawingPadding()
         ) {
             // Inline header with MTG PIRATE branding, stepper, and theme toggle
             IosInlineHeader(
