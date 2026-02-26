@@ -1,6 +1,8 @@
 package catalog
 
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import model.CardVariant
 import platform.currentTimeMillis
 
@@ -10,6 +12,7 @@ import platform.currentTimeMillis
  */
 object ScryfallImageEnricher {
     private const val RATE_LIMIT_DELAY_MS = 100L // 10 requests per second
+    private val mutex = Mutex()
     private var lastRequestTime = 0L
 
     /**
@@ -30,13 +33,15 @@ object ScryfallImageEnricher {
         // Skip if already has an image URL
         if (variant.imageUrl != null) return variant
 
-        // Rate limiting
-        val now = currentTimeMillis()
-        val timeSinceLastRequest = now - lastRequestTime
-        if (timeSinceLastRequest < RATE_LIMIT_DELAY_MS) {
-            delay(RATE_LIMIT_DELAY_MS - timeSinceLastRequest)
+        // Rate limiting — synchronized to prevent concurrent coroutines from bypassing the limit
+        mutex.withLock {
+            val now = currentTimeMillis()
+            val timeSinceLastRequest = now - lastRequestTime
+            if (timeSinceLastRequest < RATE_LIMIT_DELAY_MS) {
+                delay(RATE_LIMIT_DELAY_MS - timeSinceLastRequest)
+            }
+            lastRequestTime = currentTimeMillis()
         }
-        lastRequestTime = currentTimeMillis()
 
         try {
             val imageUrl = if (variant.collectorNumber != null) {
