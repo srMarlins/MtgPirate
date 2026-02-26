@@ -149,12 +149,12 @@ class IosMviPlatformServices(
                 val priceCents = variant.priceInCents
                 val priceStr = platform.formatDecimal(priceCents / 100.0, 2)
 
-                sb.appendLine("${variant.nameOriginal},${variant.setCode},${variant.sku},${variant.variantType},$qty,$priceStr")
+                sb.appendLine("${variant.nameOriginal},${variant.setCode},${variant.sku},${variant.variantType.displayName},$qty,$priceStr")
 
                 when (variant.variantType) {
-                    "Regular" -> regularCount += qty
-                    "Holo" -> holoCount += qty
-                    "Foil" -> foilCount += qty
+                    model.VariantType.REGULAR -> regularCount += qty
+                    model.VariantType.HOLO -> holoCount += qty
+                    model.VariantType.FOIL -> foilCount += qty
                 }
                 totalPriceCents += priceCents * qty
             }
