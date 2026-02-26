@@ -408,7 +408,7 @@ fun ResultsScreen(
                 val listState = rememberLazyListState()
                 Box(Modifier.fillMaxSize()) {
                     LazyColumn(Modifier.fillMaxSize(), state = listState) {
-                        itemsIndexed(sorted) { _, m ->
+                        itemsIndexed(sorted, key = { _, m -> m.uniqueIdentifier }) { _, m ->
                             val globalIndex = matches.indexOf(m)
                             val variant = m.selectedVariant
                             val rowTotal = variant?.priceInCents?.let { it * m.deckEntry.qty }

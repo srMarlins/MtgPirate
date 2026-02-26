@@ -134,7 +134,7 @@ fun MatchesScreen(
                 val listState = rememberLazyListState()
                 Box(Modifier.fillMaxSize()) {
                     LazyColumn(Modifier.fillMaxSize(), state = listState) {
-                        itemsIndexed(filtered) { index, m ->
+                        itemsIndexed(filtered, key = { _, m -> m.uniqueIdentifier }) { index, m ->
                             val v = m.selectedVariant
                             val price = v?.priceInCents
                             val rowTotal = price?.let { it * m.deckEntry.qty }

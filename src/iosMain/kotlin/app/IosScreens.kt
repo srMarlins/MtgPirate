@@ -488,7 +488,7 @@ fun IosResolveScreen(
                             state = listState,
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            items(sorted) { cand: model.MatchCandidate ->
+                            items(sorted, key = { it.uniqueIdentifier }) { cand: model.MatchCandidate ->
                                 val variant = cand.variant
                                 
                                 // Trigger image enrichment
