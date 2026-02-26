@@ -86,7 +86,7 @@ fun PixelImagePreview(
                         Text(
                             text = "✗",
                             style = MaterialTheme.typography.h6,
-                            color = Color(0xFFF44336)
+                            color = PixelRed
                         )
                     }
                 }
@@ -265,7 +265,7 @@ fun PixelImageModal(
                                         Text(
                                             text = "⚠ IMAGE LOAD FAILED",
                                             style = MaterialTheme.typography.h6,
-                                            color = Color(0xFFF44336),
+                                            color = PixelRed,
                                             fontWeight = FontWeight.Bold
                                         )
                                         Spacer(Modifier.height(8.dp))

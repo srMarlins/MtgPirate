@@ -77,8 +77,8 @@ fun FrameWindowScope.CustomTitleBar(
                 .background(
                     Brush.horizontalGradient(
                         colors = listOf(
-                            if (isDarkTheme) Color(0xFF1E293B) else Color(0xFF475569),
-                            if (isDarkTheme) Color(0xFF334155) else Color(0xFF64748B)
+                            if (isDarkTheme) Slate800 else Slate600,
+                            if (isDarkTheme) Slate700 else Slate500
                         )
                     )
                 )
@@ -104,7 +104,7 @@ fun FrameWindowScope.CustomTitleBar(
                     Text(
                         "MTG PIRATE",
                         style = MaterialTheme.typography.subtitle1,
-                        color = if (isDarkTheme) Color(0xFFF1F5F9) else Color.White,
+                        color = if (isDarkTheme) Slate100 else Color.White,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.5.sp
                     )
@@ -138,14 +138,14 @@ fun FrameWindowScope.CustomTitleBar(
                         text = "MATCHES",
                         onClick = onMatchesClick,
                         enabled = hasMatches,
-                        color = Color(0xFF8B5CF6)
+                        color = Violet500
                     )
 
                     CompactPixelButton(
                         text = "RESULTS",
                         onClick = onResultsClick,
                         enabled = resultsEnabled,
-                        color = Color(0xFF06B6D4)
+                        color = Cyan500
                     )
                 }
 
@@ -159,7 +159,7 @@ fun FrameWindowScope.CustomTitleBar(
                         modifier = Modifier
                             .size(28.dp)
                             .background(
-                                if (isDarkTheme) Color(0xFF475569) else Color(0xFF94A3B8),
+                                if (isDarkTheme) Slate600 else Slate400,
                                 shape = RoundedCornerShape(4.dp)
                             )
                             .clickable { onToggleTheme() }
@@ -176,14 +176,14 @@ fun FrameWindowScope.CustomTitleBar(
                     // Minimize button
                     WindowControlButton(
                         text = "—",
-                        color = Color(0xFFFBBF24),
+                        color = Amber400,
                         onClick = { windowState.isMinimized = true }
                     )
 
                     // Maximize/Restore button
                     WindowControlButton(
                         text = if (windowState.placement == WindowPlacement.Maximized) "❐" else "□",
-                        color = Color(0xFF10B981),
+                        color = Emerald500,
                         onClick = {
                             windowState.placement = if (windowState.placement == WindowPlacement.Maximized) {
                                 WindowPlacement.Floating
@@ -196,7 +196,7 @@ fun FrameWindowScope.CustomTitleBar(
                     // Close button
                     WindowControlButton(
                         text = "✕",
-                        color = Color(0xFFEF4444),
+                        color = Red500,
                         onClick = onClose
                     )
                 }

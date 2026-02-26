@@ -75,7 +75,7 @@ fun ExportScreen(
         if (ambiguousCount > 0) {
             PixelCard(glowing = true) {
                 Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    PixelBadge(text = "Resolve Required", color = Color(0xFFFF9800))
+                    PixelBadge(text = "Resolve Required", color = PixelOrange)
                     Spacer(Modifier.width(12.dp))
                     Text(
                         "There are $ambiguousCount ambiguous cards. Please resolve them before exporting.",

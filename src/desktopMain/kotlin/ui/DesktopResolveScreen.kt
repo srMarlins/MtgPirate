@@ -67,7 +67,7 @@ fun DesktopResolveScreen(
                     Text(
                         "⚠ NO CANDIDATES AVAILABLE",
                         style = MaterialTheme.typography.h6,
-                        color = Color(0xFFF44336),
+                        color = PixelRed,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(Modifier.height(8.dp))
