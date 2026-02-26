@@ -121,8 +121,12 @@ class IosMviPlatformServices(
 
     override suspend fun openUrl(url: String) {
         withContext(Dispatchers.Main) {
-            val nsUrl = platform.Foundation.NSURL(string = url) ?: return@withContext
-            platform.UIKit.UIApplication.sharedApplication.openURL(nsUrl)
+            try {
+                val nsUrl = platform.Foundation.NSURL(string = url) ?: return@withContext
+                platform.UIKit.UIApplication.sharedApplication.openURL(nsUrl)
+            } catch (e: Exception) {
+                // Log handled by caller
+            }
         }
     }
 
