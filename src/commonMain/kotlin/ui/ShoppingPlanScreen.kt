@@ -39,6 +39,7 @@ import model.OrderItem
 import model.Seller
 import model.SellerOrder
 import model.ShoppingPlan
+import util.encodeUrlParameter
 import util.formatPrice
 
 private const val TCGPLAYER_MASS_ENTRY_URL = "https://www.tcgplayer.com/massentry?productline=Magic"
@@ -499,7 +500,7 @@ private fun SellerActionButtons(
                     onClick = {
                         val exportText = formatForExport(Seller.USEA, order.items)
                         val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
-                        val mailtoUrl = "mailto:?subject=$subject&body=$exportText"
+                        val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&body=${encodeUrlParameter(exportText)}"
                         onOpenUrl(mailtoUrl)
                     },
                     variant = PixelButtonVariant.SECONDARY,

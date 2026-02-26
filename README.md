@@ -463,8 +463,7 @@ MtgPirate/
 │       ├── app/
 │       │   ├── Main.kt                     # iOS entry point
 │       │   ├── IosScreens.kt               # iOS wizard screens
-│       │   ├── IosCompactStepper.kt        # Mobile stepper
-│       │   └── IosExportHelpers.kt         # CSV export helpers
+│       │   └── IosCompactStepper.kt        # Mobile stepper
 │       ├── database/
 │       │   └── DatabaseDriverFactory.kt    # SQLite Native driver
 │       ├── platform/

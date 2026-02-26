@@ -162,6 +162,7 @@ fun IosNavigationHost(
                 onNext = {
                     viewModel.processIntent(ViewIntent.CompleteWizardStep(3))
                     viewModel.processIntent(ViewIntent.SaveCurrentImport)
+                    viewModel.processIntent(ViewIntent.OptimizeShoppingPlan)
                     navigateTo(IosScreen.EXPORT)
                 },
                 onEnrichVariant = { variant ->
@@ -219,6 +220,7 @@ fun IosNavigationHost(
                         scope.launch { platformServices.openUrl(url) }
                     },
                     onBack = { navigateTo(IosScreen.RESULTS) },
+                    isLoading = state.isMatching,
                     isDarkTheme = state.isDarkTheme,
                     onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
                 )
