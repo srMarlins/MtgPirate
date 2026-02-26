@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.jetbrains.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.detekt)
 }
 
 group = "org.srmarlins"
@@ -137,4 +138,10 @@ sqldelight {
             packageName.set("org.srmarlins.mtgpirate.db")
         }
     }
+}
+
+detekt {
+    config.setFrom(files("detekt.yml"))
+    baseline = file("detekt-baseline.xml")
+    buildUponDefaultConfig = true
 }
