@@ -1,6 +1,6 @@
 package platform
 
-import catalog.RemoteCatalogDataSource
+import catalog.KtorRemoteCatalogDataSource
 import database.Database
 import export.CsvExporter
 import kotlinx.coroutines.Dispatchers
@@ -16,12 +16,15 @@ import java.awt.Desktop
 /**
  * Desktop implementation of MVI platform services.
  * Provides platform-specific operations for the MVI ViewModel.
+ *
+ * Uses the shared [KtorRemoteCatalogDataSource] (commonMain) for catalog fetching,
+ * eliminating the duplicate desktop-only HttpURLConnection implementation.
  */
 class DesktopMviPlatformServices(
     private val database: Database
 ) : MviPlatformServices {
 
-    private val remoteCatalogDataSource = RemoteCatalogDataSource()
+    private val remoteCatalogDataSource = KtorRemoteCatalogDataSource()
 
     override suspend fun fetchCatalogFromRemote(log: (String) -> Unit): Catalog? {
         return withContext(Dispatchers.IO) {
