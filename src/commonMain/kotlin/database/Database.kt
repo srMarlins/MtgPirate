@@ -64,7 +64,7 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
             nameNormalized = variant.nameNormalized,
             setCode = variant.setCode,
             sku = variant.sku,
-            variantType = variant.variantType,
+            variantType = variant.variantType.displayName,
             priceInCents = variant.priceInCents.toLong(),
             collectorNumber = variant.collectorNumber,
             imageUrl = variant.imageUrl
@@ -116,7 +116,7 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
                     nameNormalized = variant.nameNormalized,
                     setCode = variant.setCode,
                     sku = variant.sku,
-                    variantType = variant.variantType,
+                    variantType = variant.variantType.displayName,
                     priceInCents = variant.priceInCents.toLong(),
                     collectorNumber = variant.collectorNumber,
                     imageUrl = variant.imageUrl

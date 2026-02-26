@@ -80,7 +80,7 @@ object Matcher {
         val bySet = if (config.setPriority.isNotEmpty()) {
             filtered.sortedBy { idxOrEnd(config.setPriority, it.setCode) }
         } else filtered
-        val byVariant = bySet.sortedBy { idxOrEnd(config.variantPriority, it.variantType) }
+        val byVariant = bySet.sortedBy { idxOrEnd(config.variantPriority, it.variantType.displayName) }
         return byVariant.firstOrNull()
     }
 

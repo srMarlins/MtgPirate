@@ -1,9 +1,8 @@
 package platform
 
-import catalog.CatalogCsvParser
 import catalog.KtorRemoteCatalogDataSource
-import catalog.ScryfallImageEnricher
 import database.Database
+import export.CsvGenerator
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.darwin.Darwin
 import io.ktor.client.plugins.logging.*
@@ -11,7 +10,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import model.Catalog
-import model.CardVariant
 import model.DeckEntryMatch
 import model.LogEntry
 import model.Preferences
@@ -82,14 +80,8 @@ class IosMviPlatformServices(
     override suspend fun exportCsv(matches: List<DeckEntryMatch>, onComplete: (String) -> Unit) {
         withContext(Dispatchers.Default) {
             try {
-                // Generate CSV content
-                val csvContent = generateCsvContent(matches)
-
-                // Copy to clipboard for sharing
-                // In a production iOS app, this would use the UIActivityViewController
-                // to present sharing options (Files app, email, etc.)
+                val csvContent = CsvGenerator.generateFoundCardsCsv(matches)
                 copyToClipboard(csvContent)
-
                 onComplete("CSV copied to clipboard (${matches.size} cards)")
             } catch (e: Exception) {
                 onComplete("Export failed: ${e.message}")
@@ -103,21 +95,17 @@ class IosMviPlatformServices(
     ) {
         withContext(Dispatchers.Default) {
             try {
-                // For iOS, generate both CSVs and copy to clipboard
-                val foundMatches = matches.filter { it.selectedVariant != null }
-                val unfoundMatches = matches.filter { it.selectedVariant == null }
-
-                val foundCsv = if (foundMatches.isNotEmpty()) generateCsvContent(foundMatches) else null
-                val unfoundCsv = if (unfoundMatches.isNotEmpty()) generateUnfoundCsvContent(unfoundMatches) else null
+                val foundCsv = CsvGenerator.generateFoundCardsCsv(matches)
+                val unfoundTxt = CsvGenerator.generateUnfoundCardsTxt(matches)
 
                 // Copy found cards to clipboard
-                if (foundCsv != null) {
+                if (foundCsv.isNotEmpty()) {
                     copyToClipboard(foundCsv)
                 }
 
                 onComplete(
-                    foundCsv?.let { "Found cards CSV copied to clipboard" },
-                    unfoundCsv?.let { "Unfound: ${unfoundMatches.size} cards" }
+                    if (foundCsv.isNotEmpty()) "Found cards CSV copied to clipboard" else null,
+                    if (unfoundTxt.isNotEmpty()) "Unfound cards available" else null
                 )
             } catch (e: Exception) {
                 onComplete(null, "Export failed: ${e.message}")
@@ -131,53 +119,4 @@ class IosMviPlatformServices(
         }
     }
 
-    // Helper functions
-
-    private fun generateCsvContent(matches: List<DeckEntryMatch>): String {
-        val sb = StringBuilder()
-        sb.appendLine("Card Name,Set,SKU,Card Type,Quantity,Base Price")
-
-        var regularCount = 0
-        var holoCount = 0
-        var foilCount = 0
-        var totalPriceCents = 0
-
-        matches.forEach { match ->
-            val variant = match.selectedVariant
-            if (variant != null) {
-                val qty = match.deckEntry.qty
-                val priceCents = variant.priceInCents
-                val priceStr = platform.formatDecimal(priceCents / 100.0, 2)
-
-                sb.appendLine("${variant.nameOriginal},${variant.setCode},${variant.sku},${variant.variantType},$qty,$priceStr")
-
-                when (variant.variantType) {
-                    "Regular" -> regularCount += qty
-                    "Holo" -> holoCount += qty
-                    "Foil" -> foilCount += qty
-                }
-                totalPriceCents += priceCents * qty
-            }
-        }
-
-        sb.appendLine()
-        sb.appendLine("--- Summary ---")
-        sb.appendLine("Regular Cards,$regularCount")
-        sb.appendLine("Holo Cards,$holoCount")
-        sb.appendLine("Foil Cards,$foilCount")
-        sb.appendLine("Total Price,${platform.formatDecimal(totalPriceCents / 100.0, 2)}")
-
-        return sb.toString()
-    }
-
-    private fun generateUnfoundCsvContent(matches: List<DeckEntryMatch>): String {
-        val sb = StringBuilder()
-        sb.appendLine("Card Name,Quantity,Section")
-
-        matches.forEach { match ->
-            sb.appendLine("${match.deckEntry.cardName},${match.deckEntry.qty},${match.deckEntry.section}")
-        }
-
-        return sb.toString()
-    }
 }

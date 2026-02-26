@@ -157,7 +157,7 @@ fun ResolveScreen(
                                         style = MaterialTheme.typography.body2
                                     )
                                     Text(
-                                        variant.variantType,
+                                        variant.variantType.displayName,
                                         Modifier.width(100.dp),
                                         style = MaterialTheme.typography.body2
                                     )
