@@ -1,25 +1,43 @@
 package ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import model.CardVariant
 import model.DeckEntryMatch
 import model.MatchStatus
+import model.MultiMatch
+import model.Seller
 import util.formatPrice
 
 /**
@@ -38,6 +56,9 @@ fun MobileResultsScreen(
     matchedCount: Int = 0,
     unmatchedCount: Int = 0,
     ambiguousCount: Int = 0,
+    multiMatches: List<MultiMatch> = emptyList(),
+    availableSellers: List<Seller> = emptyList(),
+    onOverrideSeller: (Int, Seller) -> Unit = { _, _ -> },
 ) {
     val totalMatched = matches.filter { it.selectedVariant != null }
     val missed = unmatchedCount
@@ -46,6 +67,13 @@ fun MobileResultsScreen(
     var filterMode by rememberSaveable { mutableStateOf(0) } // 0 = All, 1 = Matched, 2 = Unmatched, 3 = Ambiguous
     val sortSaver = remember { Saver<SortOption, String>(save = { it.name }, restore = { SortOption.valueOf(it) }) }
     var sortOption by rememberSaveable(stateSaver = sortSaver) { mutableStateOf(SortOption.DEFAULT) }
+
+    // Multi-seller state
+    var sellerFilter by remember { mutableStateOf<Seller?>(null) }
+    var expandedRows by remember { mutableStateOf(emptySet<String>()) }
+    val multiMatchByEntryId = remember(multiMatches) {
+        multiMatches.associateBy { it.deckEntry.id }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Scanline effect
@@ -216,8 +244,72 @@ fun MobileResultsScreen(
                 }
             }
 
+            // Seller filter chips (only when multiple sellers available)
+            if (availableSellers.size > 1) {
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // "All Sellers" chip
+                    Box(
+                        modifier = Modifier
+                            .clip(PixelShape(cornerSize = 6.dp))
+                            .background(
+                                if (sellerFilter == null) MaterialTheme.colors.primary.copy(alpha = 0.2f)
+                                else MaterialTheme.colors.surface,
+                                shape = PixelShape(cornerSize = 6.dp)
+                            )
+                            .clickable { sellerFilter = null }
+                            .pixelBorder(
+                                borderWidth = if (sellerFilter == null) 2.dp else 1.dp,
+                                cornerSize = 6.dp,
+                                enabled = true,
+                                glowAlpha = if (sellerFilter == null) 0.4f else 0.1f
+                            )
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            "All",
+                            style = MaterialTheme.typography.caption,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colors.primary
+                        )
+                    }
+                    // Per-seller chips
+                    availableSellers.forEach { seller ->
+                        val color = sellerColor(seller)
+                        val isSelected = sellerFilter == seller
+                        Box(
+                            modifier = Modifier
+                                .clip(PixelShape(cornerSize = 6.dp))
+                                .background(
+                                    if (isSelected) color.copy(alpha = 0.2f)
+                                    else MaterialTheme.colors.surface,
+                                    shape = PixelShape(cornerSize = 6.dp)
+                                )
+                                .clickable { sellerFilter = if (isSelected) null else seller }
+                                .pixelBorder(
+                                    borderWidth = if (isSelected) 2.dp else 1.dp,
+                                    cornerSize = 6.dp,
+                                    enabled = true,
+                                    glowAlpha = if (isSelected) 0.4f else 0.1f
+                                )
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                seller.displayName,
+                                style = MaterialTheme.typography.caption,
+                                fontWeight = FontWeight.Bold,
+                                color = color
+                            )
+                        }
+                    }
+                }
+            }
+
             Spacer(Modifier.height(16.dp))
-            
+
             // Loading indicator during matching
             if (isLoading) {
                 Box(
@@ -239,7 +331,7 @@ fun MobileResultsScreen(
                 }
                 Spacer(Modifier.height(16.dp))
             }
-            
+
             // Hide table and list when loading
             if (!isLoading) {
 
@@ -332,17 +424,27 @@ fun MobileResultsScreen(
                 else -> matches
             }
 
+            // Apply seller filter
+            val sellerFiltered = if (sellerFilter != null) {
+                filtered.filter { m ->
+                    val mm = multiMatchByEntryId[m.deckEntry.id]
+                    mm?.bestOption?.seller == sellerFilter
+                }
+            } else {
+                filtered
+            }
+
             // Apply sorting
             val sorted = when (sortOption) {
-                SortOption.NAME_ASC -> filtered.sortedBy { it.deckEntry.cardName.lowercase() }
-                SortOption.NAME_DESC -> filtered.sortedByDescending { it.deckEntry.cardName.lowercase() }
-                SortOption.QTY_ASC -> filtered.sortedBy { it.deckEntry.qty }
-                SortOption.QTY_DESC -> filtered.sortedByDescending { it.deckEntry.qty }
-                SortOption.PRICE_ASC -> filtered.sortedBy { it.selectedVariant?.priceInCents ?: Int.MAX_VALUE }
-                SortOption.PRICE_DESC -> filtered.sortedByDescending { it.selectedVariant?.priceInCents ?: -1 }
-                SortOption.STATUS_ASC -> filtered.sortedBy { it.status.ordinal }
-                SortOption.STATUS_DESC -> filtered.sortedByDescending { it.status.ordinal }
-                SortOption.DEFAULT -> filtered
+                SortOption.NAME_ASC -> sellerFiltered.sortedBy { it.deckEntry.cardName.lowercase() }
+                SortOption.NAME_DESC -> sellerFiltered.sortedByDescending { it.deckEntry.cardName.lowercase() }
+                SortOption.QTY_ASC -> sellerFiltered.sortedBy { it.deckEntry.qty }
+                SortOption.QTY_DESC -> sellerFiltered.sortedByDescending { it.deckEntry.qty }
+                SortOption.PRICE_ASC -> sellerFiltered.sortedBy { it.selectedVariant?.priceInCents ?: Int.MAX_VALUE }
+                SortOption.PRICE_DESC -> sellerFiltered.sortedByDescending { it.selectedVariant?.priceInCents ?: -1 }
+                SortOption.STATUS_ASC -> sellerFiltered.sortedBy { it.status.ordinal }
+                SortOption.STATUS_DESC -> sellerFiltered.sortedByDescending { it.status.ordinal }
+                SortOption.DEFAULT -> sellerFiltered
             }
 
             // Results List with pixel card
@@ -358,80 +460,165 @@ fun MobileResultsScreen(
                             val globalIndex = matches.indexOf(m)
                             val variant = m.selectedVariant
                             val rowTotal = variant?.priceInCents?.let { it * m.deckEntry.qty }
+                            val multiMatch = multiMatchByEntryId[m.deckEntry.id]
+                            val isExpanded = expandedRows.contains(m.deckEntry.id)
 
                             // Trigger image enrichment when variant comes into view
                             variant?.let { v ->
-                                androidx.compose.runtime.LaunchedEffect(v.sku) {
+                                LaunchedEffect(v.sku) {
                                     if (v.imageUrl == null) {
                                         onEnrichVariant?.invoke(v)
                                     }
                                 }
                             }
 
-                            Row(
-                                Modifier.fillMaxWidth().padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // QTY column
-                                Text("${m.deckEntry.qty}", Modifier.width(40.dp), style = MaterialTheme.typography.body2)
+                            Column {
+                                Row(
+                                    Modifier.fillMaxWidth().padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    // QTY column
+                                    Text("${m.deckEntry.qty}", Modifier.width(40.dp), style = MaterialTheme.typography.body2)
 
-                                // CARD column with status badge inline
-                                Column(Modifier.weight(1f).padding(end = 8.dp)) {
-                                    Text(
-                                        m.deckEntry.cardName,
-                                        style = MaterialTheme.typography.body2,
-                                        maxLines = 2
-                                    )
-                                    Spacer(Modifier.height(4.dp))
-                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        // Status badge
-                                        val (statusText, statusColor) = when (m.status) {
-                                            MatchStatus.AUTO_MATCHED -> "Auto" to PixelGreen
-                                            MatchStatus.MANUAL_SELECTED -> "Manual" to PixelBlue
-                                            MatchStatus.AMBIGUOUS -> "Ambiguous" to PixelOrange
-                                            MatchStatus.NOT_FOUND -> "Not Found" to PixelRed
-                                            MatchStatus.UNRESOLVED -> "Pending" to PixelGrey
-                                            MatchStatus.FUZZY_RECHECK -> "Recheck" to PixelYellow
-                                        }
-                                        PixelBadge(
-                                            text = statusText,
-                                            color = statusColor
+                                    // CARD column with status badge inline
+                                    Column(Modifier.weight(1f).padding(end = 8.dp)) {
+                                        Text(
+                                            m.deckEntry.cardName,
+                                            style = MaterialTheme.typography.body2,
+                                            maxLines = 2
                                         )
-
-                                        // Collector number badge if available
-                                        val collectorNumber = m.selectedVariant?.collectorNumber
-                                        if (!collectorNumber.isNullOrBlank()) {
+                                        Spacer(Modifier.height(4.dp))
+                                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            // Status badge
+                                            val (statusText, statusColor) = when (m.status) {
+                                                MatchStatus.AUTO_MATCHED -> "Auto" to PixelGreen
+                                                MatchStatus.MANUAL_SELECTED -> "Manual" to PixelBlue
+                                                MatchStatus.AMBIGUOUS -> "Ambiguous" to PixelOrange
+                                                MatchStatus.NOT_FOUND -> "Not Found" to PixelRed
+                                                MatchStatus.UNRESOLVED -> "Pending" to PixelGrey
+                                                MatchStatus.FUZZY_RECHECK -> "Recheck" to PixelYellow
+                                            }
                                             PixelBadge(
-                                                text = collectorNumber,
-                                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                                                text = statusText,
+                                                color = statusColor
+                                            )
+
+                                            // Seller badge
+                                            val bestSeller = multiMatch?.bestOption?.seller
+                                            if (bestSeller != null) {
+                                                PixelBadge(
+                                                    text = bestSeller.displayName,
+                                                    color = sellerColor(bestSeller)
+                                                )
+                                            }
+
+                                            // Collector number badge if available
+                                            val collectorNumber = m.selectedVariant?.collectorNumber
+                                            if (!collectorNumber.isNullOrBlank()) {
+                                                PixelBadge(
+                                                    text = collectorNumber,
+                                                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    // PRICE column
+                                    Text(
+                                        rowTotal?.let { formatPrice(it) } ?: "-",
+                                        Modifier.width(60.dp),
+                                        style = MaterialTheme.typography.body2
+                                    )
+
+                                    // ACTION column
+                                    Row(Modifier.width(80.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        if (m.status == MatchStatus.AMBIGUOUS || m.status == MatchStatus.NOT_FOUND || m.status == MatchStatus.FUZZY_RECHECK) {
+                                            PixelButton(
+                                                text = "Fix",
+                                                onClick = { onResolve(globalIndex) },
+                                                variant = PixelButtonVariant.SECONDARY,
+                                                modifier = Modifier.height(32.dp).width(75.dp)
+                                            )
+                                        } else if (multiMatch != null && multiMatch.alternatives.isNotEmpty()) {
+                                            PixelButton(
+                                                text = "Alt",
+                                                onClick = {
+                                                    expandedRows = if (isExpanded) {
+                                                        expandedRows - m.deckEntry.id
+                                                    } else {
+                                                        expandedRows + m.deckEntry.id
+                                                    }
+                                                },
+                                                variant = PixelButtonVariant.SURFACE,
+                                                modifier = Modifier.height(32.dp).width(75.dp)
+                                            )
+                                        } else if (m.candidates.isNotEmpty()) {
+                                            PixelButton(
+                                                text = "View",
+                                                onClick = { onShowAllCandidates(globalIndex) },
+                                                variant = PixelButtonVariant.SURFACE,
+                                                modifier = Modifier.height(32.dp).width(75.dp)
                                             )
                                         }
                                     }
                                 }
 
-                                // PRICE column
-                                Text(
-                                    rowTotal?.let { formatPrice(it) } ?: "-",
-                                    Modifier.width(60.dp),
-                                    style = MaterialTheme.typography.body2
-                                )
-
-                                // ACTION column
-                                Row(Modifier.width(80.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    if (m.status == MatchStatus.AMBIGUOUS || m.status == MatchStatus.NOT_FOUND || m.status == MatchStatus.FUZZY_RECHECK) {
-                                        PixelButton(
-                                            text = "Fix",
-                                            onClick = { onResolve(globalIndex) },
-                                            variant = PixelButtonVariant.SECONDARY,
-                                            modifier = Modifier.height(32.dp).width(75.dp)
-                                        )
-                                    } else if (m.candidates.isNotEmpty()) {
-                                        PixelButton(
-                                            text = "View",
-                                            onClick = { onShowAllCandidates(globalIndex) },
-                                            variant = PixelButtonVariant.SURFACE,
-                                            modifier = Modifier.height(32.dp).width(75.dp)
-                                        )
+                                // Expandable alternatives section
+                                if (multiMatch != null && multiMatch.alternatives.isNotEmpty()) {
+                                    AnimatedVisibility(
+                                        visible = isExpanded,
+                                        enter = expandVertically(),
+                                        exit = shrinkVertically()
+                                    ) {
+                                        Column(
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .background(MaterialTheme.colors.surface.copy(alpha = 0.5f))
+                                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            Text(
+                                                "Alternative sellers:",
+                                                style = MaterialTheme.typography.caption,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colors.primary
+                                            )
+                                            multiMatch.alternatives.forEach { alt ->
+                                                Row(
+                                                    Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Row(
+                                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
+                                                        PixelBadge(
+                                                            text = alt.seller.displayName,
+                                                            color = sellerColor(alt.seller)
+                                                        )
+                                                        Text(
+                                                            formatPrice(alt.priceCents),
+                                                            style = MaterialTheme.typography.body2
+                                                        )
+                                                    }
+                                                    PixelButton(
+                                                        text = "Use",
+                                                        onClick = {
+                                                            val mmIndex = multiMatches.indexOfFirst {
+                                                                it.deckEntry.id == m.deckEntry.id
+                                                            }
+                                                            if (mmIndex >= 0) {
+                                                                onOverrideSeller(mmIndex, alt.seller)
+                                                            }
+                                                            expandedRows = expandedRows - m.deckEntry.id
+                                                        },
+                                                        variant = PixelButtonVariant.SURFACE,
+                                                        modifier = Modifier.height(28.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }

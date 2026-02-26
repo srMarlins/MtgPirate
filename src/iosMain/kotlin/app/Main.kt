@@ -23,6 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import platform.IosMviPlatformServices
 import state.MviViewModel
 import state.ViewIntent
@@ -78,7 +79,9 @@ fun IosApp() {
             // Main navigation with wizard flow
             IosNavigationHost(
                 viewModel = viewModel,
-                state = state
+                state = state,
+                scope = scope,
+                platformServices = platformServices
             )
         }
     }
@@ -90,7 +93,9 @@ fun IosApp() {
 @Composable
 fun IosNavigationHost(
     viewModel: MviViewModel,
-    state: state.ViewState
+    state: state.ViewState,
+    scope: CoroutineScope,
+    platformServices: IosMviPlatformServices,
 ) {
     // Track current screen
     var currentScreen by remember { mutableStateOf(IosScreen.IMPORT) }
@@ -157,7 +162,6 @@ fun IosNavigationHost(
                 onNext = {
                     viewModel.processIntent(ViewIntent.CompleteWizardStep(3))
                     viewModel.processIntent(ViewIntent.SaveCurrentImport)
-                    viewModel.processIntent(ViewIntent.OptimizeShoppingPlan)
                     navigateTo(IosScreen.EXPORT)
                 },
                 onEnrichVariant = { variant ->
@@ -169,7 +173,12 @@ fun IosNavigationHost(
                 unmatchedCount = state.unmatchedCount,
                 ambiguousCount = state.ambiguousCount,
                 isDarkTheme = state.isDarkTheme,
-                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) }
+                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
+                multiMatches = state.multiMatches,
+                availableSellers = state.availableSellers,
+                onOverrideSeller = { matchIndex, seller ->
+                    viewModel.processIntent(ViewIntent.OverrideCardSeller(matchIndex, seller))
+                },
             )
             
                 IosScreen.RESOLVE -> {
@@ -197,16 +206,22 @@ fun IosNavigationHost(
                     }
                 }
             
-                IosScreen.EXPORT -> IosExportScreen(
-                matches = state.matches,
-                onBack = { navigateTo(IosScreen.RESULTS) },
-                onExport = {
-                    viewModel.processIntent(ViewIntent.ExportCsv)
-                    viewModel.processIntent(ViewIntent.CompleteWizardStep(4))
-                },
-                isDarkTheme = state.isDarkTheme,
-                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) }
-            )
+                IosScreen.EXPORT -> IosShoppingPlanScreen(
+                    shoppingPlan = state.shoppingPlan,
+                    multiMatches = state.multiMatches,
+                    onOptimize = {
+                        viewModel.processIntent(ViewIntent.OptimizeShoppingPlan)
+                    },
+                    onCopyToClipboard = { text ->
+                        scope.launch { platformServices.copyToClipboard(text) }
+                    },
+                    onOpenUrl = { url ->
+                        scope.launch { platformServices.openUrl(url) }
+                    },
+                    onBack = { navigateTo(IosScreen.RESULTS) },
+                    isDarkTheme = state.isDarkTheme,
+                    onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
+                )
             
                 IosScreen.CATALOG -> {
                     val catalog = state.catalog

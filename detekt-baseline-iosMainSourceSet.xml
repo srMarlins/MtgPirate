@@ -6,23 +6,21 @@
     <ID>FunctionNaming:Main.kt:fun MainViewController</ID>
     <ID>LongMethod:IosSavedImportsDialog.kt:@Composable actual fun SavedImportsDialog</ID>
     <ID>LongMethod:IosSavedImportsDialog.kt:@Composable fun MobileSavedImportCard</ID>
-    <ID>LongMethod:IosScreens.kt:@Composable fun IosExportScreen</ID>
     <ID>LongMethod:IosScreens.kt:@Composable fun IosImportScreen</ID>
     <ID>LongMethod:IosScreens.kt:@Composable fun IosPreferencesScreen</ID>
     <ID>LongMethod:IosScreens.kt:@Composable fun IosResolveScreen</ID>
+    <ID>LongMethod:IosScreens.kt:@Composable fun IosShoppingPlanScreen</ID>
+    <ID>LongMethod:IosScreens.kt:@Composable private fun MobileSellerActionButtons</ID>
+    <ID>LongMethod:IosScreens.kt:@Composable private fun MobileSellerOrderCard</ID>
     <ID>LongMethod:Main.kt:@Composable fun IosNavigationHost</ID>
     <ID>LongMethod:MobileResultsScreen.kt:@Composable fun MobileResultsScreen</ID>
     <ID>LongMethod:ModernIosReorderableListHybrid.kt:@Composable fun &lt;T&gt; ModernIosReorderableListWithPixelStyle</ID>
     <ID>LongMethod:ModernIosReorderableListHybrid.kt:@Composable fun HybridVariantPriorityItem</ID>
     <ID>LongMethod:ModernIosReorderableListHybrid.kt:@Composable private fun &lt;T&gt; HybridReorderableItem</ID>
-    <ID>MagicNumber:IosExportHelpers.kt:300_00</ID>
     <ID>MagicNumber:IosSavedImportsDialog.kt:200</ID>
     <ID>MagicNumber:IosSavedImportsDialog.kt:3</ID>
-    <ID>MagicNumber:IosScreens.kt:100_00</ID>
-    <ID>MagicNumber:IosScreens.kt:10_00</ID>
-    <ID>MagicNumber:IosScreens.kt:300_00</ID>
+    <ID>MagicNumber:IosScreens.kt:100</ID>
     <ID>MagicNumber:Main.kt:3</ID>
-    <ID>MagicNumber:Main.kt:4</ID>
     <ID>MagicNumber:MobileResultsScreen.kt:3</ID>
     <ID>MagicNumber:ModernIosReorderableListHybrid.kt:1000</ID>
     <ID>MagicNumber:ModernIosReorderableListHybrid.kt:10f</ID>
@@ -44,21 +42,14 @@
     <ID>UnusedParameter:ModernIosReorderableListHybrid.kt:totalItems: Int</ID>
     <ID>WildcardImport:IosCompactStepper.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:IosCompactStepper.kt:import ui.*</ID>
-    <ID>WildcardImport:IosExportHelpers.kt:import androidx.compose.foundation.layout.*</ID>
-    <ID>WildcardImport:IosExportHelpers.kt:import ui.*</ID>
     <ID>WildcardImport:IosMviPlatformServices.kt:import io.ktor.client.plugins.logging.*</ID>
     <ID>WildcardImport:IosSavedImportsDialog.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:IosSavedImportsDialog.kt:import androidx.compose.material.*</ID>
     <ID>WildcardImport:IosSavedImportsDialog.kt:import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:IosScreens.kt:import androidx.compose.foundation.layout.*</ID>
-    <ID>WildcardImport:IosScreens.kt:import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:IosScreens.kt:import ui.*</ID>
     <ID>WildcardImport:Main.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:Main.kt:import androidx.compose.material.*</ID>
     <ID>WildcardImport:Main.kt:import androidx.compose.runtime.*</ID>
     <ID>WildcardImport:Main.kt:import ui.*</ID>
-    <ID>WildcardImport:MobileResultsScreen.kt:import androidx.compose.foundation.layout.*</ID>
-    <ID>WildcardImport:MobileResultsScreen.kt:import androidx.compose.runtime.*</ID>
     <ID>WildcardImport:ModernIosReorderableListHybrid.kt:import androidx.compose.animation.core.*</ID>
     <ID>WildcardImport:ModernIosReorderableListHybrid.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:ModernIosReorderableListHybrid.kt:import androidx.compose.runtime.*</ID>
