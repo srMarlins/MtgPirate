@@ -1,6 +1,7 @@
 package database
 
 import model.SavedImport
+import model.VariantType
 
 /**
  * Extension functions to map between database entities and domain models.
@@ -27,7 +28,7 @@ fun CardVariantEntity.toDomain(): model.CardVariant {
         nameNormalized = this.nameNormalized,
         setCode = this.setCode,
         sku = this.sku,
-        variantType = this.variantType,
+        variantType = VariantType.fromString(this.variantType),
         priceInCents = this.priceInCents.toInt(),
         collectorNumber = this.collectorNumber,
         imageUrl = this.imageUrl

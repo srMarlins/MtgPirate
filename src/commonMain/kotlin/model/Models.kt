@@ -1,6 +1,23 @@
 package model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+@Serializable
+enum class VariantType(val displayName: String, val defaultPriceInCents: Int) {
+    @SerialName("Regular") REGULAR("Regular", 220),
+    @SerialName("Foil") FOIL("Foil", 350),
+    @SerialName("Holo") HOLO("Holo", 300);
+
+    companion object {
+        fun fromString(value: String): VariantType = when {
+            value.equals("Foil", ignoreCase = true) -> FOIL
+            value.equals("Holo", ignoreCase = true) ||
+            value.contains("Holo", ignoreCase = true) -> HOLO
+            else -> REGULAR
+        }
+    }
+}
 
 @Serializable
 data class CardVariant(
@@ -8,7 +25,7 @@ data class CardVariant(
     val nameNormalized: String,
     val setCode: String,
     val sku: String,
-    val variantType: String, // Regular, Foil, Holo
+    val variantType: VariantType,
     val priceInCents: Int,
     val collectorNumber: String? = null,
     val imageUrl: String? = null
@@ -19,7 +36,12 @@ data class CardVariant(
 @Serializable
 data class Catalog(
     val variants: List<CardVariant>
-)
+) {
+    /** Lazy index for O(1) lookup by normalized name. */
+    val indexByName: Map<String, List<CardVariant>> by lazy {
+        variants.groupBy { it.nameNormalized }
+    }
+}
 
 enum class Section { MAIN, SIDEBOARD, COMMANDER }
 
