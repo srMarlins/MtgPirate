@@ -37,6 +37,7 @@ import database.DatabaseDriverFactory
 import database.ImportsStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import platform.DesktopMviPlatformServices
 import state.MviViewModel
 import state.ViewIntent
@@ -707,6 +708,7 @@ fun main() = application {
                                         onClose = { navController.navigateUp() },
                                         onExport = {
                                             viewModel.processIntent(ViewIntent.CompleteWizardStep(3))
+                                            viewModel.processIntent(ViewIntent.OptimizeShoppingPlan)
                                             navController.navigate("export") { launchSingleTop = true }
                                         },
                                         isLoading = state.isMatching,
@@ -739,13 +741,24 @@ fun main() = application {
                                         }
                                     }
                                 ) {
-                                    ExportScreen(
-                                        matches = state.matches,
+                                    ShoppingPlanScreen(
+                                        shoppingPlan = state.shoppingPlan,
+                                        multiMatches = state.multiMatches,
+                                        onOptimize = {
+                                            viewModel.processIntent(ViewIntent.OptimizeShoppingPlan)
+                                        },
+                                        onCopyToClipboard = { text ->
+                                            scope.launch {
+                                                platformServices.copyToClipboard(text)
+                                            }
+                                        },
+                                        onOpenUrl = { url ->
+                                            scope.launch {
+                                                platformServices.openUrl(url)
+                                            }
+                                        },
                                         onBack = { navController.navigateUp() },
-                                        onExport = {
-                                            viewModel.processIntent(ViewIntent.ExportWizardResults)
-                                            viewModel.processIntent(ViewIntent.CompleteWizardStep(4))
-                                        }
+                                        isLoading = state.isMatching,
                                     )
                                 }
                                 composable(

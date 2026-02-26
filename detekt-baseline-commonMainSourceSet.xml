@@ -30,6 +30,8 @@
     <ID>LongMethod:PreferencesWizardScreen.kt:@Composable fun PreferencesWizardScreen</ID>
     <ID>LongMethod:ResolveScreen.kt:@Composable fun ResolveScreen</ID>
     <ID>LongMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
+    <ID>LongMethod:ShoppingPlanScreen.kt:@Composable fun ShoppingPlanScreen</ID>
+    <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerOrderCard</ID>
     <ID>LongMethod:StepperComponent.kt:@Composable fun PixelStepNode</ID>
     <ID>LongMethod:StepperComponent.kt:@Composable fun RowScope.PixelStepConnector</ID>
     <ID>LoopWithTooManyJumpStatements:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$for</ID>
@@ -188,6 +190,7 @@
     <ID>MagicNumber:SellerDiscountConfig.kt:50</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:60_00</ID>
     <ID>MagicNumber:ShoppingOptimizer.kt:ShoppingOptimizer$100</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:100</ID>
     <ID>MagicNumber:StepperComponent.kt:1200</ID>
     <ID>MagicNumber:StepperComponent.kt:12f</ID>
     <ID>MagicNumber:StepperComponent.kt:4f</ID>
