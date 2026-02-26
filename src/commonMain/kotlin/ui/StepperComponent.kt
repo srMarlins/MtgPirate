@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.max
+import kotlin.math.min
 
 enum class StepState {
     COMPLETED,
@@ -293,8 +295,8 @@ fun RowScope.PixelStepConnector(
                     while (progressX < progressWidth) {
                         // Only draw if the bar is within the progress area
                         if (progressX + patternSize > 0) {
-                            val barStart = maxOf(0f, progressX)
-                            val barEnd = minOf(progressWidth, progressX + patternSize)
+                            val barStart = max(0f, progressX)
+                            val barEnd = min(progressWidth, progressX + patternSize)
                             val barWidth = barEnd - barStart
 
                             if (barWidth > 0) {
