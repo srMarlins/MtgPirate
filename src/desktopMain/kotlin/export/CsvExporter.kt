@@ -15,6 +15,13 @@ data class ExportResult(
 
 object CsvExporter {
     private const val HEADER = "Card Name,Set,SKU,Card Type,Quantity,Base Price"
+    private val FORMULA_PREFIX_CHARS = charArrayOf('=', '+', '-', '@')
+
+    private fun escapeCsvField(field: String): String {
+        val escaped = field.replace("\"", "\"\"")
+        val safe = if (escaped.firstOrNull() in FORMULA_PREFIX_CHARS) "\t$escaped" else escaped
+        return "\"$safe\""
+    }
 
     fun export(matches: List<DeckEntryMatch>, target: Path? = null): Path {
         val file = target ?: AppDirectories.exportsDir.resolve("export-${timestamp()}.csv")
@@ -36,7 +43,7 @@ object CsvExporter {
                 first.variantType,
                 qtyTotal.toString(),
                 formatPrice(first.priceInCents)
-            ).joinToString(",")
+            ).joinToString(",") { escapeCsvField(it) }
         }
         lines += ""
         // Summary
@@ -44,11 +51,11 @@ object CsvExporter {
         val holo = resolved.count { it.selectedVariant!!.variantType.equals("Holo", true) }
         val foil = resolved.count { it.selectedVariant!!.variantType.equals("Foil", true) }
         val totalCents = resolved.sumOf { it.selectedVariant!!.priceInCents * it.deckEntry.qty }
-        lines += "--- Summary ---"
-        lines += "Regular Cards,$regular"
-        lines += "Holo Cards,$holo"
-        lines += "Foil Cards,$foil"
-        lines += "Total Price,${formatPrice(totalCents)}"
+        lines += "${escapeCsvField("--- Summary ---")}"
+        lines += "${escapeCsvField("Regular Cards")},${escapeCsvField(regular.toString())}"
+        lines += "${escapeCsvField("Holo Cards")},${escapeCsvField(holo.toString())}"
+        lines += "${escapeCsvField("Foil Cards")},${escapeCsvField(foil.toString())}"
+        lines += "${escapeCsvField("Total Price")},${escapeCsvField(formatPrice(totalCents))}"
         Files.write(file, lines)
         return file
     }
@@ -78,19 +85,19 @@ object CsvExporter {
                     first.variantType,
                     qtyTotal.toString(),
                     formatPrice(first.priceInCents)
-                ).joinToString(",")
+                ).joinToString(",") { escapeCsvField(it) }
             }
 
             lines += ""
-            lines += "--- Summary ---"
+            lines += "${escapeCsvField("--- Summary ---")}"
             val regular = resolved.count { it.selectedVariant!!.variantType.equals("Regular", true) }
             val holo = resolved.count { it.selectedVariant!!.variantType.equals("Holo", true) }
             val foil = resolved.count { it.selectedVariant!!.variantType.equals("Foil", true) }
             val totalCents = resolved.sumOf { it.selectedVariant!!.priceInCents * it.deckEntry.qty }
-            lines += "Regular Cards,$regular"
-            lines += "Holo Cards,$holo"
-            lines += "Foil Cards,$foil"
-            lines += "Total Price,${formatPrice(totalCents)}"
+            lines += "${escapeCsvField("Regular Cards")},${escapeCsvField(regular.toString())}"
+            lines += "${escapeCsvField("Holo Cards")},${escapeCsvField(holo.toString())}"
+            lines += "${escapeCsvField("Foil Cards")},${escapeCsvField(foil.toString())}"
+            lines += "${escapeCsvField("Total Price")},${escapeCsvField(formatPrice(totalCents))}"
 
             Files.write(file, lines)
             file
