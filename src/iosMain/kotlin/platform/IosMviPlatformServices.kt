@@ -119,4 +119,11 @@ class IosMviPlatformServices(
         }
     }
 
+    override suspend fun openUrl(url: String) {
+        withContext(Dispatchers.Main) {
+            val nsUrl = platform.Foundation.NSURL(string = url) ?: return@withContext
+            platform.UIKit.UIApplication.sharedApplication.openURL(nsUrl)
+        }
+    }
+
 }
