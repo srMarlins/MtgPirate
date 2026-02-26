@@ -14,6 +14,33 @@ object Matcher {
         val fuzzyEnabled: Boolean
     )
 
+    /** Secret Lair and promotional alternate names mapped to their canonical card names. */
+    private val ALTERNATE_NAMES = mapOf(
+        "Calliope's Song" to "Seething Song",
+        "Earth's Mightiest Emblem" to "Arcane Signet",
+        "Fangorn Forest" to "Yavimaya, Cradle of Growth",
+        "Hope's Aero Magic" to "Cyclonic Rift",
+        "La abundancia de Yucahú" to "Sylvan Library",
+        "La abundancia de Yucahu" to "Sylvan Library",
+        "Power Sneakers" to "Lightning Greaves",
+        "Storm's Will" to "Jeska's Will",
+    )
+
+    /** Pre-normalized version of [ALTERNATE_NAMES] for case/accent-insensitive lookup. */
+    private val ALTERNATE_NAMES_NORMALIZED: Map<String, String> =
+        ALTERNATE_NAMES.entries.associate { (k, v) ->
+            NameNormalizer.normalize(k) to v
+        }
+
+    /**
+     * Pairs of normalized names that are within Levenshtein distance but should
+     * never match each other.
+     */
+    private val FUZZY_BLOCKLIST: Map<String, Set<String>> = mapOf(
+        "electrodominance" to setOf("necrodominance"),
+        "necrodominance" to setOf("electrodominance"),
+    )
+
     fun matchAll(entries: List<DeckEntry>, catalog: Catalog, config: MatchConfig): List<DeckEntryMatch> {
         val initial = entries.map { matchEntry(it, catalog, config) }
         if (!config.fuzzyEnabled) return initial
@@ -77,9 +104,26 @@ object Matcher {
                 catalog.variants.filter { it.setCode.equals(entry.setCodeHint, true) }
             } else catalog.variants
             val fuzzyCandidates = fuzzy(normalized, Catalog(fuzzyPool))
-            return if (fuzzyCandidates.isEmpty()) DeckEntryMatch(entry, MatchStatus.NOT_FOUND)
-            else DeckEntryMatch(entry, MatchStatus.AMBIGUOUS, null, fuzzyCandidates)
+            if (fuzzyCandidates.isNotEmpty()) {
+                return DeckEntryMatch(entry, MatchStatus.AMBIGUOUS, null, fuzzyCandidates)
+            }
         }
+
+        // Pass 5 – Alternate name retry: if the card name has a known alternate,
+        // re-run matching with the canonical name
+        val alternateName = ALTERNATE_NAMES[entry.cardName]
+            ?: ALTERNATE_NAMES_NORMALIZED[normalized]
+        if (alternateName != null) {
+            val aliasEntry = entry.copy(cardName = alternateName)
+            val aliasResult = matchEntry(aliasEntry, catalog, config)
+            if (aliasResult.status != MatchStatus.NOT_FOUND) {
+                return aliasResult.copy(
+                    deckEntry = entry,
+                    notes = "Matched via alternate name: ${entry.cardName} -> $alternateName"
+                )
+            }
+        }
+
         return DeckEntryMatch(entry, MatchStatus.NOT_FOUND)
     }
 
@@ -100,8 +144,10 @@ object Matcher {
     }
 
     private fun fuzzy(targetNorm: String, catalog: Catalog): List<MatchCandidate> {
+        val blocked = FUZZY_BLOCKLIST[targetNorm].orEmpty()
         val results = mutableListOf<MatchCandidate>()
         for (variant in catalog.variants) {
+            if (variant.nameNormalized in blocked) continue
             val dist = Levenshtein.distance(targetNorm, variant.nameNormalized)
             val threshold = if (targetNorm.length <= 15) 2 else 3
             if (dist <= threshold) {

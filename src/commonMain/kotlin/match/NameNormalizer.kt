@@ -1,6 +1,6 @@
 package match
 
-// Multiplatform-safe name normalization (simplified, no Unicode decomposition)
+// Multiplatform-safe name normalization with Unicode diacritic stripping
 object NameNormalizer {
     private val PUNCTUATION = "[,'`\u2019]".toRegex()
     private val DASHES = "[-\u2013\u2014]".toRegex()
@@ -9,7 +9,9 @@ object NameNormalizer {
     private val WHITESPACE = "\\s+".toRegex()
 
     fun normalize(raw: String): String {
-        val lower = raw.lowercase()
+        // Strip diacritics first so accented characters become ASCII base letters
+        val stripped = stripDiacritics(raw)
+        val lower = stripped.lowercase()
         val replaced = lower
             .replace(PUNCTUATION, "")
             .replace(DASHES, " ")
