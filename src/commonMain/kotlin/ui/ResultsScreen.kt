@@ -455,7 +455,7 @@ fun ResultsScreen(
                                 }
 
                                 Text(
-                                    variant?.variantType ?: "-",
+                                    variant?.variantType?.displayName ?: "-",
                                     Modifier.weight(0.15f),
                                     style = MaterialTheme.typography.body2
                                 )
