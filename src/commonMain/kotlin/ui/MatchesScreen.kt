@@ -152,7 +152,7 @@ fun MatchesScreen(
                                 Text("${m.deckEntry.qty}", modifier = Modifier.width(40.dp), style = MaterialTheme.typography.body2)
                                 Text(m.deckEntry.cardName, modifier = Modifier.weight(0.35f), style = MaterialTheme.typography.body2)
                                 Text(v?.setCode ?: "-", modifier = Modifier.weight(0.10f), style = MaterialTheme.typography.body2)
-                                Text(v?.variantType ?: "-", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
+                                Text(v?.variantType?.displayName ?: "-", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.body2)
                                 Text(v?.sku ?: "-", modifier = Modifier.weight(0.18f), style = MaterialTheme.typography.body2)
 
                                 // Status badge

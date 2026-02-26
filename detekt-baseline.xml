@@ -15,7 +15,6 @@
     <ID>CyclomaticComplexMethod:MviViewModel.kt$MviViewModel$fun processIntent(intent: ViewIntent)</ID>
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt$@Composable fun DraggableVariantItem( variant: String, index: Int, isDragging: Boolean, visualOffset: Float, onDragStart: () -&gt; Unit, onDrag: (Float) -&gt; Unit, onDragEnd: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt$@Composable fun PreferencesWizardScreen( includeSideboard: Boolean = true, includeCommanders: Boolean = true, includeTokens: Boolean = true, variantPriority: List&lt;String&gt;, onIncludeSideboardChange: (Boolean) -&gt; Unit, onIncludeCommandersChange: (Boolean) -&gt; Unit, onIncludeTokensChange: (Boolean) -&gt; Unit, onVariantPriorityChange: (List&lt;String&gt;) -&gt; Unit, onBack: () -&gt; Unit, onNext: () -&gt; Unit )</ID>
-    <ID>CyclomaticComplexMethod:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private fun loadWithCacheAge(maxAge: Duration, forceRefresh: Boolean = false, log: (String) -&gt; Unit = {}): Catalog?</ID>
     <ID>CyclomaticComplexMethod:ResultsScreen.kt$@Composable fun ResultsScreen( matches: List&lt;DeckEntryMatch&gt;, onResolve: (Int) -&gt; Unit, onShowAllCandidates: (Int) -&gt; Unit, onClose: () -&gt; Unit, onExport: () -&gt; Unit = {}, onEnrichVariant: ((CardVariant) -&gt; Unit)? = null, isLoading: Boolean = false, matchedCount: Int = 0, unmatchedCount: Int = 0, ambiguousCount: Int = 0, totalPriceCents: Int = 0, )</ID>
     <ID>CyclomaticComplexMethod:ScryfallApi.kt$ScryfallApi$private fun extractImageUrl(card: ScryfallCard, imageSize: String = "normal"): String?</ID>
     <ID>CyclomaticComplexMethod:StepperComponent.kt$@Composable fun PixelStepNode( step: Step, isActive: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
@@ -182,7 +181,6 @@
     <ID>MaxLineLength:ExportScreen.kt$Text(qtyTotal.toString(), Modifier.weight(0.07f), style = MaterialTheme.typography.body2)</ID>
     <ID>MaxLineLength:ExportScreen.kt$onClick = { if (expressEligible) selectedShipping = Promotions.ShippingType.EXPRESS }</ID>
     <ID>MaxLineLength:IosMviPlatformServices.kt$IosMviPlatformServices$sb.appendLine("${variant.nameOriginal},${variant.setCode},${variant.sku},${variant.variantType},$qty,$priceStr")</ID>
-    <ID>MaxLineLength:KtorRemoteCatalogDataSource.kt$KtorRemoteCatalogDataSource$return</ID>
     <ID>MaxLineLength:Logging.kt$Logging$return "${ldt.date} ${ldt.hour.toString().padStart(2,'0')}:${ldt.minute.toString().padStart(2,'0')}:${ldt.second.toString().padStart(2,'0')}"</ID>
     <ID>MaxLineLength:Main.kt$// Coming from results -&gt; resolve: slide up from bottom and fade in (vertical twin of stepper)</ID>
     <ID>MaxLineLength:Main.kt$// Going back to results: slide down to bottom and fade out (vertical twin of stepper)</ID>
@@ -217,10 +215,6 @@
     <ID>MaxLineLength:PreferencesWizardScreen.kt$Text("VARIANT PREFERENCES", style = MaterialTheme.typography.h6, fontWeight = FontWeight.Bold, color = MaterialTheme.colors.primary)</ID>
     <ID>MaxLineLength:PreferencesWizardScreen.kt$draggedCurrentIndex &lt; targetIndex &amp;&amp; index &gt; draggedCurrentIndex &amp;&amp; index &lt;= targetIndex -&gt; -64f</ID>
     <ID>MaxLineLength:PreferencesWizardScreen.kt$draggedCurrentIndex &gt; targetIndex &amp;&amp; index &gt;= targetIndex &amp;&amp; index &lt; draggedCurrentIndex -&gt; 64f</ID>
-    <ID>MaxLineLength:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private</ID>
-    <ID>MaxLineLength:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$return</ID>
-    <ID>MaxLineLength:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$return runCatching { CatalogParser.parse(html) }.onSuccess { /* no-op */ }.onFailure { log("Table parse failed: ${it.message}") }.getOrNull()?.let { fillZeroPrices(it) }</ID>
-    <ID>MaxLineLength:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$val html = runCatching { fetchRaw(urlSource, log) }.onFailure { log("HTML fetch failed: ${it.message}") }.getOrNull() ?: return null</ID>
     <ID>MaxLineLength:ResolveScreen.kt$.</ID>
     <ID>MaxLineLength:ResolveScreen.kt$Text("ACTION", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:ResolveScreen.kt$Text("CARD NAME", Modifier.weight(0.3f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
@@ -240,8 +234,6 @@
     <ID>ReturnCount:CatalogParser.kt$CatalogParser$fun parse(html: String): Catalog</ID>
     <ID>ReturnCount:Levenshtein.kt$Levenshtein$fun distance(a: String, b: String): Int</ID>
     <ID>ReturnCount:Matcher.kt$Matcher$private fun matchEntry(entry: DeckEntry, catalog: Catalog, config: MatchConfig): DeckEntryMatch</ID>
-    <ID>ReturnCount:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private fun loadWithCacheAge(maxAge: Duration, forceRefresh: Boolean = false, log: (String) -&gt; Unit = {}): Catalog?</ID>
-    <ID>ReturnCount:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$private fun tryCsvThenHtml(log: (String) -&gt; Unit): Catalog?</ID>
     <ID>SwallowedException:DesktopMviPlatformServices.kt$DesktopMviPlatformServices$e: Exception</ID>
     <ID>SwallowedException:DesktopSavedImportsDialog.kt$e: Exception</ID>
     <ID>SwallowedException:IosSavedImportsDialog.kt$e: Exception</ID>
@@ -255,8 +247,6 @@
     <ID>TooGenericExceptionCaught:KtorRemoteCatalogDataSource.kt$KtorRemoteCatalogDataSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:MviViewModel.kt$MviViewModel$e: Exception</ID>
     <ID>TooGenericExceptionCaught:PlatformUtils.kt$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:RemoteCatalogDataSource.kt$RemoteCatalogDataSource$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:ScryfallApi.kt$ScryfallApi$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScryfallImageEnricher.kt$ScryfallImageEnricher$e: Exception</ID>
     <ID>TooGenericExceptionThrown:ScryfallApi.kt$ScryfallApi$throw Exception("HTTP ${response.status.value}: ${response.status.description}")</ID>
