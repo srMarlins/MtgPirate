@@ -633,4 +633,9 @@ interface MviPlatformServices {
      * Copy text to clipboard. Used for mobile platforms where file opening is not supported.
      */
     suspend fun copyToClipboard(text: String)
+
+    /**
+     * Open a URL in the platform's default browser.
+     */
+    suspend fun openUrl(url: String)
 }

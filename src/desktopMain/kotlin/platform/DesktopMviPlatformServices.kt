@@ -111,4 +111,16 @@ class DesktopMviPlatformServices(
             }
         }
     }
+
+    override suspend fun openUrl(url: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    Desktop.getDesktop().browse(java.net.URI.create(url))
+                }
+            } catch (e: Exception) {
+                // Log handled by caller
+            }
+        }
+    }
 }
