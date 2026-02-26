@@ -513,6 +513,10 @@ class MviViewModel(
             try {
                 val loadedSellers = catalogUseCase.loadAllCatalogs { msg, level -> log(msg, level) }
                 _localState.update { it.copy(availableSellers = loadedSellers) }
+                // Auto-trigger multi-match after catalogs load
+                if (loadedSellers.isNotEmpty()) {
+                    runMultiMatch()
+                }
             } catch (e: Exception) {
                 log("Failed to load multi-catalogs: ${e.message}", "ERROR")
                 _viewEffects.emit(ViewEffect.ShowError("Failed to load catalogs from sellers"))

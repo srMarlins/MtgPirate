@@ -140,6 +140,7 @@ fun IosNavigationHost(
                 onNext = {
                     viewModel.processIntent(ViewIntent.CompleteWizardStep(2))
                     viewModel.processIntent(ViewIntent.RunMatch)
+                    viewModel.processIntent(ViewIntent.LoadAllCatalogs)
                     navigateTo(IosScreen.RESULTS)
                 },
                 isDarkTheme = state.isDarkTheme,
@@ -155,8 +156,8 @@ fun IosNavigationHost(
                 onBack = { navigateTo(IosScreen.PREFERENCES) },
                 onNext = {
                     viewModel.processIntent(ViewIntent.CompleteWizardStep(3))
-                    // Auto-save the import when moving to export
                     viewModel.processIntent(ViewIntent.SaveCurrentImport)
+                    viewModel.processIntent(ViewIntent.OptimizeShoppingPlan)
                     navigateTo(IosScreen.EXPORT)
                 },
                 onEnrichVariant = { variant ->

@@ -52,12 +52,6 @@ enum class SortOption {
     STATUS_DESC
 }
 
-private fun sellerColor(seller: Seller): Color = when (seller) {
-    Seller.USEA -> SellerUsea
-    Seller.BOOTLEG_MAGE -> SellerBootlegMage
-    Seller.TCGPLAYER -> SellerTcgPlayer
-}
-
 @Composable
 fun ResultsScreen(
     matches: List<DeckEntryMatch>,
