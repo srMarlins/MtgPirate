@@ -748,18 +748,16 @@ fun main() = application {
                                 ) {
                                     ShoppingPlanScreen(
                                         shoppingPlan = state.shoppingPlan,
-                                        multiMatches = state.multiMatches,
-                                        onOptimize = {
-                                            viewModel.processIntent(ViewIntent.OptimizeShoppingPlan)
-                                        },
                                         onCopyToClipboard = { text ->
                                             scope.launch {
                                                 platformServices.copyToClipboard(text)
+                                                viewModel.processIntent(ViewIntent.CompleteWizardStep(4))
                                             }
                                         },
                                         onOpenUrl = { url ->
                                             scope.launch {
                                                 platformServices.openUrl(url)
+                                                viewModel.processIntent(ViewIntent.CompleteWizardStep(4))
                                             }
                                         },
                                         onBack = { navController.navigateUp() },

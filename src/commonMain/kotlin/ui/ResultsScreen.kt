@@ -52,11 +52,7 @@ enum class SortOption {
     STATUS_DESC
 }
 
-private fun sellerColor(seller: Seller): Color = when (seller) {
-    Seller.USEA -> SellerUsea
-    Seller.BOOTLEG_MAGE -> SellerBootlegMage
-    Seller.TCGPLAYER -> SellerTcgPlayer
-}
+
 
 @Composable
 fun ResultsScreen(
@@ -486,9 +482,9 @@ fun ResultsScreen(
                 else -> matches
             }
 
-            // Apply seller filter
+            // Apply seller filter (always show unmatched entries so they don't silently vanish)
             val sellerFiltered = if (sellerFilter != null) {
-                filtered.filter { it.selectedVariant?.seller == sellerFilter }
+                filtered.filter { it.selectedVariant == null || it.selectedVariant?.seller == sellerFilter }
             } else {
                 filtered
             }
@@ -506,9 +502,15 @@ fun ResultsScreen(
                 SortOption.DEFAULT -> sellerFiltered
             }
 
-            // Build a lookup from deckEntry id to multiMatch for alternatives
+            // Build lookups for multiMatch alternatives, global indices, and multiMatch indices
             val multiMatchByEntryId = remember(multiMatches) {
                 multiMatches.associateBy { it.deckEntry.id }
+            }
+            val multiMatchIndexByEntryId = remember(multiMatches) {
+                multiMatches.withIndex().associate { (idx, mm) -> mm.deckEntry.id to idx }
+            }
+            val globalIndexById = remember(matches) {
+                matches.withIndex().associate { (idx, m) -> m.uniqueIdentifier to idx }
             }
 
             // Results List with pixel card
@@ -521,7 +523,7 @@ fun ResultsScreen(
                 Box(Modifier.fillMaxSize()) {
                     LazyColumn(Modifier.fillMaxSize(), state = listState) {
                         itemsIndexed(sorted, key = { _, m -> m.uniqueIdentifier }) { _, m ->
-                            val globalIndex = matches.indexOf(m)
+                            val globalIndex = globalIndexById[m.uniqueIdentifier] ?: -1
                             val variant = m.selectedVariant
                             val rowTotal = variant?.priceInCents?.let { it * m.deckEntry.qty }
                             val multiMatch = multiMatchByEntryId[m.deckEntry.id]
@@ -646,9 +648,7 @@ fun ResultsScreen(
                                                 fontWeight = FontWeight.Bold
                                             )
                                             Spacer(Modifier.height(4.dp))
-                                            val multiMatchIndex = multiMatches.indexOfFirst {
-                                                it.deckEntry.id == m.deckEntry.id
-                                            }
+                                            val multiMatchIndex = multiMatchIndexByEntryId[m.deckEntry.id] ?: -1
                                             multiMatch.alternatives.forEach { option ->
                                                 // Skip the currently selected option
                                                 val isCurrent = multiMatch.bestOption?.let {

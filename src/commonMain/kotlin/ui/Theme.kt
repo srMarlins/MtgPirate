@@ -10,6 +10,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import model.Seller
 
 // ========================================
 // FANTASY PIXEL ART COLOR PALETTE
@@ -69,6 +70,13 @@ val PixelYellow = Color(0xFFFFEB3B)
 val SellerUsea = Color(0xFFB794F6)        // Purple — proxy seller
 val SellerBootlegMage = Color(0xFF63B3ED)  // Blue — proxy seller
 val SellerTcgPlayer = Color(0xFFFBD38D)    // Gold — real card marketplace
+
+/** Returns the themed color for a given seller. */
+fun sellerColor(seller: Seller): Color = when (seller) {
+    Seller.USEA -> SellerUsea
+    Seller.BOOTLEG_MAGE -> SellerBootlegMage
+    Seller.TCGPLAYER -> SellerTcgPlayer
+}
 
 // Brand / UI Colors
 val Slate100 = Color(0xFFF1F5F9)

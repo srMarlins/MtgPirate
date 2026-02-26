@@ -24,49 +24,46 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import model.MultiMatch
 import model.OrderItem
 import model.Seller
 import model.SellerOrder
 import model.ShoppingPlan
+import io.ktor.http.encodeURLParameter
 import util.formatPrice
 
 private const val TCGPLAYER_MASS_ENTRY_URL = "https://www.tcgplayer.com/massentry?productline=Magic"
 private const val BOOTLEG_MAGE_DECK_IMPORT_URL = "https://bootlegmage.com/deck-import/"
 
 /**
- * Returns the themed color for a given seller.
- */
-fun sellerColor(seller: Seller): Color = when (seller) {
-    Seller.USEA -> SellerUsea
-    Seller.BOOTLEG_MAGE -> SellerBootlegMage
-    Seller.TCGPLAYER -> SellerTcgPlayer
-}
-
-/**
  * Format order items for export to a given seller.
- * Duplicates the logic from CatalogSource implementations so the UI layer
- * can generate export text without needing a CatalogSource reference.
+ * Delegates to the same logic used by CatalogSource implementations.
  */
 private fun formatForExport(seller: Seller, items: List<OrderItem>): String = when (seller) {
     Seller.USEA -> {
-        // CSV format: "Card Name,Set,SKU,Type,Qty,Price"
-        val header = "Card Name,Set,SKU,Type,Qty,Price"
-        val rows = items.joinToString("\n") { item ->
-            val v = item.variant
-            "${v.nameOriginal},${v.setCode},${v.sku},${v.variantType.displayName},${item.qty},${formatPrice(v.priceInCents)}"
+        // Use CsvGenerator (same path as UseaCatalogSource.formatForExport)
+        val matches = items.map { item ->
+            model.DeckEntryMatch(
+                deckEntry = model.DeckEntry(
+                    id = "export_${item.variant.sku}",
+                    originalLine = "${item.qty} ${item.variant.nameOriginal}",
+                    qty = item.qty,
+                    cardName = item.variant.nameOriginal,
+                    section = model.Section.MAIN,
+                    include = true,
+                ),
+                status = model.MatchStatus.AUTO_MATCHED,
+                selectedVariant = item.variant,
+            )
         }
-        "$header\n$rows"
+        export.CsvGenerator.generateFoundCardsCsv(matches)
     }
     Seller.BOOTLEG_MAGE -> {
         // Bootleg Mage deck import format: "qty CardName" per line
@@ -87,20 +84,11 @@ private fun formatForExport(seller: Seller, items: List<OrderItem>): String = wh
 @Composable
 fun ShoppingPlanScreen(
     shoppingPlan: ShoppingPlan?,
-    multiMatches: List<MultiMatch>,
-    onOptimize: () -> Unit,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
     onBack: () -> Unit,
     isLoading: Boolean = false,
 ) {
-    // Trigger optimization if we have multi-matches but no plan yet
-    LaunchedEffect(shoppingPlan, multiMatches) {
-        if (shoppingPlan == null && multiMatches.isNotEmpty()) {
-            onOptimize()
-        }
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
 
@@ -499,7 +487,7 @@ private fun SellerActionButtons(
                     onClick = {
                         val exportText = formatForExport(Seller.USEA, order.items)
                         val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
-                        val mailtoUrl = "mailto:?subject=$subject&body=$exportText"
+                        val mailtoUrl = "mailto:?subject=${subject.encodeURLParameter()}&body=${exportText.encodeURLParameter()}"
                         onOpenUrl(mailtoUrl)
                     },
                     variant = PixelButtonVariant.SECONDARY,
