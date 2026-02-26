@@ -67,7 +67,9 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
             variantType = variant.variantType.displayName,
             priceInCents = variant.priceInCents.toLong(),
             collectorNumber = variant.collectorNumber,
-            imageUrl = variant.imageUrl
+            imageUrl = variant.imageUrl,
+            seller = variant.seller.name,
+            purchaseUri = variant.purchaseUri,
         )
     }
 
@@ -119,7 +121,33 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
                     variantType = variant.variantType.displayName,
                     priceInCents = variant.priceInCents.toLong(),
                     collectorNumber = variant.collectorNumber,
-                    imageUrl = variant.imageUrl
+                    imageUrl = variant.imageUrl,
+                    seller = variant.seller.name,
+                    purchaseUri = variant.purchaseUri,
+                )
+            }
+        }
+    }
+
+    suspend fun clearVariantsBySeller(seller: String) {
+        db.cardVariantQueries.deleteAllBySeller(seller)
+    }
+
+    fun replaceCatalogForSellerTransaction(seller: String, variants: List<CardVariant>) {
+        db.transaction {
+            db.cardVariantQueries.deleteAllBySeller(seller)
+            variants.forEach { variant ->
+                db.cardVariantQueries.insertVariant(
+                    nameOriginal = variant.nameOriginal,
+                    nameNormalized = variant.nameNormalized,
+                    setCode = variant.setCode,
+                    sku = variant.sku,
+                    variantType = variant.variantType.displayName,
+                    priceInCents = variant.priceInCents.toLong(),
+                    collectorNumber = variant.collectorNumber,
+                    imageUrl = variant.imageUrl,
+                    seller = variant.seller.name,
+                    purchaseUri = variant.purchaseUri,
                 )
             }
         }

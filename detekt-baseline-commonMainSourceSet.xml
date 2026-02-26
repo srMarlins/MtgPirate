@@ -32,7 +32,9 @@
     <ID>LongMethod:StepperComponent.kt:@Composable fun RowScope.PixelStepConnector</ID>
     <ID>LoopWithTooManyJumpStatements:DecklistParser.kt:DecklistParser$for</ID>
     <ID>LoopWithTooManyJumpStatements:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$while</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$10</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$184_426_222</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_386_511_848</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_434_682_742</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_541_692_383</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$3</ID>
@@ -43,7 +45,9 @@
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$7</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$704_294_497</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$8</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$9</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries.GetByNameQuery$495_182_740</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries.SelectBySellerQuery$1_165_635_530</ID>
     <ID>MagicNumber:CatalogCsvParser.kt:CatalogCsvParser$100.0</ID>
     <ID>MagicNumber:CatalogParser.kt:CatalogParser$100</ID>
     <ID>MagicNumber:CatalogScreen.kt:0.10f</ID>
@@ -210,6 +214,7 @@
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public fun getByName: Query&lt;CardVariantEntity&gt;</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries.GetByNameQuery$override</ID>
+    <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries.SelectBySellerQuery$override</ID>
     <ID>MaxLineLength:CatalogCsvParser.kt:CatalogCsvParser$private</ID>
     <ID>MaxLineLength:CatalogCsvParser.kt:CatalogCsvParser$val dollarsFromCell = if (idxPrice &gt;= 0 &amp;&amp; idxPrice &lt; aligned.size) parsePriceCell(aligned[idxPrice]) else 0.0</ID>
     <ID>MaxLineLength:CatalogScreen.kt:(query.isBlank() || v.nameOriginal.contains(query, true) || v.setCode.contains(query, true) || v.sku.contains(query, true))</ID>
