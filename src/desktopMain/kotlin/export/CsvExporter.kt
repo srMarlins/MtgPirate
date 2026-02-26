@@ -19,7 +19,7 @@ object CsvExporter {
 
     private fun escapeCsvField(field: String): String {
         val escaped = field.replace("\"", "\"\"")
-        val safe = if (escaped.firstOrNull() in FORMULA_PREFIX_CHARS) "\t$escaped" else escaped
+        val safe = if (escaped.isNotEmpty() && escaped.first() in FORMULA_PREFIX_CHARS) "\t$escaped" else escaped
         return "\"$safe\""
     }
 
