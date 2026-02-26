@@ -147,6 +147,15 @@ sqldelight {
     }
 }
 
+// Workaround: SQLDelight 2.2.1 migration-verify task fails on Windows because the
+// worker process does not forward TMP/TMPDIR env vars, causing xerial sqlite-jdbc to
+// attempt writing its native DLL to C:\WINDOWS (AccessDeniedException).
+// Upstream fix merged but unreleased: https://github.com/sqldelight/sqldelight/issues/5312
+// Safe to disable: this project has no .sqm migration files.
+tasks.matching { it.name.contains("verifyCommonMain") && it.name.contains("Migration") }.configureEach {
+    enabled = false
+}
+
 detekt {
     config.setFrom(files("detekt.yml"))
     baseline = file("detekt-baseline.xml")
