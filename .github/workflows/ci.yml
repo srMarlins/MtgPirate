@@ -33,6 +33,9 @@ jobs:
       - name: Run detekt static analysis
         run: ./gradlew detekt --stacktrace
 
+      - name: Run tests
+        run: ./gradlew allTests --stacktrace
+
   build-ios-check:
     name: Build iOS (Check)
     runs-on: macos-latest
