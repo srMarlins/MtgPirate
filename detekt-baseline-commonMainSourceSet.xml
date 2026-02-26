@@ -13,7 +13,9 @@
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt:@Composable fun DraggableVariantItem</ID>
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt:@Composable fun PreferencesWizardScreen</ID>
     <ID>CyclomaticComplexMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
+    <ID>CyclomaticComplexMethod:ShoppingOptimizer.kt:ShoppingOptimizer$private fun tryThresholdOptimization: Map&lt;Seller, List&lt;OrderItem&gt;&gt;</ID>
     <ID>CyclomaticComplexMethod:StepperComponent.kt:@Composable fun PixelStepNode</ID>
+    <ID>ForbiddenComment:SellerDiscountConfig.kt:// TODO: Implement their specific tier structure</ID>
     <ID>LongMethod:CatalogCsvParser.kt:CatalogCsvParser$fun parse: Catalog</ID>
     <ID>LongMethod:CatalogParser.kt:CatalogParser$fun parse: Catalog</ID>
     <ID>LongMethod:CatalogScreen.kt:@Composable fun CatalogScreen</ID>
@@ -164,7 +166,22 @@
     <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries$7</ID>
     <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries$8</ID>
     <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries.GetByIdQuery$757_582_413</ID>
+    <ID>MagicNumber:ScryfallApi.kt:ScryfallApi$75</ID>
     <ID>MagicNumber:ScryfallImageEnricher.kt:ScryfallImageEnricher$10</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:100_00</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:10_00</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:15</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:160_00</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:200_00</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:25</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:30</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:300_00</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:35</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:400_00</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:5</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:50</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:60_00</ID>
+    <ID>MagicNumber:ShoppingOptimizer.kt:ShoppingOptimizer$100</ID>
     <ID>MagicNumber:StepperComponent.kt:1200</ID>
     <ID>MagicNumber:StepperComponent.kt:12f</ID>
     <ID>MagicNumber:StepperComponent.kt:4f</ID>
