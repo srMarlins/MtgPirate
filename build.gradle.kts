@@ -143,6 +143,11 @@ sqldelight {
         create("MtgPirateDatabase") {
             packageName.set("org.srmarlins.mtgpirate.db")
             schemaOutputDirectory.set(file("src/commonMain/sqldelight/migrations"))
+            // Disable migration verification to work around a Windows-specific failure in SQLDelight 2.2.1.
+            // SQLDelight's worker process doesn't forward temp directory env vars, causing AccessDeniedException
+            // when xerial sqlite-jdbc tries to extract its native DLL to C:\WINDOWS\.
+            // See: https://github.com/sqldelight/sqldelight/issues/5312
+            verifyMigrations.set(false)
         }
     }
 }
