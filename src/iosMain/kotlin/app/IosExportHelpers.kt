@@ -63,7 +63,7 @@ fun ExportSummaryCard(
                     style = MaterialTheme.typography.body2,
                     fontWeight = FontWeight.Bold,
                     color = if (unresolved.isNotEmpty()) {
-                        Color(0xFFF44336)
+                        PixelRed
                     } else {
                         MaterialTheme.colors.onSurface
                     }
@@ -120,7 +120,7 @@ fun ExportPricingCard(promo: util.Promotions.Result) {
                         "-${util.formatPrice(promo.discountAmountCents)}",
                         style = MaterialTheme.typography.body2,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4CAF50)
+                        color = PixelGreen
                     )
                 }
             }

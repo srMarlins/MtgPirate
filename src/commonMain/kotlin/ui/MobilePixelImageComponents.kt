@@ -72,7 +72,7 @@ fun CompactPixelImagePreview(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "✗", style = MaterialTheme.typography.body1, color = Color(0xFFF44336)
+                            text = "✗", style = MaterialTheme.typography.body1, color = PixelRed
                         )
                     }
                 }
@@ -202,7 +202,7 @@ fun MobilePixelImageModal(
                                 modifier = Modifier.fillMaxSize().padding(16.dp)
                             ) {
                                 Text(
-                                    text = "⚠", style = MaterialTheme.typography.h4, color = Color(0xFFF44336)
+                                    text = "⚠", style = MaterialTheme.typography.h4, color = PixelRed
                                 )
                                 Spacer(Modifier.height(8.dp))
                                 Text(

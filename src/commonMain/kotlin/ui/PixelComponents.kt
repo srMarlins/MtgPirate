@@ -1119,7 +1119,7 @@ fun PixelIconButton(
     val buttonColor = when (variant) {
         PixelIconButtonVariant.PRIMARY -> colors.primary
         PixelIconButtonVariant.SECONDARY -> colors.secondary.copy(alpha = 0.6f)
-        PixelIconButtonVariant.DANGER -> Color(0xFFF44336)
+        PixelIconButtonVariant.DANGER -> PixelRed
     }
 
     val textColor = when (variant) {

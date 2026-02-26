@@ -116,7 +116,7 @@ fun MobileResultsScreen(
                         .weight(1f)
                         .clip(PixelShape(cornerSize = 9.dp))
                         .background(
-                            if (filterMode == 1) Color(0xFF4CAF50).copy(alpha = 0.2f) else MaterialTheme.colors.surface,
+                            if (filterMode == 1) PixelGreen.copy(alpha = 0.2f) else MaterialTheme.colors.surface,
                             shape = PixelShape(cornerSize = 9.dp)
                         )
                         .clickable { filterMode = 1 }
@@ -132,14 +132,14 @@ fun MobileResultsScreen(
                         Text(
                             "MATCHED",
                             style = MaterialTheme.typography.caption,
-                            color = Color(0xFF4CAF50),
+                            color = PixelGreen,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             "${totalMatched.size}",
                             style = MaterialTheme.typography.h5,
-                            color = Color(0xFF4CAF50),
+                            color = PixelGreen,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -151,7 +151,7 @@ fun MobileResultsScreen(
                         .weight(1f)
                         .clip(PixelShape(cornerSize = 9.dp))
                         .background(
-                            if (filterMode == 2) Color(0xFFF44336).copy(alpha = 0.2f) else MaterialTheme.colors.surface,
+                            if (filterMode == 2) PixelRed.copy(alpha = 0.2f) else MaterialTheme.colors.surface,
                             shape = PixelShape(cornerSize = 9.dp)
                         )
                         .clickable { filterMode = 2 }
@@ -167,14 +167,14 @@ fun MobileResultsScreen(
                         Text(
                             "UNMATCHED",
                             style = MaterialTheme.typography.caption,
-                            color = if (missed > 0) Color(0xFFF44336) else MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                            color = if (missed > 0) PixelRed else MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             "$missed",
                             style = MaterialTheme.typography.h5,
-                            color = if (missed > 0) Color(0xFFF44336) else MaterialTheme.colors.onSurface,
+                            color = if (missed > 0) PixelRed else MaterialTheme.colors.onSurface,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -186,7 +186,7 @@ fun MobileResultsScreen(
                         .weight(1f)
                         .clip(PixelShape(cornerSize = 9.dp))
                         .background(
-                            if (filterMode == 3) Color(0xFFFF9800).copy(alpha = 0.2f) else MaterialTheme.colors.surface,
+                            if (filterMode == 3) PixelOrange.copy(alpha = 0.2f) else MaterialTheme.colors.surface,
                             shape = PixelShape(cornerSize = 9.dp)
                         )
                         .clickable { filterMode = 3 }
@@ -202,14 +202,14 @@ fun MobileResultsScreen(
                         Text(
                             "AMBIGUOUS",
                             style = MaterialTheme.typography.caption,
-                            color = if (ambiguous > 0) Color(0xFFFF9800) else MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                            color = if (ambiguous > 0) PixelOrange else MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             "$ambiguous",
                             style = MaterialTheme.typography.h5,
-                            color = if (ambiguous > 0) Color(0xFFFF9800) else MaterialTheme.colors.onSurface,
+                            color = if (ambiguous > 0) PixelOrange else MaterialTheme.colors.onSurface,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -386,11 +386,11 @@ fun MobileResultsScreen(
                                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                         // Status badge
                                         val (statusText, statusColor) = when (m.status) {
-                                            MatchStatus.AUTO_MATCHED -> "Auto" to Color(0xFF4CAF50)
-                                            MatchStatus.MANUAL_SELECTED -> "Manual" to Color(0xFF2196F3)
-                                            MatchStatus.AMBIGUOUS -> "Ambiguous" to Color(0xFFFF9800)
-                                            MatchStatus.NOT_FOUND -> "Not Found" to Color(0xFFF44336)
-                                            MatchStatus.UNRESOLVED -> "Pending" to Color(0xFF9E9E9E)
+                                            MatchStatus.AUTO_MATCHED -> "Auto" to PixelGreen
+                                            MatchStatus.MANUAL_SELECTED -> "Manual" to PixelBlue
+                                            MatchStatus.AMBIGUOUS -> "Ambiguous" to PixelOrange
+                                            MatchStatus.NOT_FOUND -> "Not Found" to PixelRed
+                                            MatchStatus.UNRESOLVED -> "Pending" to PixelGrey
                                         }
                                         PixelBadge(
                                             text = statusText,
