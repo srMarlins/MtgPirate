@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import model.CardVariant
 import model.Catalog
+import model.Seller
 
 /**
  * Database store for catalog card variants.
@@ -54,7 +55,7 @@ class CatalogStore(private val database: Database) {
      * Replace catalog data for a specific seller.
      * Deletes all existing variants for the seller, then inserts the new ones.
      */
-    suspend fun replaceCatalogForSeller(seller: model.Seller, variants: List<CardVariant>) {
+    suspend fun replaceCatalogForSeller(seller: Seller, variants: List<CardVariant>) {
         database.replaceCatalogForSellerTransaction(seller.name, variants.map { it.copy(seller = seller) })
     }
 }
