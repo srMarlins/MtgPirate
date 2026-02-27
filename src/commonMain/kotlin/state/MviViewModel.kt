@@ -123,8 +123,7 @@ class MviViewModel(
                 multiMatches = localState.multiMatches,
                 shoppingPlan = localState.shoppingPlan,
                 availableSellers = localState.availableSellers,
-                loadingMultiCatalogs = localState.loadingMultiCatalogs,
-                catalogsLoadedThisSession = localState.catalogsLoadedThisSession
+                loadingMultiCatalogs = localState.loadingMultiCatalogs
             )
         }.onEach { newState ->
             _viewState.update { newState }
@@ -506,24 +505,27 @@ class MviViewModel(
     // -----------------------------------------------------------------------
 
     private suspend fun loadAllCatalogs() {
-        // Guard against concurrent loads
-        if (_localState.value.loadingMultiCatalogs) {
+        // Atomic check-and-set guard against concurrent loads
+        var wasAlreadyLoading = false
+        _localState.update { state ->
+            if (state.loadingMultiCatalogs) {
+                wasAlreadyLoading = true
+                state
+            } else {
+                state.copy(loadingMultiCatalogs = true)
+            }
+        }
+        if (wasAlreadyLoading) {
             log("loadAllCatalogs already in progress, skipping", "WARNING")
             return
         }
         withContext(Dispatchers.IO) {
-            _localState.update { it.copy(loadingMultiCatalogs = true) }
             try {
                 val loadedSellers = catalogUseCase.loadAllCatalogs { msg, level -> log(msg, level) }
                 _localState.update { it.copy(availableSellers = loadedSellers) }
                 // Auto-trigger matching after catalogs load
                 if (loadedSellers.isNotEmpty()) {
-                    // Read catalog fresh from DB (viewState flow may not have propagated yet)
-                    val catalog = database.observeCatalog().first()
-                    val preferences = database.observePreferences().first() ?: Preferences()
-                    val entries = _localState.value.deckEntries
-                    runMultiMatch(entries, catalog, preferences)
-                    runMatchInternal(entries, catalog, preferences)
+                    runAllMatching()
                 }
             } catch (e: Exception) {
                 log("Failed to load multi-catalogs: ${e.message}", "ERROR")
@@ -531,6 +533,20 @@ class MviViewModel(
             } finally {
                 _localState.update { it.copy(loadingMultiCatalogs = false, catalogsLoadedThisSession = true) }
             }
+        }
+    }
+
+    /**
+     * Read fresh catalog/preferences from DB and run both multi-seller and single-seller matching.
+     * Shared by loadAllCatalogs (after loading) and wizardPreferencesToResults (cached path).
+     */
+    private suspend fun runAllMatching() {
+        val catalog = withContext(Dispatchers.IO) { database.observeCatalog().first() }
+        val preferences = withContext(Dispatchers.IO) { database.observePreferences().first() } ?: Preferences()
+        val entries = _localState.value.deckEntries
+        if (catalog.variants.isNotEmpty() && entries.isNotEmpty()) {
+            runMultiMatch(entries, catalog, preferences)
+            runMatchInternal(entries, catalog, preferences)
         }
     }
 
@@ -642,15 +658,8 @@ class MviViewModel(
         if (!_localState.value.catalogsLoadedThisSession) {
             loadAllCatalogs()
         } else {
-            // Catalogs already loaded this session — just run matching against existing data
             log("Catalogs already loaded this session, running match only", "INFO")
-            val catalog = withContext(Dispatchers.IO) { database.observeCatalog().first() }
-            val preferences = withContext(Dispatchers.IO) { database.observePreferences().first() } ?: Preferences()
-            val entries = _localState.value.deckEntries
-            if (catalog.variants.isNotEmpty() && entries.isNotEmpty()) {
-                runMultiMatch(entries, catalog, preferences)
-                runMatchInternal(entries, catalog, preferences)
-            }
+            runAllMatching()
         }
     }
 
@@ -722,8 +731,7 @@ data class ViewState(
     val multiMatches: List<MultiMatch> = emptyList(),
     val shoppingPlan: ShoppingPlan? = null,
     val availableSellers: List<Seller> = emptyList(),
-    val loadingMultiCatalogs: Boolean = false,
-    val catalogsLoadedThisSession: Boolean = false
+    val loadingMultiCatalogs: Boolean = false
 )
 
 /**

@@ -1,0 +1,4 @@
+-- Migration: Change unique index from (sku) to (seller, sku) for multi-seller support.
+-- The DB is cache-only (network data), so data loss from re-indexing is acceptable.
+DROP INDEX IF EXISTS idx_variant_sku;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_variant_seller_sku ON CardVariantEntity(seller, sku);
