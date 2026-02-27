@@ -470,23 +470,23 @@ fun ResultsScreen(
                 else -> matches
             }
 
-            // Apply seller filter
+            // Apply seller filter (cards without a match always pass through)
             val sellerFiltered = if (sellerFilter != null) {
-                filtered.filter { it.selectedVariant?.seller == sellerFilter }
+                filtered.filter { it.selectedVariant == null || it.selectedVariant?.seller == sellerFilter }
             } else {
                 filtered
             }
 
-            // Apply proxy/real filter
+            // Apply proxy/real filter (cards without a match always pass through)
             val proxyFiltered = when (proxyFilter) {
-                1 -> sellerFiltered.filter { it.selectedVariant?.seller?.isProxy == true }
-                2 -> sellerFiltered.filter { it.selectedVariant?.seller?.isProxy == false }
+                1 -> sellerFiltered.filter { it.selectedVariant == null || it.selectedVariant?.seller?.isProxy == true }
+                2 -> sellerFiltered.filter { it.selectedVariant == null || it.selectedVariant?.seller?.isProxy == false }
                 else -> sellerFiltered
             }
 
-            // Apply variant type filter
+            // Apply variant type filter (cards without a match always pass through)
             val variantFiltered = if (variantTypeFilter != null) {
-                proxyFiltered.filter { it.selectedVariant?.variantType == variantTypeFilter }
+                proxyFiltered.filter { it.selectedVariant == null || it.selectedVariant?.variantType == variantTypeFilter }
             } else {
                 proxyFiltered
             }

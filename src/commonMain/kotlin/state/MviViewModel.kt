@@ -220,8 +220,7 @@ class MviViewModel(
             try {
                 val variantCount = catalogUseCase.getVariantCount()
                 if (variantCount == 0L) {
-                    log("Catalog is empty, loading from all sources...", "INFO")
-                    loadAllCatalogs()
+                    log("Catalog is empty — will fetch when search is triggered", "INFO")
                 } else {
                     log("Catalog already loaded: $variantCount variants", "INFO")
                 }
@@ -551,7 +550,7 @@ class MviViewModel(
         withContext(Dispatchers.IO) {
             try {
                 val loadedSellers = catalogUseCase.loadAllCatalogs { msg, level -> log(msg, level) }
-                _localState.update { it.copy(availableSellers = loadedSellers) }
+                _localState.update { it.copy(availableSellers = loadedSellers.distinct()) }
                 // Auto-trigger matching after catalogs load
                 if (loadedSellers.isNotEmpty()) {
                     runAllMatching()
