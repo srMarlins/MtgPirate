@@ -56,6 +56,10 @@ class MviViewModel(
     private val matchingUseCase = MatchingUseCase()
     private val importExportUseCase = ImportExportUseCase(importsStore, platformServices)
     private val preferencesUseCase = PreferencesUseCase(platformServices)
+    private val deckSearchUseCase = DeckSearchUseCase(
+        sources = catalogUseCase.sourceRegistry.allSources,
+        catalogStore = catalogStore,
+    )
 
     // -- State --------------------------------------------------------------
     private val _viewState = MutableStateFlow(ViewState())
@@ -123,7 +127,8 @@ class MviViewModel(
                 multiMatches = localState.multiMatches,
                 shoppingPlan = localState.shoppingPlan,
                 availableSellers = localState.availableSellers,
-                loadingMultiCatalogs = localState.loadingMultiCatalogs
+                loadingMultiCatalogs = localState.searchProgress?.isSearching ?: localState.loadingMultiCatalogs,
+                searchProgress = localState.searchProgress,
             )
         }.onEach { newState ->
             _viewState.update { newState }
@@ -176,6 +181,7 @@ class MviViewModel(
                 is ViewIntent.DeleteSavedImport -> deleteSavedImport(intent.importId)
                 is ViewIntent.EnrichVariantWithImage -> enrichVariantWithImage(intent.variant)
                 ViewIntent.LoadAllCatalogs -> loadAllCatalogs()
+                ViewIntent.SearchDeck -> searchDeck()
                 ViewIntent.RunMultiMatch -> runMultiMatch()
                 ViewIntent.OptimizeShoppingPlan -> optimizeShoppingPlan()
                 is ViewIntent.OverrideCardSeller -> overrideCardSeller(intent.matchIndex, intent.seller)
@@ -536,6 +542,42 @@ class MviViewModel(
         }
     }
 
+    private suspend fun searchDeck() {
+        val entries = _localState.value.deckEntries
+        if (entries.isEmpty()) {
+            log("No deck entries to search", "WARNING")
+            return
+        }
+
+        val preferences = _viewState.value.preferences
+        val config = MultiCatalogMatcher.Config(
+            variantPriority = preferences.variantPriority,
+            setPriority = preferences.setPriority,
+            fuzzyEnabled = preferences.fuzzyEnabled,
+        )
+
+        deckSearchUseCase.search(entries, config)
+            .collect { progress ->
+                _localState.update { state ->
+                    state.copy(
+                        searchProgress = progress,
+                        multiMatches = progress.multiMatches,
+                        availableSellers = progress.sellerStatuses
+                            .filter { it.value.state == SearchState.DONE }
+                            .map { it.key },
+                    )
+                }
+
+                if (progress.isComplete) {
+                    val catalog = withContext(Dispatchers.IO) { database.observeCatalog().first() }
+                    if (catalog.variants.isNotEmpty() && entries.isNotEmpty()) {
+                        runMatchInternal(entries, catalog, _viewState.value.preferences)
+                    }
+                    _localState.update { it.copy(catalogsLoadedThisSession = true) }
+                }
+            }
+    }
+
     /**
      * Read fresh catalog/preferences from DB and run both multi-seller and single-seller matching.
      * Shared by loadAllCatalogs (after loading) and wizardPreferencesToResults (cached path).
@@ -648,15 +690,13 @@ class MviViewModel(
         completeWizardStep(1)
     }
 
-    /** Step 2 → 3: Mark complete, load all catalogs, then match */
+    /** Step 2 → 3: Mark complete, search deck across all sellers, then match */
     private suspend fun wizardPreferencesToResults() {
         completeWizardStep(2)
-        // Re-parse with latest preferences
         parseDeck()
 
-        // Reload catalogs if not already loaded this session
         if (!_localState.value.catalogsLoadedThisSession) {
-            loadAllCatalogs()
+            searchDeck()
         } else {
             log("Catalogs already loaded this session, running match only", "INFO")
             runAllMatching()
@@ -731,7 +771,8 @@ data class ViewState(
     val multiMatches: List<MultiMatch> = emptyList(),
     val shoppingPlan: ShoppingPlan? = null,
     val availableSellers: List<Seller> = emptyList(),
-    val loadingMultiCatalogs: Boolean = false
+    val loadingMultiCatalogs: Boolean = false,
+    val searchProgress: SearchProgress? = null,
 )
 
 /**
@@ -758,7 +799,8 @@ private data class LocalUiState(
     val shoppingPlan: ShoppingPlan? = null,
     val availableSellers: List<Seller> = emptyList(),
     val loadingMultiCatalogs: Boolean = false,
-    val catalogsLoadedThisSession: Boolean = false
+    val catalogsLoadedThisSession: Boolean = false,
+    val searchProgress: SearchProgress? = null,
 )
 
 /**
@@ -801,6 +843,7 @@ sealed class ViewIntent {
 
     // Multi-catalog and shopping optimization intents
     data object LoadAllCatalogs : ViewIntent()
+    data object SearchDeck : ViewIntent()
     data object RunMultiMatch : ViewIntent()
     data object OptimizeShoppingPlan : ViewIntent()
     data class OverrideCardSeller(val matchIndex: Int, val seller: Seller) : ViewIntent()
