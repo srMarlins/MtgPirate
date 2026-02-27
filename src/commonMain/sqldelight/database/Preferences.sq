@@ -7,6 +7,8 @@ CREATE TABLE PreferencesEntity (
     setPriority TEXT NOT NULL,
     fuzzyEnabled INTEGER NOT NULL,
     cacheMaxAgeHours INTEGER NOT NULL,
+    enabledSellers TEXT NOT NULL DEFAULT 'USEA,BOOTLEG_MAGE,TCGPLAYER,MANAPOOL',
+    proxyFirst INTEGER NOT NULL DEFAULT 1,
     CHECK (id = 1)
 );
 
@@ -15,5 +17,5 @@ SELECT * FROM PreferencesEntity;
 
 insertPreferences:
 INSERT OR REPLACE INTO PreferencesEntity (
-    id, includeSideboard, includeCommanders, includeTokens, variantPriority, setPriority, fuzzyEnabled, cacheMaxAgeHours
-) VALUES (1, ?, ?, ?, ?, ?, ?, ?);
+    id, includeSideboard, includeCommanders, includeTokens, variantPriority, setPriority, fuzzyEnabled, cacheMaxAgeHours, enabledSellers, proxyFirst
+) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?);

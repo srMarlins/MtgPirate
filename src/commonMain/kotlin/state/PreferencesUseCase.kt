@@ -55,6 +55,20 @@ class PreferencesUseCase(
     }
 
     /**
+     * Update which sellers are enabled for searching.
+     */
+    suspend fun updateEnabledSellers(sellers: List<String>): Result<Unit> = runUpdate {
+        it.copy(enabledSellers = sellers)
+    }
+
+    /**
+     * Toggle the proxy-first matching preference.
+     */
+    suspend fun updateProxyFirst(value: Boolean): Result<Unit> = runUpdate {
+        it.copy(proxyFirst = value)
+    }
+
+    /**
      * Convenience wrapper that catches exceptions and returns a [Result].
      */
     private suspend fun runUpdate(

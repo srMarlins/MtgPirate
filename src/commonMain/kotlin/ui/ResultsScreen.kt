@@ -38,6 +38,7 @@ import model.DeckEntryMatch
 import model.MatchStatus
 import model.MultiMatch
 import model.Seller
+import model.VariantType
 import state.SearchProgress
 import util.formatPrice
 
@@ -78,6 +79,8 @@ fun ResultsScreen(
 
     var filterMode by rememberSaveable { mutableStateOf(0) } // 0 = All, 1 = Matched, 2 = Unmatched, 3 = Ambiguous
     var sellerFilter by remember { mutableStateOf<Seller?>(null) }
+    var proxyFilter by rememberSaveable { mutableStateOf(0) } // 0 = All, 1 = Proxy Only, 2 = Real Only
+    var variantTypeFilter by remember { mutableStateOf<VariantType?>(null) } // null = All
     val sortSaver = remember { Saver<SortOption, String>(save = { it.name }, restore = { SortOption.valueOf(it) }) }
     var sortOption by rememberSaveable(stateSaver = sortSaver) { mutableStateOf(SortOption.DEFAULT) }
 
@@ -348,6 +351,116 @@ fun ResultsScreen(
                 }
             }
 
+            // Proxy/Real filter chips
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "TYPE:",
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                    fontWeight = FontWeight.Bold
+                )
+                // Proxy/Real filter
+                listOf("ALL" to 0, "PROXY" to 1, "REAL" to 2).forEach { (label, value) ->
+                    val isActive = proxyFilter == value
+                    val chipColor = when (value) {
+                        1 -> PixelOrange
+                        2 -> PixelGreen
+                        else -> MaterialTheme.colors.primary
+                    }
+                    Box(
+                        modifier = Modifier
+                            .clip(PixelShape(cornerSize = 6.dp))
+                            .background(
+                                if (isActive) chipColor else PixelGrey,
+                                shape = PixelShape(cornerSize = 6.dp)
+                            )
+                            .pixelBorder(
+                                borderWidth = 2.dp,
+                                cornerSize = 6.dp,
+                                enabled = true,
+                                glowAlpha = if (isActive) 0.4f else 0.1f
+                            )
+                            .clickable { proxyFilter = value }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.caption,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(Modifier.width(16.dp))
+
+                // Variant type filter
+                Text(
+                    "VARIANT:",
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                    fontWeight = FontWeight.Bold
+                )
+                // "All" variant chip
+                Box(
+                    modifier = Modifier
+                        .clip(PixelShape(cornerSize = 6.dp))
+                        .background(
+                            if (variantTypeFilter == null) MaterialTheme.colors.primary else PixelGrey,
+                            shape = PixelShape(cornerSize = 6.dp)
+                        )
+                        .pixelBorder(
+                            borderWidth = 2.dp,
+                            cornerSize = 6.dp,
+                            enabled = true,
+                            glowAlpha = if (variantTypeFilter == null) 0.4f else 0.1f
+                        )
+                        .clickable { variantTypeFilter = null }
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "ALL",
+                        style = MaterialTheme.typography.caption,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                // Per-variant-type chips
+                VariantType.entries.forEach { vt ->
+                    val isActive = variantTypeFilter == vt
+                    Box(
+                        modifier = Modifier
+                            .clip(PixelShape(cornerSize = 6.dp))
+                            .background(
+                                if (isActive) MaterialTheme.colors.secondary else PixelGrey,
+                                shape = PixelShape(cornerSize = 6.dp)
+                            )
+                            .pixelBorder(
+                                borderWidth = 2.dp,
+                                cornerSize = 6.dp,
+                                enabled = true,
+                                glowAlpha = if (isActive) 0.4f else 0.1f
+                            )
+                            .clickable {
+                                variantTypeFilter = if (variantTypeFilter == vt) null else vt
+                            }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = vt.displayName.uppercase(),
+                            style = MaterialTheme.typography.caption,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
             Spacer(Modifier.height(16.dp))
 
             // Loading/search progress indicator
@@ -493,17 +606,31 @@ fun ResultsScreen(
                 filtered
             }
 
+            // Apply proxy/real filter
+            val proxyFiltered = when (proxyFilter) {
+                1 -> sellerFiltered.filter { it.selectedVariant?.seller?.isProxy == true }
+                2 -> sellerFiltered.filter { it.selectedVariant?.seller?.isProxy == false }
+                else -> sellerFiltered
+            }
+
+            // Apply variant type filter
+            val variantFiltered = if (variantTypeFilter != null) {
+                proxyFiltered.filter { it.selectedVariant?.variantType == variantTypeFilter }
+            } else {
+                proxyFiltered
+            }
+
             // Apply sorting
             val sorted = when (sortOption) {
-                SortOption.NAME_ASC -> sellerFiltered.sortedBy { it.deckEntry.cardName.lowercase() }
-                SortOption.NAME_DESC -> sellerFiltered.sortedByDescending { it.deckEntry.cardName.lowercase() }
-                SortOption.QTY_ASC -> sellerFiltered.sortedBy { it.deckEntry.qty }
-                SortOption.QTY_DESC -> sellerFiltered.sortedByDescending { it.deckEntry.qty }
-                SortOption.PRICE_ASC -> sellerFiltered.sortedBy { it.selectedVariant?.priceInCents ?: Int.MAX_VALUE }
-                SortOption.PRICE_DESC -> sellerFiltered.sortedByDescending { it.selectedVariant?.priceInCents ?: -1 }
-                SortOption.STATUS_ASC -> sellerFiltered.sortedBy { it.status.ordinal }
-                SortOption.STATUS_DESC -> sellerFiltered.sortedByDescending { it.status.ordinal }
-                SortOption.DEFAULT -> sellerFiltered
+                SortOption.NAME_ASC -> variantFiltered.sortedBy { it.deckEntry.cardName.lowercase() }
+                SortOption.NAME_DESC -> variantFiltered.sortedByDescending { it.deckEntry.cardName.lowercase() }
+                SortOption.QTY_ASC -> variantFiltered.sortedBy { it.deckEntry.qty }
+                SortOption.QTY_DESC -> variantFiltered.sortedByDescending { it.deckEntry.qty }
+                SortOption.PRICE_ASC -> variantFiltered.sortedBy { it.selectedVariant?.priceInCents ?: Int.MAX_VALUE }
+                SortOption.PRICE_DESC -> variantFiltered.sortedByDescending { it.selectedVariant?.priceInCents ?: -1 }
+                SortOption.STATUS_ASC -> variantFiltered.sortedBy { it.status.ordinal }
+                SortOption.STATUS_DESC -> variantFiltered.sortedByDescending { it.status.ordinal }
+                SortOption.DEFAULT -> variantFiltered
             }
 
             // Build a lookup from deckEntry id to multiMatch for alternatives

@@ -39,19 +39,38 @@ class SearchProgressTest {
     }
 
     @Test
-    fun progressFraction_calculatesCorrectly() {
+    fun progressFraction_sellerBased() {
         val progress = SearchProgress(
             totalCards = 60,
             cardsWithResults = 30,
-            sellerStatuses = emptyMap(),
+            sellerStatuses = mapOf(
+                Seller.TCGPLAYER to SellerSearchStatus(Seller.TCGPLAYER, SearchState.DONE, 30),
+                Seller.MANAPOOL to SellerSearchStatus(Seller.MANAPOOL, SearchState.SEARCHING),
+            ),
             multiMatches = emptyList(),
             isComplete = false,
         )
+        // 1 of 2 sellers done = 0.5
         assertEquals(0.5f, progress.progressFraction)
     }
 
     @Test
-    fun progressFraction_zeroTotalCards() {
+    fun progressFraction_allSellersDone() {
+        val progress = SearchProgress(
+            totalCards = 60,
+            cardsWithResults = 58,
+            sellerStatuses = mapOf(
+                Seller.TCGPLAYER to SellerSearchStatus(Seller.TCGPLAYER, SearchState.DONE, 30),
+                Seller.MANAPOOL to SellerSearchStatus(Seller.MANAPOOL, SearchState.DONE, 28),
+            ),
+            multiMatches = emptyList(),
+            isComplete = true,
+        )
+        assertEquals(1f, progress.progressFraction)
+    }
+
+    @Test
+    fun progressFraction_noSellers() {
         val progress = SearchProgress(
             totalCards = 0,
             cardsWithResults = 0,
@@ -59,6 +78,22 @@ class SearchProgressTest {
             multiMatches = emptyList(),
             isComplete = true,
         )
+        assertEquals(1f, progress.progressFraction)
+    }
+
+    @Test
+    fun progressFraction_errorCountsAsComplete() {
+        val progress = SearchProgress(
+            totalCards = 60,
+            cardsWithResults = 0,
+            sellerStatuses = mapOf(
+                Seller.TCGPLAYER to SellerSearchStatus(Seller.TCGPLAYER, SearchState.ERROR, message = "timeout"),
+                Seller.MANAPOOL to SellerSearchStatus(Seller.MANAPOOL, SearchState.DONE, 28),
+            ),
+            multiMatches = emptyList(),
+            isComplete = false,
+        )
+        // Both are completed (error + done) = 1.0
         assertEquals(1f, progress.progressFraction)
     }
 }

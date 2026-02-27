@@ -102,7 +102,9 @@ data class Preferences(
     val variantPriority: List<String> = listOf("Foil", "Holo", "Regular"),
     val setPriority: List<String> = emptyList(),
     val fuzzyEnabled: Boolean = true,
-    val cacheMaxAgeHours: Int = 24
+    val cacheMaxAgeHours: Int = 24,
+    val enabledSellers: List<String> = Seller.entries.map { it.name },
+    val proxyFirst: Boolean = true,
 )
 
 @Serializable

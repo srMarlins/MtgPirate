@@ -23,6 +23,14 @@ data class SearchProgress(
     val isComplete: Boolean,
 ) {
     val isSearching: Boolean get() = !isComplete
+
+    /** Seller-based progress: fraction of sellers that have completed (DONE or ERROR). */
     val progressFraction: Float
-        get() = if (totalCards == 0) 1f else cardsWithResults.toFloat() / totalCards
+        get() {
+            if (sellerStatuses.isEmpty()) return 1f
+            val completed = sellerStatuses.values.count {
+                it.state == SearchState.DONE || it.state == SearchState.ERROR
+            }
+            return completed.toFloat() / sellerStatuses.size
+        }
 }

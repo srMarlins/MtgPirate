@@ -11,7 +11,8 @@ object Matcher {
     data class MatchConfig(
         val variantPriority: List<String>,
         val setPriority: List<String>,
-        val fuzzyEnabled: Boolean
+        val fuzzyEnabled: Boolean,
+        val proxyFirst: Boolean = true,
     )
 
     /** Secret Lair and promotional alternate names mapped to their canonical card names. */
@@ -130,27 +131,22 @@ object Matcher {
     private fun selectByPriority(list: List<CardVariant>, config: MatchConfig, entry: DeckEntry): CardVariant? {
         // If set code hint was provided, keep only that set
         val filtered = entry.setCodeHint?.let { code -> list.filter { it.setCode.equals(code, true) } }.orEmpty().ifEmpty { list }
-        // Proxy first, then cheapest, then variant/set priority as tiebreakers
         return filtered.sortedWith(
-            compareBy<CardVariant> { if (it.seller.isProxy) 0 else 1 }
-                .thenBy { it.priceInCents }
-                .thenBy { idxOrEnd(config.variantPriority, it.variantType.displayName) }
-                .thenBy { idxOrEnd(config.setPriority, it.setCode) }
+            MatchSorting.variantComparator(
+                proxyFirst = config.proxyFirst,
+                variantPriority = config.variantPriority,
+                setPriority = config.setPriority,
+            )
         ).firstOrNull()
-    }
-
-    private fun idxOrEnd(list: List<String>, value: String): Int {
-        val idx = list.indexOf(value)
-        return if (idx >= 0) idx else list.size
     }
 
     private fun fuzzy(targetNorm: String, catalog: Catalog): List<MatchCandidate> {
         val blocked = FUZZY_BLOCKLIST[targetNorm].orEmpty()
+        val threshold = MatchSorting.fuzzyThreshold(targetNorm.length)
         val results = mutableListOf<MatchCandidate>()
         for (variant in catalog.variants) {
             if (variant.nameNormalized in blocked) continue
             val dist = Levenshtein.distance(targetNorm, variant.nameNormalized)
-            val threshold = if (targetNorm.length <= 15) 2 else 3
             if (dist <= threshold) {
                 results += MatchCandidate(variant, dist, "lev:$dist")
             }
@@ -182,9 +178,9 @@ object Matcher {
      */
     private fun fuzzyRecheck(targetNorm: String, catalog: Catalog): List<MatchCandidate> {
         val blocked = FUZZY_BLOCKLIST[targetNorm].orEmpty()
+        val standardThreshold = MatchSorting.fuzzyThreshold(targetNorm.length)
+        val relaxedThreshold = MatchSorting.fuzzyThreshold(targetNorm.length, relaxed = true)
         val results = mutableListOf<MatchCandidate>()
-        val standardThreshold = if (targetNorm.length <= 15) 2 else 3
-        val relaxedThreshold = standardThreshold + 2
         for (variant in catalog.variants) {
             if (variant.nameNormalized in blocked) continue
             val dist = Levenshtein.distance(targetNorm, variant.nameNormalized)

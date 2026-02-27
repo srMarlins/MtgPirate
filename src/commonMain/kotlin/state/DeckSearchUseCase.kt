@@ -114,7 +114,14 @@ class DeckSearchUseCase(
                             }
                         } else {
                             // Fetch from API (parallel — outside lock)
-                            val allVariants = source.fetchCatalog()
+                            var allVariants = source.fetchCatalog()
+
+                            // If fetchCatalog returned empty and source supports bulk search,
+                            // fall back to searchBulk with deck card names
+                            if (allVariants.isEmpty() && source.supportsBulkSearch) {
+                                val cardNames = includedEntries.map { it.cardName }
+                                allVariants = source.searchBulk(cardNames)
+                            }
 
                             // Filter to only cards matching deck entries
                             val matchingVariants = allVariants.filter { variant ->
