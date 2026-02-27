@@ -75,7 +75,7 @@ fun MobileResultsScreen(
 
     // Multi-seller state
     var sellerFilter by remember { mutableStateOf<Seller?>(null) }
-    var proxyFilter by remember { mutableStateOf(0) } // 0 = All, 1 = Proxy Only, 2 = Real Only
+    var proxyFilter by rememberSaveable { mutableStateOf(0) } // 0 = All, 1 = Proxy Only, 2 = Real Only
     var variantTypeFilter by remember { mutableStateOf<VariantType?>(null) }
     var expandedRows by remember { mutableStateOf(emptySet<String>()) }
     val multiMatchByEntryId = remember(multiMatches) {
@@ -333,6 +333,9 @@ fun MobileResultsScreen(
                         onClick = { proxyFilter = value }
                     )
                 }
+
+                // Divider between filter groups
+                Box(Modifier.width(1.dp).height(16.dp).background(MaterialTheme.colors.onSurface.copy(alpha = 0.2f)))
 
                 // Variant type filter
                 FilterChip(

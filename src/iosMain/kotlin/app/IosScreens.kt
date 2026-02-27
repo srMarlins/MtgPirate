@@ -378,6 +378,7 @@ fun IosPreferencesScreen(
                             PixelToggle(
                                 checked = isEnabled,
                                 onCheckedChange = { checked ->
+                                    if (!checked && enabledSellers.size <= 1) return@PixelToggle
                                     platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.LIGHT)
                                     val updated = if (checked) {
                                         enabledSellers + seller.name
@@ -1199,6 +1200,14 @@ private fun MobileSellerActionButtons(
     onOpenUrl: (String) -> Unit,
 ) {
     var copied by remember { mutableStateOf(false) }
+
+    // Auto-reset "Copied!" feedback after 2 seconds
+    LaunchedEffect(copied) {
+        if (copied) {
+            kotlinx.coroutines.delay(2000)
+            copied = false
+        }
+    }
 
     Row(
         Modifier.fillMaxWidth(),

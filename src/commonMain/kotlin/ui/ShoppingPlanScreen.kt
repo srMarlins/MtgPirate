@@ -502,6 +502,14 @@ private fun SellerActionButtons(
 ) {
     var copied by remember { mutableStateOf(false) }
 
+    // Auto-reset "Copied!" feedback after 2 seconds
+    LaunchedEffect(copied) {
+        if (copied) {
+            kotlinx.coroutines.delay(2000)
+            copied = false
+        }
+    }
+
     Row(
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
