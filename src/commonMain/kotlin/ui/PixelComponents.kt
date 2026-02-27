@@ -6,6 +6,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
@@ -35,6 +36,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlin.math.max
+import state.SearchProgress
+import state.SearchState
+import state.SellerSearchStatus
 
 // ========================================
 // PIXEL SHAPE (for matching border clipping)
@@ -1587,6 +1591,148 @@ fun AnimatedLoadingDots() {
                         MaterialTheme.colors.primary.copy(alpha = alpha),
                         shape = PixelShape(cornerSize = 2.dp)
                     )
+            )
+        }
+    }
+}
+
+// ========================================
+// SEARCH PROGRESS COMPONENTS
+// ========================================
+
+@Composable
+fun PixelProgressBar(
+    progress: Float,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colors.primary,
+    backgroundColor: Color = MaterialTheme.colors.surface,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(12.dp)
+            .background(backgroundColor, PixelShape(cornerSize = 2.dp))
+            .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.3f), PixelShape(cornerSize = 2.dp))
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(fraction = progress.coerceIn(0f, 1f))
+                .background(color, PixelShape(cornerSize = 2.dp))
+        )
+    }
+}
+
+@Composable
+fun SearchProgressPanel(
+    searchProgress: SearchProgress,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colors.surface, PixelShape(cornerSize = 4.dp))
+            .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.2f), PixelShape(cornerSize = 4.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        // Header row with progress text and percentage
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = if (searchProgress.isComplete) {
+                        "Found ${searchProgress.cardsWithResults}/${searchProgress.totalCards} cards"
+                    } else {
+                        "Searching ${searchProgress.cardsWithResults}/${searchProgress.totalCards} cards..."
+                    },
+                    style = MaterialTheme.typography.body2,
+                    color = MaterialTheme.colors.onSurface,
+                )
+                if (searchProgress.isSearching) {
+                    AnimatedLoadingDots()
+                }
+            }
+            Text(
+                text = "${(searchProgress.progressFraction * 100).toInt()}%",
+                style = MaterialTheme.typography.caption,
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+            )
+        }
+
+        // Progress bar
+        PixelProgressBar(
+            progress = searchProgress.progressFraction,
+            color = if (searchProgress.isComplete) PixelGreen else MaterialTheme.colors.primary,
+        )
+
+        // Per-supplier status rows
+        searchProgress.sellerStatuses.forEach { (_, status) ->
+            SellerStatusRow(status)
+        }
+    }
+}
+
+@Composable
+private fun SellerStatusRow(status: SellerSearchStatus) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            // Status indicator dot
+            val indicatorColor = when (status.state) {
+                SearchState.PENDING -> PixelGrey
+                SearchState.SEARCHING -> PixelOrange
+                SearchState.DONE -> PixelGreen
+                SearchState.ERROR -> PixelRed
+            }
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(indicatorColor, PixelShape(cornerSize = 2.dp))
+            )
+            Text(
+                text = status.seller.displayName,
+                style = MaterialTheme.typography.caption,
+                color = MaterialTheme.colors.onSurface,
+            )
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (status.cardsFound > 0) {
+                Text(
+                    text = "${status.cardsFound} cards",
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                )
+            }
+            Text(
+                text = when (status.state) {
+                    SearchState.PENDING -> "pending"
+                    SearchState.SEARCHING -> status.message ?: "searching..."
+                    SearchState.DONE -> status.message ?: "done"
+                    SearchState.ERROR -> status.message ?: "error"
+                },
+                style = MaterialTheme.typography.caption,
+                color = when (status.state) {
+                    SearchState.ERROR -> PixelRed
+                    SearchState.DONE -> PixelGreen
+                    else -> MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                },
             )
         }
     }

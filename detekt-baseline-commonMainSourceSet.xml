@@ -10,19 +10,24 @@
     <ID>CyclomaticComplexMethod:Matcher.kt:Matcher$private fun matchEntry: DeckEntryMatch</ID>
     <ID>CyclomaticComplexMethod:MatchesScreen.kt:@Composable fun MatchesScreen</ID>
     <ID>CyclomaticComplexMethod:MviViewModel.kt:MviViewModel$fun processIntent</ID>
+    <ID>CyclomaticComplexMethod:PixelComponents.kt:@Composable private fun SellerStatusRow</ID>
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt:@Composable fun DraggableVariantItem</ID>
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt:@Composable fun PreferencesWizardScreen</ID>
     <ID>CyclomaticComplexMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
     <ID>CyclomaticComplexMethod:ShoppingOptimizer.kt:ShoppingOptimizer$private fun tryThresholdOptimization: Map&lt;Seller, List&lt;OrderItem&gt;&gt;</ID>
     <ID>CyclomaticComplexMethod:StepperComponent.kt:@Composable fun PixelStepNode</ID>
     <ID>ForbiddenComment:SellerDiscountConfig.kt:// TODO: Implement their specific tier structure</ID>
+    <ID>LargeClass:MviViewModel.kt:MviViewModel</ID>
     <ID>LongMethod:CatalogCsvParser.kt:CatalogCsvParser$fun parse: Catalog</ID>
     <ID>LongMethod:CatalogParser.kt:CatalogParser$fun parse: Catalog</ID>
     <ID>LongMethod:CatalogScreen.kt:@Composable fun CatalogScreen</ID>
+    <ID>LongMethod:DeckSearchUseCase.kt:DeckSearchUseCase$fun search: Flow&lt;SearchProgress&gt;</ID>
     <ID>LongMethod:DecklistParser.kt:DecklistParser$fun parse: List&lt;DeckEntry&gt;</ID>
     <ID>LongMethod:ExportScreen.kt:@Composable fun ExportScreen</ID>
     <ID>LongMethod:MatchesScreen.kt:@Composable fun MatchesScreen</ID>
     <ID>LongMethod:MobilePixelImageComponents.kt:@Composable fun MobilePixelImageModal</ID>
+    <ID>LongMethod:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$override fun create: QueryResult.Value&lt;Unit&gt;</ID>
+    <ID>LongMethod:MviViewModel.kt:MviViewModel$private suspend fun searchDeck</ID>
     <ID>LongMethod:PixelComponents.kt:@Composable fun FantasyStarIcon</ID>
     <ID>LongMethod:PixelComponents.kt:@Composable fun PixelProgressAnimation</ID>
     <ID>LongMethod:PixelComponents.kt:@Composable private fun PixelDraggableItem</ID>
@@ -101,6 +106,7 @@
     <ID>MagicNumber:Models.kt:VariantType.FOIL$350</ID>
     <ID>MagicNumber:Models.kt:VariantType.HOLO$300</ID>
     <ID>MagicNumber:Models.kt:VariantType.REGULAR$220</ID>
+    <ID>MagicNumber:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$3</ID>
     <ID>MagicNumber:MviViewModel.kt:MviViewModel$3</ID>
     <ID>MagicNumber:PixelComponents.kt:0.2f</ID>
     <ID>MagicNumber:PixelComponents.kt:0.4f</ID>
@@ -180,6 +186,10 @@
     <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries.GetByIdQuery$757_582_413</ID>
     <ID>MagicNumber:ScryfallApi.kt:ScryfallApi$75</ID>
     <ID>MagicNumber:ScryfallImageEnricher.kt:ScryfallImageEnricher$10</ID>
+    <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$1_517_078_527</ID>
+    <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$1_842_316_798</ID>
+    <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$2_054_145_787</ID>
+    <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries.GetCacheQuery$1_012_674_590</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:100_00</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:10_00</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:15</ID>
@@ -246,6 +256,7 @@
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$)</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public fun getByName: Query&lt;CardVariantEntity&gt;</ID>
+    <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$val</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries.GetByNameQuery$override</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries.SelectBySellerQuery$override</ID>
     <ID>MaxLineLength:CatalogCsvParser.kt:CatalogCsvParser$private</ID>
@@ -306,6 +317,7 @@
     <ID>MaxLineLength:MatchesScreen.kt:color = if (rowTotal != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)</ID>
     <ID>MaxLineLength:MatchesScreen.kt:val content = unmatched.joinToString("\n") { "${it.deckEntry.qty} ${it.deckEntry.cardName}" }</ID>
     <ID>MaxLineLength:MobilePixelImageComponents.kt:var loadState by remember { mutableStateOf&lt;AsyncImagePainter.State&gt;(AsyncImagePainter.State.Empty) }</ID>
+    <ID>MaxLineLength:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$driver.execute(null, "CREATE UNIQUE INDEX IF NOT EXISTS idx_variant_seller_sku ON CardVariantEntity(seller, sku)", 0)</ID>
     <ID>MaxLineLength:MviViewModel.kt:MviViewModel$private suspend</ID>
     <ID>MaxLineLength:PreferencesQueries.kt:PreferencesQueries$)</ID>
     <ID>MaxLineLength:PreferencesWizardScreen.kt:.</ID>
@@ -331,6 +343,8 @@
     <ID>MaxLineLength:SavedImportQueries.kt:SavedImportQueries$)</ID>
     <ID>MaxLineLength:SavedImportQueries.kt:SavedImportQueries.GetByIdQuery$override</ID>
     <ID>MaxLineLength:ScryfallImageEnricher.kt:ScryfallImageEnricher$log?.invoke("Fetching image for ${variant.nameOriginal} (${variant.setCode} #${variant.collectorNumber})")</ID>
+    <ID>MaxLineLength:SellerCacheQueries.kt:SellerCacheQueries$val</ID>
+    <ID>MaxLineLength:SellerCacheQueries.kt:SellerCacheQueries.GetCacheQuery$override</ID>
     <ID>MaxLineLength:ShoppingPlanScreen.kt:val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&amp;body=${encodeUrlParameter(exportText)}"</ID>
     <ID>PackageNaming:MtgPirateDatabaseImpl.kt:package org.srmarlins.mtgpirate.db.MtgPirate</ID>
     <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun extractValue: String?</ID>
@@ -342,6 +356,7 @@
     <ID>TooGenericExceptionCaught:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogSourceRegistry$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogUseCase$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DeckSearchUseCase.kt:DeckSearchUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ImportExportUseCase.kt:ImportExportUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:MviViewModel.kt:MviViewModel$e: Exception</ID>

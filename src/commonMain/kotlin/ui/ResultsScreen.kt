@@ -38,6 +38,7 @@ import model.DeckEntryMatch
 import model.MatchStatus
 import model.MultiMatch
 import model.Seller
+import state.SearchProgress
 import util.formatPrice
 
 enum class SortOption {
@@ -64,6 +65,7 @@ fun ResultsScreen(
     onExport: () -> Unit = {},
     onEnrichVariant: ((CardVariant) -> Unit)? = null,
     isLoading: Boolean = false,
+    searchProgress: SearchProgress? = null,
     matchedCount: Int = 0,
     unmatchedCount: Int = 0,
     ambiguousCount: Int = 0,
@@ -348,8 +350,11 @@ fun ResultsScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Loading indicator below badge counts
-            if (isLoading) {
+            // Loading/search progress indicator
+            if (searchProgress != null && searchProgress.isSearching) {
+                SearchProgressPanel(searchProgress = searchProgress)
+                Spacer(Modifier.height(16.dp))
+            } else if (isLoading) {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -359,8 +364,9 @@ fun ResultsScreen(
                 Spacer(Modifier.height(16.dp))
             }
 
-            // Hide table and list when loading
-            if (!isLoading) {
+            // Show results when we have data, even during loading
+            val hasResults = multiMatches.isNotEmpty() || matches.isNotEmpty()
+            if (!isLoading || hasResults) {
 
             // Table Header with pixel styling and sorting
             Box(

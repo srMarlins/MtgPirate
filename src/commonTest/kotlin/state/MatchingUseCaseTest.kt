@@ -204,13 +204,13 @@ class MatchingUseCaseTest {
             variant("Lightning Bolt", variantType = VariantType.HOLO, priceCents = 300),
         )
 
-        // Priority: Foil > Holo > Regular
+        // Price-first: cheapest variant wins, variant priority is tiebreaker
         val matches = useCase.matchEntries(entries, catalog, defaultConfig)
 
         assertEquals(1, matches.size)
         assertEquals(MatchStatus.AUTO_MATCHED, matches[0].status)
-        // Should pick Foil since it's first in variantPriority
-        assertEquals(VariantType.FOIL, matches[0].selectedVariant!!.variantType)
+        // Should pick Regular since it's cheapest ($2.20 < $3.00 < $3.50)
+        assertEquals(VariantType.REGULAR, matches[0].selectedVariant!!.variantType)
     }
 
     @Test
