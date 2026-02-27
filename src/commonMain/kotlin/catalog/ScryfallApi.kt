@@ -1,6 +1,7 @@
 package catalog
 
 import io.ktor.client.*
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
@@ -41,6 +42,11 @@ object ScryfallApi {
         return httpClient ?: HttpClient {
             install(ContentNegotiation) {
                 json(json)
+            }
+            install(HttpTimeout) {
+                requestTimeoutMillis = 60_000
+                connectTimeoutMillis = 15_000
+                socketTimeoutMillis = 60_000
             }
             install(Logging) {
                 level = LogLevel.INFO
