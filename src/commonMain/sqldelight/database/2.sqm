@@ -1,0 +1,5 @@
+-- Migration: Add seller cache table for tracking per-seller fetch timestamps.
+CREATE TABLE IF NOT EXISTS SellerCacheEntity (
+    seller TEXT NOT NULL PRIMARY KEY,
+    lastFetchedAtMillis INTEGER NOT NULL
+);

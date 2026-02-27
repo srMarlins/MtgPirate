@@ -5,6 +5,25 @@ import kotlinx.coroutines.flow.map
 import model.CardVariant
 import model.Catalog
 import model.Seller
+import platform.currentTimeMillis
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+
+/**
+ * Utility functions for seller cache TTL calculations.
+ * Proxy sellers (BM, USEA) use a 7-day TTL; real card sellers (ManaPool, TCGPlayer) use 24 hours.
+ */
+object CacheUtils {
+    fun ttlForSeller(seller: Seller): Duration =
+        if (seller.isProxy) 7.days else 24.hours
+
+    fun isFresh(
+        fetchedAtMillis: Long,
+        ttl: Duration,
+        nowMillis: Long = currentTimeMillis(),
+    ): Boolean = (nowMillis - fetchedAtMillis) < ttl.inWholeMilliseconds
+}
 
 /**
  * Database store for catalog card variants.
@@ -52,10 +71,33 @@ class CatalogStore(private val database: Database) {
     }
 
     /**
+     * Get all card variants currently stored in the database (blocking read).
+     */
+    fun getAllVariants(): List<CardVariant> {
+        return database.getAllVariants()
+    }
+
+    /**
      * Replace catalog data for a specific seller.
      * Deletes all existing variants for the seller, then inserts the new ones.
      */
     suspend fun replaceCatalogForSeller(seller: Seller, variants: List<CardVariant>) {
         database.replaceCatalogForSellerTransaction(seller.name, variants.map { it.copy(seller = seller) })
+    }
+
+    /**
+     * Check whether the cached data for a seller is still fresh based on its TTL.
+     * Returns false if no cache entry exists for the seller.
+     */
+    fun isSellerCacheFresh(seller: Seller): Boolean {
+        val fetchedAt = database.getSellerCacheTimestamp(seller.name) ?: return false
+        return CacheUtils.isFresh(fetchedAt, CacheUtils.ttlForSeller(seller))
+    }
+
+    /**
+     * Record the current time as the last-fetched timestamp for a seller.
+     */
+    fun markSellerFetched(seller: Seller) {
+        database.upsertSellerCache(seller.name, currentTimeMillis())
     }
 }

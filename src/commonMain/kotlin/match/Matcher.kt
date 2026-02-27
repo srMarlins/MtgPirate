@@ -130,12 +130,13 @@ object Matcher {
     private fun selectByPriority(list: List<CardVariant>, config: MatchConfig, entry: DeckEntry): CardVariant? {
         // If set code hint was provided, keep only that set
         val filtered = entry.setCodeHint?.let { code -> list.filter { it.setCode.equals(code, true) } }.orEmpty().ifEmpty { list }
-        // Set priority first, then variant priority
-        val bySet = if (config.setPriority.isNotEmpty()) {
-            filtered.sortedBy { idxOrEnd(config.setPriority, it.setCode) }
-        } else filtered
-        val byVariant = bySet.sortedBy { idxOrEnd(config.variantPriority, it.variantType.displayName) }
-        return byVariant.firstOrNull()
+        // Proxy first, then cheapest, then variant/set priority as tiebreakers
+        return filtered.sortedWith(
+            compareBy<CardVariant> { if (it.seller.isProxy) 0 else 1 }
+                .thenBy { it.priceInCents }
+                .thenBy { idxOrEnd(config.variantPriority, it.variantType.displayName) }
+                .thenBy { idxOrEnd(config.setPriority, it.setCode) }
+        ).firstOrNull()
     }
 
     private fun idxOrEnd(list: List<String>, value: String): Int {

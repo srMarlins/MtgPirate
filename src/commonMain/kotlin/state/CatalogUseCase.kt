@@ -1,11 +1,13 @@
 package state
 
 import catalog.BootlegMageCatalogSource
+import catalog.CatalogDataSource
 import catalog.CatalogSource
 import catalog.ManaPoolCatalogSource
 import catalog.ScryfallApi
 import catalog.ScryfallImageEnricher
 import catalog.ScryfallPricingSource
+import catalog.UseaCatalogSource
 import database.CatalogStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -70,13 +72,17 @@ class CatalogUseCase(
     private val platformServices: MviPlatformServices
 ) {
     /**
-     * Registry of multi-seller catalog sources.
+     * Registry of all catalog sources.
+     * UseaCatalogSource wraps platformServices for the USEA remote catalog.
      * ManaPoolCatalogSource is the primary real card source (bulk pricing).
      * ScryfallPricingSource provides TCGPlayer pricing via Scryfall API.
-     * UseaCatalogSource uses the existing platformServices path and is handled separately.
      */
     val sourceRegistry = CatalogSourceRegistry(
         listOf(
+            UseaCatalogSource(object : CatalogDataSource {
+                override suspend fun load(forceRefresh: Boolean, log: (String) -> Unit): Catalog? =
+                    platformServices.fetchCatalogFromRemote(log)
+            }),
             BootlegMageCatalogSource(),
             ManaPoolCatalogSource(),
             ScryfallPricingSource(ScryfallApi),

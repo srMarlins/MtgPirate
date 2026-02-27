@@ -81,6 +81,10 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
         return db.cardVariantQueries.countAll().executeAsOne()
     }
 
+    fun getAllVariants(): List<CardVariant> {
+        return db.cardVariantQueries.selectAll().executeAsList().map { it.toDomain() }
+    }
+
     suspend fun insertPreferences(preferences: Preferences) {
         db.preferencesQueries.insertPreferences(
             includeSideboard = if (preferences.includeSideboard) 1L else 0L,
@@ -151,5 +155,13 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
                 )
             }
         }
+    }
+
+    fun upsertSellerCache(seller: String, lastFetchedAtMillis: Long) {
+        db.sellerCacheQueries.upsertCache(seller, lastFetchedAtMillis)
+    }
+
+    fun getSellerCacheTimestamp(seller: String): Long? {
+        return db.sellerCacheQueries.getCache(seller).executeAsOneOrNull()
     }
 }

@@ -712,6 +712,7 @@ fun main() = application {
                                             navController.navigate("export") { launchSingleTop = true }
                                         },
                                         isLoading = state.isMatching || state.loadingMultiCatalogs,
+                                        searchProgress = state.searchProgress,
                                         matchedCount = state.matchedCount,
                                         unmatchedCount = state.unmatchedCount,
                                         ambiguousCount = state.ambiguousCount,
