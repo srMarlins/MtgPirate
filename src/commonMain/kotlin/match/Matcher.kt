@@ -34,6 +34,15 @@ object Matcher {
         }
 
     /**
+     * Returns the canonical card name for an alternate name, or null if not an alternate.
+     * Used by DeckSearchUseCase to include canonical names when filtering catalog results.
+     */
+    fun resolveAlternateName(cardName: String): String? {
+        return ALTERNATE_NAMES[cardName]
+            ?: ALTERNATE_NAMES_NORMALIZED[NameNormalizer.normalize(cardName)]
+    }
+
+    /**
      * Pairs of normalized names that are within Levenshtein distance but should
      * never match each other.
      */

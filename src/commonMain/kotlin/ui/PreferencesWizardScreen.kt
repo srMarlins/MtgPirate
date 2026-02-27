@@ -103,28 +103,19 @@ fun PreferencesWizardScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // Seller Selection & Matching Strategy Section
+            // Seller Selection & Matching Strategy — compact single card
             PixelCard(glowing = false) {
-                Text(
-                    "SELLERS & MATCHING",
-                    style = MaterialTheme.typography.body1,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colors.primary
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    "\u2514\u2500 Choose which sellers to search and matching strategy",
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                )
-                Spacer(Modifier.height(8.dp))
-
-                // Seller toggle checkboxes
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Text(
+                        "SELLERS:",
+                        style = MaterialTheme.typography.body1,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.primary
+                    )
                     Seller.entries.forEach { seller ->
                         val isEnabled = seller.name in enabledSellers
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -139,35 +130,21 @@ fun PreferencesWizardScreen(
                                     onEnabledSellersChange(newList)
                                 }
                             )
-                            Spacer(Modifier.width(4.dp))
-                            Column {
-                                Text(seller.displayName, style = MaterialTheme.typography.body2)
-                                Text(
-                                    if (seller.isProxy) "Proxy" else "Real",
-                                    style = MaterialTheme.typography.caption,
-                                    color = if (seller.isProxy) PixelOrange else PixelGreen
-                                )
-                            }
+                            Text(seller.displayName, style = MaterialTheme.typography.body2)
+                            Spacer(Modifier.width(2.dp))
+                            PixelBadge(
+                                text = if (seller.isProxy) "P" else "R",
+                                color = if (seller.isProxy) PixelOrange else PixelGreen
+                            )
                         }
                     }
-                }
 
-                Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.weight(1f))
 
-                // Proxy-first toggle
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(
-                        checked = proxyFirst,
-                        onCheckedChange = onProxyFirstChange
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Column {
-                        Text("Prefer proxy cards", style = MaterialTheme.typography.body2)
-                        Text(
-                            "When enabled, proxy sellers are prioritized over real card sellers",
-                            style = MaterialTheme.typography.caption,
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                        )
+                    // Proxy-first toggle inline
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = proxyFirst, onCheckedChange = onProxyFirstChange)
+                        Text("Proxy first", style = MaterialTheme.typography.body2)
                     }
                 }
             }

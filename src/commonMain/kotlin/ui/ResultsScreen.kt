@@ -281,183 +281,54 @@ fun ResultsScreen(
                 }
             }
 
-            // Seller filter chips (shown when multiple sellers are available)
-            if (availableSellers.size > 1) {
-                Spacer(Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "SELLER:",
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
-                        fontWeight = FontWeight.Bold
-                    )
-                    // "All" chip
-                    Box(
-                        modifier = Modifier
-                            .clip(PixelShape(cornerSize = 6.dp))
-                            .background(
-                                if (sellerFilter == null) MaterialTheme.colors.primary else PixelGrey,
-                                shape = PixelShape(cornerSize = 6.dp)
-                            )
-                            .pixelBorder(
-                                borderWidth = 2.dp,
-                                cornerSize = 6.dp,
-                                enabled = true,
-                                glowAlpha = if (sellerFilter == null) 0.4f else 0.1f
-                            )
-                            .clickable { sellerFilter = null }
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = "ALL",
-                            style = MaterialTheme.typography.caption,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    // Per-seller chips
-                    availableSellers.forEach { seller ->
-                        val chipColor = sellerColor(seller)
-                        Box(
-                            modifier = Modifier
-                                .clip(PixelShape(cornerSize = 6.dp))
-                                .background(
-                                    if (sellerFilter == seller) chipColor else chipColor.copy(alpha = 0.5f),
-                                    shape = PixelShape(cornerSize = 6.dp)
-                                )
-                                .pixelBorder(
-                                    borderWidth = 2.dp,
-                                    cornerSize = 6.dp,
-                                    enabled = true,
-                                    glowAlpha = if (sellerFilter == seller) 0.4f else 0.1f
-                                )
-                                .clickable {
-                                    sellerFilter = if (sellerFilter == seller) null else seller
-                                }
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = seller.displayName.uppercase(),
-                                style = MaterialTheme.typography.caption,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Proxy/Real filter chips
-            Spacer(Modifier.height(8.dp))
+            // Compact filter row: seller | proxy/real | variant type
+            Spacer(Modifier.height(6.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    "TYPE:",
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
-                    fontWeight = FontWeight.Bold
-                )
+                // Seller filter chips
+                if (availableSellers.size > 1) {
+                    FilterChip(
+                        label = "ALL",
+                        isActive = sellerFilter == null,
+                        activeColor = MaterialTheme.colors.primary,
+                        onClick = { sellerFilter = null }
+                    )
+                    availableSellers.forEach { seller ->
+                        FilterChip(
+                            label = seller.displayName.uppercase(),
+                            isActive = sellerFilter == seller,
+                            activeColor = sellerColor(seller),
+                            onClick = { sellerFilter = if (sellerFilter == seller) null else seller }
+                        )
+                    }
+
+                    // Divider
+                    Box(Modifier.width(1.dp).height(16.dp).background(MaterialTheme.colors.onSurface.copy(alpha = 0.2f)))
+                }
+
                 // Proxy/Real filter
                 listOf("ALL" to 0, "PROXY" to 1, "REAL" to 2).forEach { (label, value) ->
-                    val isActive = proxyFilter == value
                     val chipColor = when (value) {
-                        1 -> PixelOrange
-                        2 -> PixelGreen
-                        else -> MaterialTheme.colors.primary
+                        1 -> PixelOrange; 2 -> PixelGreen; else -> MaterialTheme.colors.primary
                     }
-                    Box(
-                        modifier = Modifier
-                            .clip(PixelShape(cornerSize = 6.dp))
-                            .background(
-                                if (isActive) chipColor else PixelGrey,
-                                shape = PixelShape(cornerSize = 6.dp)
-                            )
-                            .pixelBorder(
-                                borderWidth = 2.dp,
-                                cornerSize = 6.dp,
-                                enabled = true,
-                                glowAlpha = if (isActive) 0.4f else 0.1f
-                            )
-                            .clickable { proxyFilter = value }
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.caption,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    FilterChip(label = label, isActive = proxyFilter == value, activeColor = chipColor, onClick = { proxyFilter = value })
                 }
 
-                Spacer(Modifier.width(16.dp))
+                // Divider
+                Box(Modifier.width(1.dp).height(16.dp).background(MaterialTheme.colors.onSurface.copy(alpha = 0.2f)))
 
                 // Variant type filter
-                Text(
-                    "VARIANT:",
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
-                    fontWeight = FontWeight.Bold
-                )
-                // "All" variant chip
-                Box(
-                    modifier = Modifier
-                        .clip(PixelShape(cornerSize = 6.dp))
-                        .background(
-                            if (variantTypeFilter == null) MaterialTheme.colors.primary else PixelGrey,
-                            shape = PixelShape(cornerSize = 6.dp)
-                        )
-                        .pixelBorder(
-                            borderWidth = 2.dp,
-                            cornerSize = 6.dp,
-                            enabled = true,
-                            glowAlpha = if (variantTypeFilter == null) 0.4f else 0.1f
-                        )
-                        .clickable { variantTypeFilter = null }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "ALL",
-                        style = MaterialTheme.typography.caption,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                // Per-variant-type chips
+                FilterChip(label = "ALL", isActive = variantTypeFilter == null, activeColor = MaterialTheme.colors.primary, onClick = { variantTypeFilter = null })
                 VariantType.entries.forEach { vt ->
-                    val isActive = variantTypeFilter == vt
-                    Box(
-                        modifier = Modifier
-                            .clip(PixelShape(cornerSize = 6.dp))
-                            .background(
-                                if (isActive) MaterialTheme.colors.secondary else PixelGrey,
-                                shape = PixelShape(cornerSize = 6.dp)
-                            )
-                            .pixelBorder(
-                                borderWidth = 2.dp,
-                                cornerSize = 6.dp,
-                                enabled = true,
-                                glowAlpha = if (isActive) 0.4f else 0.1f
-                            )
-                            .clickable {
-                                variantTypeFilter = if (variantTypeFilter == vt) null else vt
-                            }
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = vt.displayName.uppercase(),
-                            style = MaterialTheme.typography.caption,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    FilterChip(
+                        label = vt.displayName.uppercase(),
+                        isActive = variantTypeFilter == vt,
+                        activeColor = MaterialTheme.colors.secondary,
+                        onClick = { variantTypeFilter = if (variantTypeFilter == vt) null else vt }
+                    )
                 }
             }
 

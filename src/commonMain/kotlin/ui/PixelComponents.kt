@@ -155,6 +155,41 @@ enum class PixelButtonVariant {
 }
 
 // ========================================
+// FILTER CHIP
+// ========================================
+@Composable
+fun FilterChip(
+    label: String,
+    isActive: Boolean,
+    activeColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val bg = if (isActive) activeColor.copy(alpha = 0.25f) else Color.Transparent
+    val textColor = if (isActive) activeColor else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+    Box(
+        modifier = modifier
+            .clip(PixelShape(cornerSize = 4.dp))
+            .background(bg, shape = PixelShape(cornerSize = 4.dp))
+            .border(
+                width = if (isActive) 1.5.dp else 1.dp,
+                color = if (isActive) activeColor else MaterialTheme.colors.onSurface.copy(alpha = 0.2f),
+                shape = PixelShape(cornerSize = 4.dp)
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.overline,
+            color = textColor,
+            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
+        )
+    }
+}
+
+// ========================================
 // PIXEL TEXT FIELD
 // ========================================
 @Composable

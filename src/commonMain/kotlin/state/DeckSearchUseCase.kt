@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import match.Matcher
 import match.MultiCatalogMatcher
 import match.NameNormalizer
 import model.CardVariant
@@ -68,10 +69,18 @@ class DeckSearchUseCase(
             return@channelFlow
         }
 
-        // Normalized names of cards we're looking for — used to filter bulk catalogs
-        val deckNormalizedNames = includedEntries
-            .map { NameNormalizer.normalize(it.cardName) }
-            .toSet()
+        // Normalized names of cards we're looking for — used to filter bulk catalogs.
+        // Also include canonical names for alternate-name cards (e.g. Secret Lair promos)
+        // so that the real card variants don't get filtered out before matching.
+        val deckNormalizedNames = buildSet {
+            for (entry in includedEntries) {
+                add(NameNormalizer.normalize(entry.cardName))
+                val canonical = Matcher.resolveAlternateName(entry.cardName)
+                if (canonical != null) {
+                    add(NameNormalizer.normalize(canonical))
+                }
+            }
+        }
 
         // Mutable shared state protected by mutex
         val mutex = Mutex()
