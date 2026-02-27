@@ -155,6 +155,41 @@ enum class PixelButtonVariant {
 }
 
 // ========================================
+// FILTER CHIP
+// ========================================
+@Composable
+fun FilterChip(
+    label: String,
+    isActive: Boolean,
+    activeColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val bg = if (isActive) activeColor.copy(alpha = 0.25f) else Color.Transparent
+    val textColor = if (isActive) activeColor else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+    Box(
+        modifier = modifier
+            .clip(PixelShape(cornerSize = 4.dp))
+            .background(bg, shape = PixelShape(cornerSize = 4.dp))
+            .border(
+                width = if (isActive) 1.5.dp else 1.dp,
+                color = if (isActive) activeColor else MaterialTheme.colors.onSurface.copy(alpha = 0.2f),
+                shape = PixelShape(cornerSize = 4.dp)
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.overline,
+            color = textColor,
+            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
+        )
+    }
+}
+
+// ========================================
 // PIXEL TEXT FIELD
 // ========================================
 @Composable
@@ -1636,43 +1671,23 @@ fun SearchProgressPanel(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        // Header row with progress text and percentage
+        // Simple header
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = if (searchProgress.isComplete) {
-                        "Found ${searchProgress.cardsWithResults}/${searchProgress.totalCards} cards"
-                    } else {
-                        "Searching ${searchProgress.cardsWithResults}/${searchProgress.totalCards} cards..."
-                    },
-                    style = MaterialTheme.typography.body2,
-                    color = MaterialTheme.colors.onSurface,
-                )
-                if (searchProgress.isSearching) {
-                    AnimatedLoadingDots()
-                }
-            }
             Text(
-                text = "${(searchProgress.progressFraction * 100).toInt()}%",
-                style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                text = if (searchProgress.isComplete) "Search Complete" else "Loading...",
+                style = MaterialTheme.typography.body2,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colors.onSurface,
             )
+            if (searchProgress.isSearching) {
+                AnimatedLoadingDots()
+            }
         }
 
-        // Progress bar
-        PixelProgressBar(
-            progress = searchProgress.progressFraction,
-            color = if (searchProgress.isComplete) PixelGreen else MaterialTheme.colors.primary,
-        )
-
-        // Per-supplier status rows
+        // Per-supplier status rows with shimmer animation
         searchProgress.sellerStatuses.forEach { (_, status) ->
             SellerStatusRow(status)
         }
@@ -1681,6 +1696,22 @@ fun SearchProgressPanel(
 
 @Composable
 private fun SellerStatusRow(status: SellerSearchStatus) {
+    // Pulsing animation for SEARCHING state
+    val shimmerAlpha = if (status.state == SearchState.SEARCHING) {
+        val infiniteTransition = rememberInfiniteTransition()
+        val alpha by infiniteTransition.animateFloat(
+            initialValue = 0.4f,
+            targetValue = 1.0f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(800, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse,
+            ),
+        )
+        alpha
+    } else {
+        1f
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -1700,12 +1731,12 @@ private fun SellerStatusRow(status: SellerSearchStatus) {
             Box(
                 modifier = Modifier
                     .size(8.dp)
-                    .background(indicatorColor, PixelShape(cornerSize = 2.dp))
+                    .background(indicatorColor.copy(alpha = shimmerAlpha), PixelShape(cornerSize = 2.dp))
             )
             Text(
                 text = status.seller.displayName,
                 style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.onSurface,
+                color = MaterialTheme.colors.onSurface.copy(alpha = shimmerAlpha),
             )
         }
 
@@ -1713,7 +1744,7 @@ private fun SellerStatusRow(status: SellerSearchStatus) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (status.cardsFound > 0) {
+            if (status.state == SearchState.DONE && status.cardsFound > 0) {
                 Text(
                     text = "${status.cardsFound} cards",
                     style = MaterialTheme.typography.caption,
@@ -1722,15 +1753,16 @@ private fun SellerStatusRow(status: SellerSearchStatus) {
             }
             Text(
                 text = when (status.state) {
-                    SearchState.PENDING -> "pending"
-                    SearchState.SEARCHING -> status.message ?: "searching..."
-                    SearchState.DONE -> status.message ?: "done"
+                    SearchState.PENDING -> "waiting"
+                    SearchState.SEARCHING -> "searching..."
+                    SearchState.DONE -> "done"
                     SearchState.ERROR -> status.message ?: "error"
                 },
                 style = MaterialTheme.typography.caption,
                 color = when (status.state) {
                     SearchState.ERROR -> PixelRed
                     SearchState.DONE -> PixelGreen
+                    SearchState.SEARCHING -> PixelOrange.copy(alpha = shimmerAlpha)
                     else -> MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
                 },
             )

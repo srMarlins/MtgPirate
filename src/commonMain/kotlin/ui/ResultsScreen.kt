@@ -38,6 +38,7 @@ import model.DeckEntryMatch
 import model.MatchStatus
 import model.MultiMatch
 import model.Seller
+import model.VariantType
 import state.SearchProgress
 import util.formatPrice
 
@@ -78,6 +79,8 @@ fun ResultsScreen(
 
     var filterMode by rememberSaveable { mutableStateOf(0) } // 0 = All, 1 = Matched, 2 = Unmatched, 3 = Ambiguous
     var sellerFilter by remember { mutableStateOf<Seller?>(null) }
+    var proxyFilter by rememberSaveable { mutableStateOf(0) } // 0 = All, 1 = Proxy Only, 2 = Real Only
+    var variantTypeFilter by remember { mutableStateOf<VariantType?>(null) } // null = All
     val sortSaver = remember { Saver<SortOption, String>(save = { it.name }, restore = { SortOption.valueOf(it) }) }
     var sortOption by rememberSaveable(stateSaver = sortSaver) { mutableStateOf(SortOption.DEFAULT) }
 
@@ -278,73 +281,54 @@ fun ResultsScreen(
                 }
             }
 
-            // Seller filter chips (shown when multiple sellers are available)
-            if (availableSellers.size > 1) {
-                Spacer(Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "SELLER:",
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
-                        fontWeight = FontWeight.Bold
+            // Compact filter row: seller | proxy/real | variant type
+            Spacer(Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Seller filter chips
+                if (availableSellers.size > 1) {
+                    FilterChip(
+                        label = "ALL",
+                        isActive = sellerFilter == null,
+                        activeColor = MaterialTheme.colors.primary,
+                        onClick = { sellerFilter = null }
                     )
-                    // "All" chip
-                    Box(
-                        modifier = Modifier
-                            .clip(PixelShape(cornerSize = 6.dp))
-                            .background(
-                                if (sellerFilter == null) MaterialTheme.colors.primary else PixelGrey,
-                                shape = PixelShape(cornerSize = 6.dp)
-                            )
-                            .pixelBorder(
-                                borderWidth = 2.dp,
-                                cornerSize = 6.dp,
-                                enabled = true,
-                                glowAlpha = if (sellerFilter == null) 0.4f else 0.1f
-                            )
-                            .clickable { sellerFilter = null }
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = "ALL",
-                            style = MaterialTheme.typography.caption,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
+                    availableSellers.forEach { seller ->
+                        FilterChip(
+                            label = seller.displayName.uppercase(),
+                            isActive = sellerFilter == seller,
+                            activeColor = sellerColor(seller),
+                            onClick = { sellerFilter = if (sellerFilter == seller) null else seller }
                         )
                     }
-                    // Per-seller chips
-                    availableSellers.forEach { seller ->
-                        val chipColor = sellerColor(seller)
-                        Box(
-                            modifier = Modifier
-                                .clip(PixelShape(cornerSize = 6.dp))
-                                .background(
-                                    if (sellerFilter == seller) chipColor else chipColor.copy(alpha = 0.5f),
-                                    shape = PixelShape(cornerSize = 6.dp)
-                                )
-                                .pixelBorder(
-                                    borderWidth = 2.dp,
-                                    cornerSize = 6.dp,
-                                    enabled = true,
-                                    glowAlpha = if (sellerFilter == seller) 0.4f else 0.1f
-                                )
-                                .clickable {
-                                    sellerFilter = if (sellerFilter == seller) null else seller
-                                }
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = seller.displayName.uppercase(),
-                                style = MaterialTheme.typography.caption,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+
+                    // Divider
+                    Box(Modifier.width(1.dp).height(16.dp).background(MaterialTheme.colors.onSurface.copy(alpha = 0.2f)))
+                }
+
+                // Proxy/Real filter
+                listOf("ALL" to 0, "PROXY" to 1, "REAL" to 2).forEach { (label, value) ->
+                    val chipColor = when (value) {
+                        1 -> PixelOrange; 2 -> PixelGreen; else -> MaterialTheme.colors.primary
                     }
+                    FilterChip(label = label, isActive = proxyFilter == value, activeColor = chipColor, onClick = { proxyFilter = value })
+                }
+
+                // Divider
+                Box(Modifier.width(1.dp).height(16.dp).background(MaterialTheme.colors.onSurface.copy(alpha = 0.2f)))
+
+                // Variant type filter
+                FilterChip(label = "ALL", isActive = variantTypeFilter == null, activeColor = MaterialTheme.colors.primary, onClick = { variantTypeFilter = null })
+                VariantType.entries.forEach { vt ->
+                    FilterChip(
+                        label = vt.displayName.uppercase(),
+                        isActive = variantTypeFilter == vt,
+                        activeColor = MaterialTheme.colors.secondary,
+                        onClick = { variantTypeFilter = if (variantTypeFilter == vt) null else vt }
+                    )
                 }
             }
 
@@ -486,24 +470,38 @@ fun ResultsScreen(
                 else -> matches
             }
 
-            // Apply seller filter
+            // Apply seller filter (cards without a match always pass through)
             val sellerFiltered = if (sellerFilter != null) {
-                filtered.filter { it.selectedVariant?.seller == sellerFilter }
+                filtered.filter { it.selectedVariant == null || it.selectedVariant?.seller == sellerFilter }
             } else {
                 filtered
             }
 
+            // Apply proxy/real filter (cards without a match always pass through)
+            val proxyFiltered = when (proxyFilter) {
+                1 -> sellerFiltered.filter { it.selectedVariant == null || it.selectedVariant?.seller?.isProxy == true }
+                2 -> sellerFiltered.filter { it.selectedVariant == null || it.selectedVariant?.seller?.isProxy == false }
+                else -> sellerFiltered
+            }
+
+            // Apply variant type filter (cards without a match always pass through)
+            val variantFiltered = if (variantTypeFilter != null) {
+                proxyFiltered.filter { it.selectedVariant == null || it.selectedVariant?.variantType == variantTypeFilter }
+            } else {
+                proxyFiltered
+            }
+
             // Apply sorting
             val sorted = when (sortOption) {
-                SortOption.NAME_ASC -> sellerFiltered.sortedBy { it.deckEntry.cardName.lowercase() }
-                SortOption.NAME_DESC -> sellerFiltered.sortedByDescending { it.deckEntry.cardName.lowercase() }
-                SortOption.QTY_ASC -> sellerFiltered.sortedBy { it.deckEntry.qty }
-                SortOption.QTY_DESC -> sellerFiltered.sortedByDescending { it.deckEntry.qty }
-                SortOption.PRICE_ASC -> sellerFiltered.sortedBy { it.selectedVariant?.priceInCents ?: Int.MAX_VALUE }
-                SortOption.PRICE_DESC -> sellerFiltered.sortedByDescending { it.selectedVariant?.priceInCents ?: -1 }
-                SortOption.STATUS_ASC -> sellerFiltered.sortedBy { it.status.ordinal }
-                SortOption.STATUS_DESC -> sellerFiltered.sortedByDescending { it.status.ordinal }
-                SortOption.DEFAULT -> sellerFiltered
+                SortOption.NAME_ASC -> variantFiltered.sortedBy { it.deckEntry.cardName.lowercase() }
+                SortOption.NAME_DESC -> variantFiltered.sortedByDescending { it.deckEntry.cardName.lowercase() }
+                SortOption.QTY_ASC -> variantFiltered.sortedBy { it.deckEntry.qty }
+                SortOption.QTY_DESC -> variantFiltered.sortedByDescending { it.deckEntry.qty }
+                SortOption.PRICE_ASC -> variantFiltered.sortedBy { it.selectedVariant?.priceInCents ?: Int.MAX_VALUE }
+                SortOption.PRICE_DESC -> variantFiltered.sortedByDescending { it.selectedVariant?.priceInCents ?: -1 }
+                SortOption.STATUS_ASC -> variantFiltered.sortedBy { it.status.ordinal }
+                SortOption.STATUS_DESC -> variantFiltered.sortedByDescending { it.status.ordinal }
+                SortOption.DEFAULT -> variantFiltered
             }
 
             // Build a lookup from deckEntry id to multiMatch for alternatives
@@ -553,13 +551,20 @@ fun ResultsScreen(
                                                 color = MaterialTheme.colors.onSurface
                                             )
                                         }
-                                        // Seller badge
+                                        // Seller badge + proxy indicator
                                         variant?.let { v ->
                                             Spacer(Modifier.width(4.dp))
                                             PixelBadge(
                                                 text = v.seller.displayName,
                                                 color = sellerColor(v.seller)
                                             )
+                                            if (v.seller.isProxy) {
+                                                Spacer(Modifier.width(3.dp))
+                                                PixelBadge(
+                                                    text = "PROXY",
+                                                    color = PixelOrange
+                                                )
+                                            }
                                         }
                                     }
 

@@ -27,10 +27,12 @@
     <ID>LongMethod:MatchesScreen.kt:@Composable fun MatchesScreen</ID>
     <ID>LongMethod:MobilePixelImageComponents.kt:@Composable fun MobilePixelImageModal</ID>
     <ID>LongMethod:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$override fun create: QueryResult.Value&lt;Unit&gt;</ID>
+    <ID>LongMethod:MviViewModel.kt:MviViewModel$fun processIntent</ID>
     <ID>LongMethod:MviViewModel.kt:MviViewModel$private suspend fun searchDeck</ID>
     <ID>LongMethod:PixelComponents.kt:@Composable fun FantasyStarIcon</ID>
     <ID>LongMethod:PixelComponents.kt:@Composable fun PixelProgressAnimation</ID>
     <ID>LongMethod:PixelComponents.kt:@Composable private fun PixelDraggableItem</ID>
+    <ID>LongMethod:PixelComponents.kt:@Composable private fun SellerStatusRow</ID>
     <ID>LongMethod:PreferencesWizardScreen.kt:@Composable fun DraggableVariantItem</ID>
     <ID>LongMethod:PreferencesWizardScreen.kt:@Composable fun PreferencesWizardScreen</ID>
     <ID>LongMethod:ResolveScreen.kt:@Composable fun ResolveScreen</ID>
@@ -95,8 +97,8 @@
     <ID>MagicNumber:LogEntryQueries.kt:LogEntryQueries$3</ID>
     <ID>MagicNumber:LogEntryQueries.kt:LogEntryQueries$407_997_744</ID>
     <ID>MagicNumber:Logging.kt:Logging$300</ID>
-    <ID>MagicNumber:Matcher.kt:Matcher$15</ID>
-    <ID>MagicNumber:Matcher.kt:Matcher$3</ID>
+    <ID>MagicNumber:MatchSorting.kt:MatchSorting$15</ID>
+    <ID>MagicNumber:MatchSorting.kt:MatchSorting$3</ID>
     <ID>MagicNumber:MatchesScreen.kt:0.10f</ID>
     <ID>MagicNumber:MatchesScreen.kt:0.12f</ID>
     <ID>MagicNumber:MatchesScreen.kt:0.18f</ID>
@@ -107,6 +109,7 @@
     <ID>MagicNumber:Models.kt:VariantType.HOLO$300</ID>
     <ID>MagicNumber:Models.kt:VariantType.REGULAR$220</ID>
     <ID>MagicNumber:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$3</ID>
+    <ID>MagicNumber:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$4</ID>
     <ID>MagicNumber:MviViewModel.kt:MviViewModel$3</ID>
     <ID>MagicNumber:PixelComponents.kt:0.2f</ID>
     <ID>MagicNumber:PixelComponents.kt:0.4f</ID>
@@ -139,6 +142,7 @@
     <ID>MagicNumber:PixelComponents.kt:600</ID>
     <ID>MagicNumber:PixelComponents.kt:7</ID>
     <ID>MagicNumber:PixelComponents.kt:8</ID>
+    <ID>MagicNumber:PixelComponents.kt:800</ID>
     <ID>MagicNumber:PixelComponents.kt:9</ID>
     <ID>MagicNumber:PixelComponents.kt:90</ID>
     <ID>MagicNumber:PixelComponents.kt:900</ID>
@@ -149,6 +153,8 @@
     <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$6</ID>
     <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$7</ID>
     <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$757_506_398</ID>
+    <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$8</ID>
+    <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$9</ID>
     <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$933_600_296</ID>
     <ID>MagicNumber:PreferencesWizardScreen.kt:0.2f</ID>
     <ID>MagicNumber:PreferencesWizardScreen.kt:10f</ID>
@@ -294,6 +300,7 @@
     <ID>MaxLineLength:ExportScreen.kt:onClick = { if (expressEligible) selectedShipping = Promotions.ShippingType.EXPRESS }</ID>
     <ID>MaxLineLength:LogEntryQueries.kt:LogEntryQueries$)</ID>
     <ID>MaxLineLength:Logging.kt:Logging$return "${ldt.date} ${ldt.hour.toString().padStart(2,'0')}:${ldt.minute.toString().padStart(2,'0')}:${ldt.second.toString().padStart(2,'0')}"</ID>
+    <ID>MaxLineLength:MatchSorting.kt:MatchSorting$compareBy&lt;CardVariant&gt; { if (proxyFirst &amp;&amp; it.seller.isProxy) 0 else if (!proxyFirst &amp;&amp; !it.seller.isProxy) 0 else 1 }</ID>
     <ID>MaxLineLength:Matcher.kt:Matcher$DeckEntryMatch(entry, MatchStatus.AUTO_MATCHED, selected, exactNameMatches.map { MatchCandidate(it, 0, "exact") })</ID>
     <ID>MaxLineLength:Matcher.kt:Matcher$return</ID>
     <ID>MaxLineLength:Matcher.kt:Matcher$val filtered = entry.setCodeHint?.let { code -&gt; list.filter { it.setCode.equals(code, true) } }.orEmpty().ifEmpty { list }</ID>
@@ -317,6 +324,7 @@
     <ID>MaxLineLength:MatchesScreen.kt:color = if (rowTotal != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)</ID>
     <ID>MaxLineLength:MatchesScreen.kt:val content = unmatched.joinToString("\n") { "${it.deckEntry.qty} ${it.deckEntry.cardName}" }</ID>
     <ID>MaxLineLength:MobilePixelImageComponents.kt:var loadState by remember { mutableStateOf&lt;AsyncImagePainter.State&gt;(AsyncImagePainter.State.Empty) }</ID>
+    <ID>MaxLineLength:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$driver.execute(null, "ALTER TABLE PreferencesEntity ADD COLUMN enabledSellers TEXT NOT NULL DEFAULT 'USEA,BOOTLEG_MAGE,TCGPLAYER,MANAPOOL'", 0)</ID>
     <ID>MaxLineLength:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$driver.execute(null, "CREATE UNIQUE INDEX IF NOT EXISTS idx_variant_seller_sku ON CardVariantEntity(seller, sku)", 0)</ID>
     <ID>MaxLineLength:MviViewModel.kt:MviViewModel$private suspend</ID>
     <ID>MaxLineLength:PreferencesQueries.kt:PreferencesQueries$)</ID>
@@ -331,6 +339,9 @@
     <ID>MaxLineLength:ResolveScreen.kt:Text("PRICE", Modifier.width(80.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:ResolveScreen.kt:Text("SET", Modifier.width(70.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:ResolveScreen.kt:Text("VARIANT", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:Box(Modifier.width(1.dp).height(16.dp).background(MaterialTheme.colors.onSurface.copy(alpha = 0.2f)))</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:FilterChip(label = "ALL", isActive = variantTypeFilter == null, activeColor = MaterialTheme.colors.primary, onClick = { variantTypeFilter = null })</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:FilterChip(label = label, isActive = proxyFilter == value, activeColor = chipColor, onClick = { proxyFilter = value })</ID>
     <ID>MaxLineLength:ResultsScreen.kt:Text("${m.deckEntry.qty}", Modifier.width(50.dp), style = MaterialTheme.typography.body1)</ID>
     <ID>MaxLineLength:ResultsScreen.kt:color = if (ambiguous &gt; 0) PixelOrange else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)</ID>
     <ID>MaxLineLength:ResultsScreen.kt:if</ID>

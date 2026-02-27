@@ -1,0 +1,3 @@
+-- Migration: Add enabledSellers and proxyFirst columns to PreferencesEntity.
+ALTER TABLE PreferencesEntity ADD COLUMN enabledSellers TEXT NOT NULL DEFAULT 'USEA,BOOTLEG_MAGE,TCGPLAYER,MANAPOOL';
+ALTER TABLE PreferencesEntity ADD COLUMN proxyFirst INTEGER NOT NULL DEFAULT 1;

@@ -209,6 +209,35 @@ class DeckSearchUseCaseTest {
     }
 
     @Test
+    fun bulkSearchFallbackWhenCatalogEmpty() = runTest {
+        // Source returns empty from fetchCatalog but supports bulk search
+        val source = object : CatalogSource {
+            override val seller = Seller.TCGPLAYER
+            override val supportsBulkSearch = true
+            override suspend fun fetchCatalog(log: (String) -> Unit): List<CardVariant> = emptyList()
+            override suspend fun searchBulk(cardNames: List<String>, log: (String) -> Unit): List<CardVariant> {
+                return cardNames.map { testVariant(it, Seller.TCGPLAYER) }
+            }
+            override suspend fun search(cardName: String): List<CardVariant> = emptyList()
+            override fun checkoutUrl(items: List<OrderItem>): String? = null
+            override fun formatForExport(items: List<OrderItem>): String = ""
+        }
+
+        val entries = listOf(testEntry("Lightning Bolt"))
+        val storedVariants = mutableListOf<CardVariant>()
+        val useCase = createUseCase(sources = listOf(source), storedVariants = storedVariants)
+        val config = MultiCatalogMatcher.Config()
+
+        val emissions = useCase.search(entries, config).toList()
+        val last = emissions.last()
+
+        assertTrue(last.isComplete)
+        assertEquals(SearchState.DONE, last.sellerStatuses[Seller.TCGPLAYER]?.state)
+        // Should have found cards via bulk search fallback
+        assertTrue(storedVariants.isNotEmpty(), "Bulk search fallback should produce variants")
+    }
+
+    @Test
     fun multipleSuppliersSearchInParallel() = runTest {
         val useaSource = FakeCatalogSource(
             seller = Seller.USEA,

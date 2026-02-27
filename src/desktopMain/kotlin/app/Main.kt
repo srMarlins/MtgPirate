@@ -618,6 +618,8 @@ fun main() = application {
                                         includeCommanders = state.includeCommanders,
                                         includeTokens = state.includeTokens,
                                         variantPriority = state.preferences.variantPriority,
+                                        enabledSellers = state.preferences.enabledSellers,
+                                        proxyFirst = state.preferences.proxyFirst,
                                         onIncludeSideboardChange = {
                                             viewModel.processIntent(ViewIntent.ToggleIncludeSideboard(it))
                                         },
@@ -633,6 +635,12 @@ fun main() = application {
                                         },
                                         onVariantPriorityChange = {
                                             viewModel.processIntent(ViewIntent.UpdateVariantPriority(it))
+                                        },
+                                        onEnabledSellersChange = {
+                                            viewModel.processIntent(ViewIntent.UpdateEnabledSellers(it))
+                                        },
+                                        onProxyFirstChange = {
+                                            viewModel.processIntent(ViewIntent.UpdateProxyFirst(it))
                                         },
                                         onBack = { navController.navigateUp() },
                                         onNext = {

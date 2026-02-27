@@ -180,6 +180,8 @@ class MviViewModel(
                 is ViewIntent.LoadSavedImport -> loadSavedImport(intent.importId)
                 is ViewIntent.DeleteSavedImport -> deleteSavedImport(intent.importId)
                 is ViewIntent.EnrichVariantWithImage -> enrichVariantWithImage(intent.variant)
+                is ViewIntent.UpdateEnabledSellers -> updateEnabledSellers(intent.sellers)
+                is ViewIntent.UpdateProxyFirst -> updateProxyFirst(intent.value)
                 ViewIntent.LoadAllCatalogs -> loadAllCatalogs()
                 ViewIntent.SearchDeck -> searchDeck()
                 ViewIntent.RunMultiMatch -> runMultiMatch()
@@ -200,7 +202,9 @@ class MviViewModel(
                 is ViewIntent.SetShowSavedImportsWindow,
                 is ViewIntent.CompleteWizardStep,
                 is ViewIntent.ToggleTheme,
-                is ViewIntent.Log -> {}
+                is ViewIntent.Log,
+                is ViewIntent.UpdateEnabledSellers,
+                is ViewIntent.UpdateProxyFirst -> {}
             }
         }
     }
@@ -216,8 +220,7 @@ class MviViewModel(
             try {
                 val variantCount = catalogUseCase.getVariantCount()
                 if (variantCount == 0L) {
-                    log("Catalog is empty, loading from all sources...", "INFO")
-                    loadAllCatalogs()
+                    log("Catalog is empty — will fetch when search is triggered", "INFO")
                 } else {
                     log("Catalog already loaded: $variantCount variants", "INFO")
                 }
@@ -312,9 +315,10 @@ class MviViewModel(
             entries,
             catalog,
             Matcher.MatchConfig(
-                preferences.variantPriority,
-                preferences.setPriority,
-                preferences.fuzzyEnabled
+                variantPriority = preferences.variantPriority,
+                setPriority = preferences.setPriority,
+                fuzzyEnabled = preferences.fuzzyEnabled,
+                proxyFirst = preferences.proxyFirst,
             )
         )
 
@@ -440,6 +444,24 @@ class MviViewModel(
             }
     }
 
+    private suspend fun updateEnabledSellers(sellers: List<String>) {
+        preferencesUseCase.updateEnabledSellers(sellers)
+            .onSuccess { log("Enabled sellers updated: ${sellers.joinToString()}", "INFO") }
+            .onFailure {
+                log("Failed to update enabled sellers: ${it.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to update enabled sellers"))
+            }
+    }
+
+    private suspend fun updateProxyFirst(value: Boolean) {
+        preferencesUseCase.updateProxyFirst(value)
+            .onSuccess { log("Proxy-first preference: $value", "INFO") }
+            .onFailure {
+                log("Failed to update proxy-first: ${it.message}", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Failed to update proxy-first preference"))
+            }
+    }
+
     private fun completeWizardStep(step: Int) {
         _localState.update { state ->
             val completed = state.wizardCompletedSteps.toMutableSet()
@@ -528,7 +550,7 @@ class MviViewModel(
         withContext(Dispatchers.IO) {
             try {
                 val loadedSellers = catalogUseCase.loadAllCatalogs { msg, level -> log(msg, level) }
-                _localState.update { it.copy(availableSellers = loadedSellers) }
+                _localState.update { it.copy(availableSellers = loadedSellers.distinct()) }
                 // Auto-trigger matching after catalogs load
                 if (loadedSellers.isNotEmpty()) {
                     runAllMatching()
@@ -543,6 +565,17 @@ class MviViewModel(
     }
 
     private suspend fun searchDeck() {
+        val preferences = _viewState.value.preferences
+        val enabledSellerNames = preferences.enabledSellers.toSet()
+        val filteredSources = catalogUseCase.sourceRegistry.allSources
+            .filter { it.seller.name in enabledSellerNames }
+
+        if (filteredSources.isEmpty()) {
+            log("No sellers enabled — enable at least one seller in preferences", "WARNING")
+            _viewEffects.emit(ViewEffect.ShowError("No sellers enabled"))
+            return
+        }
+
         // Atomic check-and-set guard against concurrent searches
         var wasAlreadySearching = false
         _localState.update { state ->
@@ -551,12 +584,11 @@ class MviViewModel(
                 state
             } else {
                 // Set initial progress immediately so UI shows the loading panel
-                val sources = catalogUseCase.sourceRegistry.allSources
                 state.copy(
                     searchProgress = SearchProgress(
                         totalCards = 0,
                         cardsWithResults = 0,
-                        sellerStatuses = sources.associate { source ->
+                        sellerStatuses = filteredSources.associate { source ->
                             source.seller to SellerSearchStatus(
                                 seller = source.seller,
                                 state = SearchState.PENDING,
@@ -580,15 +612,21 @@ class MviViewModel(
             return
         }
 
-        val preferences = _viewState.value.preferences
         val config = MultiCatalogMatcher.Config(
             variantPriority = preferences.variantPriority,
             setPriority = preferences.setPriority,
             fuzzyEnabled = preferences.fuzzyEnabled,
+            proxyFirst = preferences.proxyFirst,
+        )
+
+        // Create a DeckSearchUseCase with only the enabled sources
+        val filteredSearchUseCase = DeckSearchUseCase(
+            sources = filteredSources,
+            catalogStore = catalogStore,
         )
 
         withContext(Dispatchers.IO) {
-            deckSearchUseCase.search(entries, config)
+            filteredSearchUseCase.search(entries, config)
                 .collect { progress ->
                     _localState.update { state ->
                         state.copy(
@@ -649,6 +687,7 @@ class MviViewModel(
                 variantPriority = preferences.variantPriority,
                 setPriority = preferences.setPriority,
                 fuzzyEnabled = preferences.fuzzyEnabled,
+                proxyFirst = preferences.proxyFirst,
             )
 
             val multiMatches = matchingUseCase.matchEntriesMulti(
@@ -873,6 +912,8 @@ sealed class ViewIntent {
     data class LoadSavedImport(val importId: String) : ViewIntent()
     data class DeleteSavedImport(val importId: String) : ViewIntent()
     data class EnrichVariantWithImage(val variant: CardVariant) : ViewIntent()
+    data class UpdateEnabledSellers(val sellers: List<String>) : ViewIntent()
+    data class UpdateProxyFirst(val value: Boolean) : ViewIntent()
 
     // Multi-catalog and shopping optimization intents
     data object LoadAllCatalogs : ViewIntent()

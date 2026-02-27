@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.delay
+import model.Seller
 
 @Composable
 fun PreferencesWizardScreen(
@@ -24,10 +25,14 @@ fun PreferencesWizardScreen(
     includeCommanders: Boolean = true,
     includeTokens: Boolean = true,
     variantPriority: List<String>,
+    enabledSellers: List<String> = Seller.entries.map { it.name },
+    proxyFirst: Boolean = true,
     onIncludeSideboardChange: (Boolean) -> Unit,
     onIncludeCommandersChange: (Boolean) -> Unit,
     onIncludeTokensChange: (Boolean) -> Unit,
     onVariantPriorityChange: (List<String>) -> Unit,
+    onEnabledSellersChange: (List<String>) -> Unit = {},
+    onProxyFirstChange: (Boolean) -> Unit = {},
     onBack: () -> Unit,
     onNext: () -> Unit
 ) {
@@ -44,7 +49,7 @@ fun PreferencesWizardScreen(
             // Header with pixel styling - compact layout
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "▸ CONFIGURE",
+                    "\u25b8 CONFIGURE",
                     style = MaterialTheme.typography.h4,
                     color = MaterialTheme.colors.primary,
                     fontWeight = FontWeight.Bold
@@ -56,12 +61,11 @@ fun PreferencesWizardScreen(
             }
             Spacer(Modifier.height(4.dp))
             Text(
-                "└─ Customize how cards should be matched and prioritized",
+                "\u2514\u2500 Customize how cards should be matched and prioritized",
                 style = MaterialTheme.typography.caption,
                 color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
             )
             Spacer(Modifier.height(12.dp))
-
 
             // Card Inclusion Section with pixel styling
             PixelCard(glowing = false) {
@@ -93,6 +97,54 @@ fun PreferencesWizardScreen(
                         Checkbox(checked = includeTokens, onCheckedChange = onIncludeTokensChange)
                         Spacer(Modifier.width(4.dp))
                         Text("Tokens", style = MaterialTheme.typography.body2)
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Seller Selection & Matching Strategy — compact single card
+            PixelCard(glowing = false) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "SELLERS:",
+                        style = MaterialTheme.typography.body1,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.primary
+                    )
+                    Seller.entries.forEach { seller ->
+                        val isEnabled = seller.name in enabledSellers
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = isEnabled,
+                                onCheckedChange = { checked ->
+                                    val newList = if (checked) {
+                                        enabledSellers + seller.name
+                                    } else {
+                                        enabledSellers - seller.name
+                                    }
+                                    onEnabledSellersChange(newList)
+                                }
+                            )
+                            Text(seller.displayName, style = MaterialTheme.typography.body2)
+                            Spacer(Modifier.width(6.dp))
+                            PixelBadge(
+                                text = if (seller.isProxy) "P" else "R",
+                                color = if (seller.isProxy) PixelOrange else PixelGreen
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.weight(1f))
+
+                    // Proxy-first toggle inline
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = proxyFirst, onCheckedChange = onProxyFirstChange)
+                        Text("Proxy first", style = MaterialTheme.typography.body2)
                     }
                 }
             }

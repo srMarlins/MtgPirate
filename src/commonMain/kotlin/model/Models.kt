@@ -20,7 +20,7 @@ enum class VariantType(val displayName: String, val defaultPriceInCents: Int) {
 }
 
 enum class Seller(val displayName: String, val isProxy: Boolean) {
-    USEA("USEA MTG Proxy", true),
+    USEA("USEA", true),
     BOOTLEG_MAGE("Bootleg Mage", true),
     TCGPLAYER("TCGPlayer", false),
     MANAPOOL("ManaPool", false);
@@ -102,7 +102,9 @@ data class Preferences(
     val variantPriority: List<String> = listOf("Foil", "Holo", "Regular"),
     val setPriority: List<String> = emptyList(),
     val fuzzyEnabled: Boolean = true,
-    val cacheMaxAgeHours: Int = 24
+    val cacheMaxAgeHours: Int = 24,
+    val enabledSellers: List<String> = Seller.entries.map { it.name },
+    val proxyFirst: Boolean = true,
 )
 
 @Serializable
