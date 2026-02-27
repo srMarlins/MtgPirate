@@ -48,11 +48,13 @@
     <ID>LoopWithTooManyJumpStatements:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$while</ID>
     <ID>LoopWithTooManyJumpStatements:MultiCatalogMatcher.kt:MultiCatalogMatcher$for</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$100</ID>
+    <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$15_000</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$3</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$4</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$401</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$403</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$5</ID>
+    <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$60_000</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$10</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$184_426_222</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_386_511_848</ID>
@@ -97,6 +99,8 @@
     <ID>MagicNumber:LogEntryQueries.kt:LogEntryQueries$3</ID>
     <ID>MagicNumber:LogEntryQueries.kt:LogEntryQueries$407_997_744</ID>
     <ID>MagicNumber:Logging.kt:Logging$300</ID>
+    <ID>MagicNumber:ManaPoolApi.kt:ManaPoolApi$120_000</ID>
+    <ID>MagicNumber:ManaPoolApi.kt:ManaPoolApi$30_000</ID>
     <ID>MagicNumber:MatchSorting.kt:MatchSorting$15</ID>
     <ID>MagicNumber:MatchSorting.kt:MatchSorting$3</ID>
     <ID>MagicNumber:MatchesScreen.kt:0.10f</ID>
@@ -190,6 +194,8 @@
     <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries$7</ID>
     <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries$8</ID>
     <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries.GetByIdQuery$757_582_413</ID>
+    <ID>MagicNumber:ScryfallApi.kt:ScryfallApi$15_000</ID>
+    <ID>MagicNumber:ScryfallApi.kt:ScryfallApi$60_000</ID>
     <ID>MagicNumber:ScryfallApi.kt:ScryfallApi$75</ID>
     <ID>MagicNumber:ScryfallImageEnricher.kt:ScryfallImageEnricher$10</ID>
     <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$1_517_078_527</ID>
@@ -339,6 +345,7 @@
     <ID>MaxLineLength:ResolveScreen.kt:Text("PRICE", Modifier.width(80.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:ResolveScreen.kt:Text("SET", Modifier.width(70.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:ResolveScreen.kt:Text("VARIANT", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:2 -&gt; sellerFiltered.filter { it.selectedVariant == null || it.selectedVariant?.seller?.isProxy == false }</ID>
     <ID>MaxLineLength:ResultsScreen.kt:Box(Modifier.width(1.dp).height(16.dp).background(MaterialTheme.colors.onSurface.copy(alpha = 0.2f)))</ID>
     <ID>MaxLineLength:ResultsScreen.kt:FilterChip(label = "ALL", isActive = variantTypeFilter == null, activeColor = MaterialTheme.colors.primary, onClick = { variantTypeFilter = null })</ID>
     <ID>MaxLineLength:ResultsScreen.kt:FilterChip(label = label, isActive = proxyFilter == value, activeColor = chipColor, onClick = { proxyFilter = value })</ID>
@@ -351,11 +358,13 @@
     <ID>MaxLineLength:ResultsScreen.kt:if (sortOption == SortOption.PRICE_DESC) Text(" \u25bc", style = MaterialTheme.typography.caption)</ID>
     <ID>MaxLineLength:ResultsScreen.kt:if (sortOption == SortOption.STATUS_ASC) Text(" \u25b2", style = MaterialTheme.typography.caption)</ID>
     <ID>MaxLineLength:ResultsScreen.kt:if (sortOption == SortOption.STATUS_DESC) Text(" \u25bc", style = MaterialTheme.typography.caption)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt:proxyFiltered.filter { it.selectedVariant == null || it.selectedVariant?.variantType == variantTypeFilter }</ID>
     <ID>MaxLineLength:SavedImportQueries.kt:SavedImportQueries$)</ID>
     <ID>MaxLineLength:SavedImportQueries.kt:SavedImportQueries.GetByIdQuery$override</ID>
     <ID>MaxLineLength:ScryfallImageEnricher.kt:ScryfallImageEnricher$log?.invoke("Fetching image for ${variant.nameOriginal} (${variant.setCode} #${variant.collectorNumber})")</ID>
     <ID>MaxLineLength:SellerCacheQueries.kt:SellerCacheQueries$val</ID>
     <ID>MaxLineLength:SellerCacheQueries.kt:SellerCacheQueries.GetCacheQuery$override</ID>
+    <ID>MaxLineLength:ShoppingPlanScreen.kt:color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface</ID>
     <ID>MaxLineLength:ShoppingPlanScreen.kt:val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&amp;body=${encodeUrlParameter(exportText)}"</ID>
     <ID>PackageNaming:MtgPirateDatabaseImpl.kt:package org.srmarlins.mtgpirate.db.MtgPirate</ID>
     <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun extractValue: String?</ID>
