@@ -566,10 +566,7 @@ fun main() = application {
                                                 PixelButton(
                                                     text = "Next: Configure →",
                                                     onClick = {
-                                                        viewModel.processIntent(ViewIntent.SaveCurrentImport)
-
-                                                        viewModel.processIntent(ViewIntent.ParseDeck)
-                                                        viewModel.processIntent(ViewIntent.CompleteWizardStep(1))
+                                                        viewModel.processIntent(ViewIntent.WizardImportToPreferences)
                                                         navController.navigate("preferences") {
                                                             launchSingleTop = true
                                                         }
@@ -639,9 +636,7 @@ fun main() = application {
                                         },
                                         onBack = { navController.navigateUp() },
                                         onNext = {
-                                            viewModel.processIntent(ViewIntent.CompleteWizardStep(2))
-                                            viewModel.processIntent(ViewIntent.RunMatch)
-                                            viewModel.processIntent(ViewIntent.LoadAllCatalogs)
+                                            viewModel.processIntent(ViewIntent.WizardPreferencesToResults)
                                             navController.navigate("results") {
                                                 launchSingleTop = true
                                             }
@@ -713,11 +708,10 @@ fun main() = application {
                                         },
                                         onClose = { navController.navigateUp() },
                                         onExport = {
-                                            viewModel.processIntent(ViewIntent.CompleteWizardStep(3))
-                                            viewModel.processIntent(ViewIntent.OptimizeShoppingPlan)
+                                            viewModel.processIntent(ViewIntent.WizardResultsToExport)
                                             navController.navigate("export") { launchSingleTop = true }
                                         },
-                                        isLoading = state.isMatching,
+                                        isLoading = state.isMatching || state.loadingMultiCatalogs,
                                         matchedCount = state.matchedCount,
                                         unmatchedCount = state.unmatchedCount,
                                         ambiguousCount = state.ambiguousCount,

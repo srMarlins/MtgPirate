@@ -319,6 +319,125 @@ class BootlegMageCatalogSourceTest {
         assertEquals("BM-HTML-2", variants[1].sku)
     }
 
+    // ---- parseStoreProductName (new Store API format) ----
+
+    @Test
+    fun `parseStoreProductName with standard format`() {
+        val result = source.parseStoreProductName("Ocelot Pride SCH Textless #47 Foil")
+        assertNotNull(result)
+        assertEquals("Ocelot Pride", result.cardName)
+        assertEquals("SCH", result.setCode)
+        assertEquals(VariantType.FOIL, result.variantType)
+        assertEquals("47", result.collectorNumber)
+    }
+
+    @Test
+    fun `parseStoreProductName without foil`() {
+        val result = source.parseStoreProductName("Visions of Beyond SLD Full Art #1670")
+        assertNotNull(result)
+        assertEquals("Visions of Beyond", result.cardName)
+        assertEquals("SLD", result.setCode)
+        assertEquals(VariantType.REGULAR, result.variantType)
+        assertEquals("1670", result.collectorNumber)
+    }
+
+    @Test
+    fun `parseStoreProductName simple card`() {
+        val result = source.parseStoreProductName("Lightning Bolt M11 #1")
+        assertNotNull(result)
+        assertEquals("Lightning Bolt", result.cardName)
+        assertEquals("M11", result.setCode)
+        assertEquals("1", result.collectorNumber)
+    }
+
+    @Test
+    fun `parseStoreProductName with blank returns null`() {
+        assertNull(source.parseStoreProductName(""))
+        assertNull(source.parseStoreProductName("   "))
+    }
+
+    @Test
+    fun `parseStoreProductName without collector number`() {
+        val result = source.parseStoreProductName("Sol Ring CMD Foil")
+        assertNotNull(result)
+        assertEquals("Sol Ring", result.cardName)
+        assertEquals("CMD", result.setCode)
+        assertEquals(VariantType.FOIL, result.variantType)
+        assertNull(result.collectorNumber)
+    }
+
+    @Test
+    fun `parseStoreProductName with holo variant`() {
+        val result = source.parseStoreProductName("Dark Ritual ICE Holo #1")
+        assertNotNull(result)
+        assertEquals("Dark Ritual", result.cardName)
+        assertEquals("ICE", result.setCode)
+        assertEquals(VariantType.HOLO, result.variantType)
+    }
+
+    // ---- parseStoreApiJson (new Store API JSON) ----
+
+    @Test
+    fun `parseStoreApiJson with valid product`() {
+        val json = """
+            [
+                {
+                    "id": 119622,
+                    "name": "Ocelot Pride SCH Textless #47 Foil",
+                    "sku": "C1724-SCH",
+                    "prices": {
+                        "price": "350",
+                        "regular_price": "400",
+                        "sale_price": "350",
+                        "currency_code": "USD"
+                    },
+                    "images": [{"src": "https://bootlegmage.com/img/ocelot.jpg"}],
+                    "permalink": "https://bootlegmage.com/product/ocelot-pride/"
+                }
+            ]
+        """.trimIndent()
+        val variants = source.parseStoreApiJson(json)
+        assertEquals(1, variants.size)
+        val v = variants[0]
+        assertEquals("Ocelot Pride", v.nameOriginal)
+        assertEquals("SCH", v.setCode)
+        assertEquals("C1724-SCH", v.sku)
+        assertEquals(VariantType.FOIL, v.variantType)
+        assertEquals(350, v.priceInCents)
+        assertEquals(Seller.BOOTLEG_MAGE, v.seller)
+        assertEquals("https://bootlegmage.com/product/ocelot-pride/", v.purchaseUri)
+        assertEquals("https://bootlegmage.com/img/ocelot.jpg", v.imageUrl)
+        assertEquals("47", v.collectorNumber)
+    }
+
+    @Test
+    fun `parseStoreApiJson with multiple products`() {
+        val json = """
+            [
+                {"id": 1, "name": "Lightning Bolt M11 #1", "prices": {"price": "300"}, "sku": "C1-M11"},
+                {"id": 2, "name": "Sol Ring CMD #1 Foil", "prices": {"price": "350"}, "sku": "C2-CMD"}
+            ]
+        """.trimIndent()
+        val variants = source.parseStoreApiJson(json)
+        assertEquals(2, variants.size)
+        assertEquals(VariantType.REGULAR, variants[0].variantType)
+        assertEquals(VariantType.FOIL, variants[1].variantType)
+    }
+
+    @Test
+    fun `parseStoreApiJson returns empty for blank input`() {
+        assertTrue(source.parseStoreApiJson("").isEmpty())
+        assertTrue(source.parseStoreApiJson("   ").isEmpty())
+    }
+
+    @Test
+    fun `parseStoreApiJson price in cents not dollars`() {
+        val json = """[{"id": 1, "name": "Card TST #1", "prices": {"price": "220"}}]"""
+        val variants = source.parseStoreApiJson(json)
+        assertEquals(1, variants.size)
+        assertEquals(220, variants[0].priceInCents)
+    }
+
     // ---- all variants tagged with BOOTLEG_MAGE seller ----
 
     @Test
