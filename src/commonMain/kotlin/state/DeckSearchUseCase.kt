@@ -102,10 +102,10 @@ class DeckSearchUseCase(
                         }
 
                         if (isSellerCacheFresh(source.seller)) {
-                            // Cache is fresh — skip API call
-                            val existingVariants = getAllVariants()
-                                .filter { it.seller == source.seller }
+                            // Cache is fresh — skip API call; serialize DB read + status update
                             mutex.withLock {
+                                val existingVariants = getAllVariants()
+                                    .filter { it.seller == source.seller }
                                 sellerStatuses[source.seller] = SellerSearchStatus(
                                     seller = source.seller,
                                     state = SearchState.DONE,
@@ -113,7 +113,7 @@ class DeckSearchUseCase(
                                 )
                             }
                         } else {
-                            // Fetch from API
+                            // Fetch from API (parallel — outside lock)
                             val allVariants = source.fetchCatalog()
 
                             // Filter to only cards matching deck entries
@@ -121,16 +121,18 @@ class DeckSearchUseCase(
                                 variant.nameNormalized in deckNormalizedNames
                             }
 
-                            // Store in DB
-                            replaceCatalogForSeller(source.seller, matchingVariants)
-                            markSellerFetched(source.seller)
-
-                            mutex.withLock {
+                            // Serialize DB writes + status update to avoid concurrent SQLite access
+                            mutex.lock()
+                            try {
+                                replaceCatalogForSeller(source.seller, matchingVariants)
+                                markSellerFetched(source.seller)
                                 sellerStatuses[source.seller] = SellerSearchStatus(
                                     seller = source.seller,
                                     state = SearchState.DONE,
                                     cardsFound = matchingVariants.size,
                                 )
+                            } finally {
+                                mutex.unlock()
                             }
                         }
                     } catch (e: CancellationException) {

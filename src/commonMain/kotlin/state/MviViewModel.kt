@@ -550,7 +550,23 @@ class MviViewModel(
                 wasAlreadySearching = true
                 state
             } else {
-                state.copy(searchProgress = null)
+                // Set initial progress immediately so UI shows the loading panel
+                val sources = catalogUseCase.sourceRegistry.allSources
+                state.copy(
+                    searchProgress = SearchProgress(
+                        totalCards = 0,
+                        cardsWithResults = 0,
+                        sellerStatuses = sources.associate { source ->
+                            source.seller to SellerSearchStatus(
+                                seller = source.seller,
+                                state = SearchState.PENDING,
+                            )
+                        },
+                        multiMatches = emptyList(),
+                        isComplete = false,
+                    ),
+                    showResultsWindow = true,
+                )
             }
         }
         if (wasAlreadySearching) {
@@ -571,26 +587,28 @@ class MviViewModel(
             fuzzyEnabled = preferences.fuzzyEnabled,
         )
 
-        deckSearchUseCase.search(entries, config)
-            .collect { progress ->
-                _localState.update { state ->
-                    state.copy(
-                        searchProgress = progress,
-                        multiMatches = progress.multiMatches,
-                        availableSellers = progress.sellerStatuses
-                            .filter { it.value.state == SearchState.DONE }
-                            .map { it.key },
-                    )
-                }
-
-                if (progress.isComplete) {
-                    val catalog = withContext(Dispatchers.IO) { database.observeCatalog().first() }
-                    if (catalog.variants.isNotEmpty() && entries.isNotEmpty()) {
-                        runMatchInternal(entries, catalog, _viewState.value.preferences)
+        withContext(Dispatchers.IO) {
+            deckSearchUseCase.search(entries, config)
+                .collect { progress ->
+                    _localState.update { state ->
+                        state.copy(
+                            searchProgress = progress,
+                            multiMatches = progress.multiMatches,
+                            availableSellers = progress.sellerStatuses
+                                .filter { it.value.state == SearchState.DONE }
+                                .map { it.key },
+                        )
                     }
-                    _localState.update { it.copy(catalogsLoadedThisSession = true) }
+
+                    if (progress.isComplete) {
+                        val catalog = database.observeCatalog().first()
+                        if (catalog.variants.isNotEmpty() && entries.isNotEmpty()) {
+                            runMatchInternal(entries, catalog, _viewState.value.preferences)
+                        }
+                        _localState.update { it.copy(catalogsLoadedThisSession = true) }
+                    }
                 }
-            }
+        }
     }
 
     /**
