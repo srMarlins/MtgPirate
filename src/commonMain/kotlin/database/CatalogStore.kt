@@ -47,8 +47,8 @@ class CatalogStore(private val database: Database) {
      * Update the image URL for a specific card variant by SKU.
      * This is used to lazily enrich variants with Scryfall image URLs.
      */
-    suspend fun updateVariantImageUrl(sku: String, imageUrl: String) {
-        database.updateVariantImageUrl(sku, imageUrl)
+    suspend fun updateVariantImageUrl(sku: String, imageUrl: String, seller: String) {
+        database.updateVariantImageUrl(sku, imageUrl, seller)
     }
 
     /**

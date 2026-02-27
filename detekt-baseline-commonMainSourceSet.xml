@@ -42,8 +42,10 @@
     <ID>LoopWithTooManyJumpStatements:MultiCatalogMatcher.kt:MultiCatalogMatcher$for</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$100</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$3</ID>
+    <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$4</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$401</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$403</ID>
+    <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$5</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$10</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$184_426_222</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_386_511_848</ID>
@@ -336,7 +338,6 @@
     <ID>ReturnCount:Levenshtein.kt:Levenshtein$fun distance: Int</ID>
     <ID>ReturnCount:Matcher.kt:Matcher$private fun matchEntry: DeckEntryMatch</ID>
     <ID>ReturnCount:MviViewModel.kt:MviViewModel$fun processIntent</ID>
-    <ID>SwallowedException:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$e: Exception</ID>
     <ID>SwallowedException:ScryfallApi.kt:ScryfallApi$e: Exception</ID>
     <ID>TooGenericExceptionCaught:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogSourceRegistry$e: Exception</ID>

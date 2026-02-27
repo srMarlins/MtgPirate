@@ -512,7 +512,7 @@ fun ResultsScreen(
                 glowing = false
             ) {
                 val listState = rememberLazyListState()
-                Box(Modifier.fillMaxSize()) {
+                Box(Modifier.fillMaxWidth().weight(1f)) {
                     LazyColumn(Modifier.fillMaxSize(), state = listState) {
                         itemsIndexed(sorted, key = { _, m -> m.uniqueIdentifier }) { _, m ->
                             val globalIndex = matches.indexOf(m)
