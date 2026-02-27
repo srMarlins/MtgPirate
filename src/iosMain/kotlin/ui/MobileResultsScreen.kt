@@ -33,11 +33,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import model.CardVariant
 import model.DeckEntryMatch
 import model.MatchStatus
 import model.MultiMatch
 import model.Seller
+import model.VariantType
+import state.SearchProgress
 import util.formatPrice
 
 /**
@@ -59,6 +63,7 @@ fun MobileResultsScreen(
     multiMatches: List<MultiMatch> = emptyList(),
     availableSellers: List<Seller> = emptyList(),
     onOverrideSeller: (Int, Seller) -> Unit = { _, _ -> },
+    searchProgress: SearchProgress? = null,
 ) {
     val totalMatched = matches.filter { it.selectedVariant != null }
     val missed = unmatchedCount
@@ -70,6 +75,8 @@ fun MobileResultsScreen(
 
     // Multi-seller state
     var sellerFilter by remember { mutableStateOf<Seller?>(null) }
+    var proxyFilter by remember { mutableStateOf(0) } // 0 = All, 1 = Proxy Only, 2 = Real Only
+    var variantTypeFilter by remember { mutableStateOf<VariantType?>(null) }
     var expandedRows by remember { mutableStateOf(emptySet<String>()) }
     val multiMatchByEntryId = remember(multiMatches) {
         multiMatches.associateBy { it.deckEntry.id }
@@ -308,10 +315,52 @@ fun MobileResultsScreen(
                 }
             }
 
+            // Proxy/Real + Variant type filter chips (horizontally scrollable)
+            Spacer(Modifier.height(8.dp))
+            Row(
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                // Proxy filter
+                listOf("ALL" to 0, "PROXY" to 1, "REAL" to 2).forEach { (label, value) ->
+                    val chipColor = when (value) {
+                        1 -> PixelOrange; 2 -> PixelGreen; else -> MaterialTheme.colors.primary
+                    }
+                    FilterChip(
+                        label = label,
+                        isActive = proxyFilter == value,
+                        activeColor = chipColor,
+                        onClick = { proxyFilter = value }
+                    )
+                }
+
+                // Variant type filter
+                FilterChip(
+                    label = "ALL",
+                    isActive = variantTypeFilter == null,
+                    activeColor = MaterialTheme.colors.primary,
+                    onClick = { variantTypeFilter = null }
+                )
+                VariantType.entries.forEach { vt ->
+                    FilterChip(
+                        label = vt.displayName.uppercase(),
+                        isActive = variantTypeFilter == vt,
+                        activeColor = MaterialTheme.colors.secondary,
+                        onClick = { variantTypeFilter = if (variantTypeFilter == vt) null else vt }
+                    )
+                }
+            }
+
+            // Search progress indicator (per-seller streaming)
+            if (searchProgress != null && searchProgress.isSearching) {
+                Spacer(Modifier.height(8.dp))
+                SearchProgressPanel(searchProgress = searchProgress)
+            }
+
             Spacer(Modifier.height(16.dp))
 
             // Loading indicator during matching
-            if (isLoading) {
+            if (isLoading && (searchProgress == null || !searchProgress.isSearching)) {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -434,17 +483,31 @@ fun MobileResultsScreen(
                 filtered
             }
 
+            // Apply proxy/real filter
+            val proxyFiltered = when (proxyFilter) {
+                1 -> sellerFiltered.filter { it.selectedVariant == null || it.selectedVariant?.seller?.isProxy == true }
+                2 -> sellerFiltered.filter { it.selectedVariant == null || it.selectedVariant?.seller?.isProxy == false }
+                else -> sellerFiltered
+            }
+
+            // Apply variant type filter
+            val variantFiltered = if (variantTypeFilter != null) {
+                proxyFiltered.filter { it.selectedVariant == null || it.selectedVariant?.variantType == variantTypeFilter }
+            } else {
+                proxyFiltered
+            }
+
             // Apply sorting
             val sorted = when (sortOption) {
-                SortOption.NAME_ASC -> sellerFiltered.sortedBy { it.deckEntry.cardName.lowercase() }
-                SortOption.NAME_DESC -> sellerFiltered.sortedByDescending { it.deckEntry.cardName.lowercase() }
-                SortOption.QTY_ASC -> sellerFiltered.sortedBy { it.deckEntry.qty }
-                SortOption.QTY_DESC -> sellerFiltered.sortedByDescending { it.deckEntry.qty }
-                SortOption.PRICE_ASC -> sellerFiltered.sortedBy { it.selectedVariant?.priceInCents ?: Int.MAX_VALUE }
-                SortOption.PRICE_DESC -> sellerFiltered.sortedByDescending { it.selectedVariant?.priceInCents ?: -1 }
-                SortOption.STATUS_ASC -> sellerFiltered.sortedBy { it.status.ordinal }
-                SortOption.STATUS_DESC -> sellerFiltered.sortedByDescending { it.status.ordinal }
-                SortOption.DEFAULT -> sellerFiltered
+                SortOption.NAME_ASC -> variantFiltered.sortedBy { it.deckEntry.cardName.lowercase() }
+                SortOption.NAME_DESC -> variantFiltered.sortedByDescending { it.deckEntry.cardName.lowercase() }
+                SortOption.QTY_ASC -> variantFiltered.sortedBy { it.deckEntry.qty }
+                SortOption.QTY_DESC -> variantFiltered.sortedByDescending { it.deckEntry.qty }
+                SortOption.PRICE_ASC -> variantFiltered.sortedBy { it.selectedVariant?.priceInCents ?: Int.MAX_VALUE }
+                SortOption.PRICE_DESC -> variantFiltered.sortedByDescending { it.selectedVariant?.priceInCents ?: -1 }
+                SortOption.STATUS_ASC -> variantFiltered.sortedBy { it.status.ordinal }
+                SortOption.STATUS_DESC -> variantFiltered.sortedByDescending { it.status.ordinal }
+                SortOption.DEFAULT -> variantFiltered
             }
 
             // Results List with pixel card
@@ -509,6 +572,14 @@ fun MobileResultsScreen(
                                                 PixelBadge(
                                                     text = bestSeller.displayName,
                                                     color = sellerColor(bestSeller)
+                                                )
+                                            }
+
+                                            // PROXY badge
+                                            if (variant?.seller?.isProxy == true) {
+                                                PixelBadge(
+                                                    text = "P",
+                                                    color = PixelOrange
                                                 )
                                             }
 

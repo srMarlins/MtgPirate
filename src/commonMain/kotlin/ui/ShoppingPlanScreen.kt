@@ -39,39 +39,11 @@ import model.OrderItem
 import model.Seller
 import model.SellerOrder
 import model.ShoppingPlan
+import util.buildManaPoolUrl
+import util.buildTcgPlayerUrl
 import util.encodeUrlParameter
 import util.formatPrice
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
-
-private const val BOOTLEG_MAGE_DECK_IMPORT_URL = "https://bootlegmage.com/deck-import/"
-
-/**
- * Build TCGPlayer mass entry URL with card list pre-filled via the `c` query parameter.
- * Cards are separated by `||` which TCGPlayer renders as separate rows.
- * Format per card: "qty CardName [SET]"
- */
-private fun buildTcgPlayerUrl(items: List<OrderItem>): String {
-    val cardList = items.joinToString("||") {
-        "${it.qty} ${it.variant.nameOriginal} [${it.variant.setCode}]"
-    }
-    return "https://www.tcgplayer.com/massentry?c=${encodeUrlParameter(cardList)}"
-}
-
-/**
- * Build ManaPool add-deck URL with card list pre-filled via base64-encoded `deck` parameter.
- * Format per line: "qty CardName [set] collectorNumber"
- */
-@OptIn(ExperimentalEncodingApi::class)
-private fun buildManaPoolUrl(items: List<OrderItem>): String {
-    val deckText = items.joinToString("\n") {
-        val cn = it.variant.collectorNumber
-        if (cn != null) "${it.qty} ${it.variant.nameOriginal} [${it.variant.setCode}] $cn"
-        else "${it.qty} ${it.variant.nameOriginal} [${it.variant.setCode}]"
-    }
-    val encoded = Base64.encode(deckText.encodeToByteArray())
-    return "https://manapool.com/add-deck?deck=${encodeUrlParameter(encoded)}"
-}
+import util.sellerCheckoutUrl
 
 /**
  * Returns the themed color for a given seller.
@@ -563,7 +535,7 @@ private fun SellerActionButtons(
                     text = "Buy on Bootleg Mage",
                     onClick = {
                         onCopyToClipboard(formatForExport(Seller.BOOTLEG_MAGE, order.items))
-                        onOpenUrl(BOOTLEG_MAGE_DECK_IMPORT_URL)
+                        sellerCheckoutUrl(Seller.BOOTLEG_MAGE, order.items)?.let { onOpenUrl(it) }
                     },
                     variant = PixelButtonVariant.PRIMARY,
                     modifier = Modifier.weight(1f)
