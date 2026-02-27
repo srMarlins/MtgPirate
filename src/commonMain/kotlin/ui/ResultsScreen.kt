@@ -551,13 +551,20 @@ fun ResultsScreen(
                                                 color = MaterialTheme.colors.onSurface
                                             )
                                         }
-                                        // Seller badge
+                                        // Seller badge + proxy indicator
                                         variant?.let { v ->
                                             Spacer(Modifier.width(4.dp))
                                             PixelBadge(
                                                 text = v.seller.displayName,
                                                 color = sellerColor(v.seller)
                                             )
+                                            if (v.seller.isProxy) {
+                                                Spacer(Modifier.width(3.dp))
+                                                PixelBadge(
+                                                    text = "PROXY",
+                                                    color = PixelOrange
+                                                )
+                                            }
                                         }
                                     }
 

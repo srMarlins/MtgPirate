@@ -131,7 +131,7 @@ fun PreferencesWizardScreen(
                                 }
                             )
                             Text(seller.displayName, style = MaterialTheme.typography.body2)
-                            Spacer(Modifier.width(2.dp))
+                            Spacer(Modifier.width(6.dp))
                             PixelBadge(
                                 text = if (seller.isProxy) "P" else "R",
                                 color = if (seller.isProxy) PixelOrange else PixelGreen
