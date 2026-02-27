@@ -2,6 +2,7 @@ package catalog
 
 import com.fleeksoft.ksoup.Ksoup
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.accept
@@ -491,6 +492,11 @@ class BootlegMageCatalogSource(
     }
 
     private fun defaultClient(): HttpClient = HttpClient {
+        install(HttpTimeout) {
+            requestTimeoutMillis = 60_000
+            connectTimeoutMillis = 15_000
+            socketTimeoutMillis = 60_000
+        }
         install(Logging) { level = LogLevel.INFO }
         expectSuccess = false // We handle status codes manually
     }

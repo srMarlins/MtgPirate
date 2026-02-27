@@ -47,7 +47,9 @@ fun PreferencesEntity.toDomain(): model.Preferences {
         variantPriority = this.variantPriority.split(",").map { it.trim() }.filter { it.isNotEmpty() },
         setPriority = this.setPriority.split(",").map { it.trim() }.filter { it.isNotEmpty() },
         fuzzyEnabled = this.fuzzyEnabled != 0L,
-        cacheMaxAgeHours = this.cacheMaxAgeHours.toInt()
+        cacheMaxAgeHours = this.cacheMaxAgeHours.toInt(),
+        enabledSellers = this.enabledSellers.split(",").map { it.trim() }.filter { it.isNotEmpty() },
+        proxyFirst = this.proxyFirst != 0L,
     )
 }
 

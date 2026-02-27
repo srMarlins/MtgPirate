@@ -25,6 +25,7 @@ object MultiCatalogMatcher {
             variantPriority = config.variantPriority,
             setPriority = config.setPriority,
             fuzzyEnabled = config.fuzzyEnabled,
+            proxyFirst = config.proxyFirst,
         )
 
         return entries.map { entry ->
@@ -68,11 +69,9 @@ object MultiCatalogMatcher {
                 }
             }
 
-            // Sort: proxy first (if enabled), then by match score, then by price
+            // Sort using shared comparator
             val sorted = allOptions.sortedWith(
-                compareBy<MatchOption> { if (config.proxyFirst && it.isProxy) 0 else 1 }
-                    .thenBy { it.matchScore }
-                    .thenBy { it.priceCents }
+                MatchSorting.matchOptionComparator(proxyFirst = config.proxyFirst)
             )
 
             val bestOption = sorted.firstOrNull()

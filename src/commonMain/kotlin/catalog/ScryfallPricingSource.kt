@@ -15,6 +15,7 @@ class ScryfallPricingSource(
     private val scryfallApi: ScryfallApi,
 ) : CatalogSource {
     override val seller = Seller.TCGPLAYER
+    override val supportsBulkSearch: Boolean = true
 
     override suspend fun fetchCatalog(log: (String) -> Unit): List<CardVariant> {
         // Scryfall is on-demand only — no full catalog fetch
@@ -28,11 +29,19 @@ class ScryfallPricingSource(
         return cards.flatMap { card -> cardToVariants(card) }
     }
 
+    override suspend fun searchBulk(cardNames: List<String>, log: (String) -> Unit): List<CardVariant> {
+        log("Scryfall: bulk searching ${cardNames.size} card names...")
+        val identifiers = cardNames.distinct().map { mapOf("name" to it) }
+        val cards = scryfallApi.getCollection(identifiers)
+        val variants = cards.flatMap { card -> cardToVariants(card) }
+        log("Scryfall: found ${variants.size} variants from bulk search")
+        return variants
+    }
+
     /**
-     * Efficiently fetch multiple cards by name in bulk.
-     * Maps the results back to normalized card names.
+     * Efficiently fetch multiple cards by name in bulk, grouped by normalized name.
      */
-    suspend fun searchBulk(cardNames: List<String>): Map<String, List<CardVariant>> {
+    suspend fun searchBulkGrouped(cardNames: List<String>): Map<String, List<CardVariant>> {
         val identifiers = cardNames.distinct().map { mapOf("name" to it) }
         val cards = scryfallApi.getCollection(identifiers)
         return cards.groupBy(

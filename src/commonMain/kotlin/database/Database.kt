@@ -93,7 +93,9 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
             variantPriority = preferences.variantPriority.joinToString(","),
             setPriority = preferences.setPriority.joinToString(","),
             fuzzyEnabled = if (preferences.fuzzyEnabled) 1L else 0L,
-            cacheMaxAgeHours = preferences.cacheMaxAgeHours.toLong()
+            cacheMaxAgeHours = preferences.cacheMaxAgeHours.toLong(),
+            enabledSellers = preferences.enabledSellers.joinToString(","),
+            proxyFirst = if (preferences.proxyFirst) 1L else 0L,
         )
     }
 
