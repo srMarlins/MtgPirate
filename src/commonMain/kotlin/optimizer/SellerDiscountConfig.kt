@@ -39,9 +39,18 @@ val BOOTLEG_MAGE_DISCOUNT_CONFIG = SellerDiscountConfig(
     ),
 )
 
+@Suppress("DEPRECATION")
 val TCGPLAYER_DISCOUNT_CONFIG = SellerDiscountConfig(
     seller = Seller.TCGPLAYER,
-    discountTiers = emptyList(),  // No standard bulk discounts for TCGPlayer
+    discountTiers = emptyList(),
+    shippingTiers = listOf(
+        ShippingTier(0, 0, "Varies by seller"),
+    ),
+)
+
+val MANAPOOL_DISCOUNT_CONFIG = SellerDiscountConfig(
+    seller = Seller.MANAPOOL,
+    discountTiers = emptyList(),
     shippingTiers = listOf(
         ShippingTier(0, 0, "Varies by seller"),
     ),
@@ -53,5 +62,6 @@ val TCGPLAYER_DISCOUNT_CONFIG = SellerDiscountConfig(
 fun getDiscountConfig(seller: Seller): SellerDiscountConfig = when (seller) {
     Seller.USEA -> USEA_DISCOUNT_CONFIG
     Seller.BOOTLEG_MAGE -> BOOTLEG_MAGE_DISCOUNT_CONFIG
-    Seller.TCGPLAYER -> TCGPLAYER_DISCOUNT_CONFIG
+    @Suppress("DEPRECATION") Seller.TCGPLAYER -> TCGPLAYER_DISCOUNT_CONFIG
+    Seller.MANAPOOL -> MANAPOOL_DISCOUNT_CONFIG
 }

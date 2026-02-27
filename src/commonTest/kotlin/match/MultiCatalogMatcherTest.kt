@@ -48,7 +48,7 @@ class MultiCatalogMatcherTest {
             entries = listOf(entry("Lightning Bolt")),
             catalogs = mapOf(
                 Seller.USEA to Catalog(listOf(variant("Lightning Bolt", Seller.USEA, 220))),
-                Seller.TCGPLAYER to Catalog(listOf(variant("Lightning Bolt", Seller.TCGPLAYER, 150))),
+                Seller.MANAPOOL to Catalog(listOf(variant("Lightning Bolt", Seller.MANAPOOL, 150))),
             ),
             config = defaultConfig(),
         )
@@ -64,13 +64,13 @@ class MultiCatalogMatcherTest {
             entries = listOf(entry("Tarmogoyf")),
             catalogs = mapOf(
                 Seller.USEA to Catalog(emptyList()),
-                Seller.TCGPLAYER to Catalog(listOf(variant("Tarmogoyf", Seller.TCGPLAYER, 5000))),
+                Seller.MANAPOOL to Catalog(listOf(variant("Tarmogoyf", Seller.MANAPOOL, 5000))),
             ),
             config = defaultConfig(),
         )
         assertEquals(1, result.size)
         assertNotNull(result[0].bestOption)
-        assertEquals(Seller.TCGPLAYER, result[0].bestOption!!.seller)
+        assertEquals(Seller.MANAPOOL, result[0].bestOption!!.seller)
         assertEquals(false, result[0].bestOption!!.isProxy)
     }
 
@@ -99,14 +99,14 @@ class MultiCatalogMatcherTest {
                 Seller.BOOTLEG_MAGE to Catalog(
                     listOf(variant("Lightning Bolt", Seller.BOOTLEG_MAGE, 180))
                 ),
-                Seller.TCGPLAYER to Catalog(
-                    listOf(variant("Lightning Bolt", Seller.TCGPLAYER, 150))
+                Seller.MANAPOOL to Catalog(
+                    listOf(variant("Lightning Bolt", Seller.MANAPOOL, 150))
                 ),
             ),
             config = defaultConfig(),
         )
         val sellers = result[0].alternatives.map { it.seller }.toSet()
-        assertEquals(setOf(Seller.USEA, Seller.BOOTLEG_MAGE, Seller.TCGPLAYER), sellers)
+        assertEquals(setOf(Seller.USEA, Seller.BOOTLEG_MAGE, Seller.MANAPOOL), sellers)
     }
 
     @Test
@@ -115,13 +115,13 @@ class MultiCatalogMatcherTest {
             entries = listOf(entry("Lightning Bolt")),
             catalogs = mapOf(
                 Seller.USEA to Catalog(listOf(variant("Lightning Bolt", Seller.USEA, 220))),
-                Seller.TCGPLAYER to Catalog(listOf(variant("Lightning Bolt", Seller.TCGPLAYER, 150))),
+                Seller.MANAPOOL to Catalog(listOf(variant("Lightning Bolt", Seller.MANAPOOL, 150))),
             ),
             config = defaultConfig(),
         )
         assertTrue(result[0].bestOption!!.isProxy)
         assertNotNull(result[0].realCardFallback)
-        assertEquals(Seller.TCGPLAYER, result[0].realCardFallback!!.seller)
+        assertEquals(Seller.MANAPOOL, result[0].realCardFallback!!.seller)
     }
 
     @Test
@@ -130,7 +130,7 @@ class MultiCatalogMatcherTest {
             entries = listOf(entry("Tarmogoyf")),
             catalogs = mapOf(
                 Seller.USEA to Catalog(emptyList()),
-                Seller.TCGPLAYER to Catalog(listOf(variant("Tarmogoyf", Seller.TCGPLAYER, 5000))),
+                Seller.MANAPOOL to Catalog(listOf(variant("Tarmogoyf", Seller.MANAPOOL, 5000))),
             ),
             config = defaultConfig(),
         )
@@ -143,7 +143,7 @@ class MultiCatalogMatcherTest {
             entries = listOf(entry("Nonexistent Card")),
             catalogs = mapOf(
                 Seller.USEA to Catalog(emptyList()),
-                Seller.TCGPLAYER to Catalog(emptyList()),
+                Seller.MANAPOOL to Catalog(emptyList()),
             ),
             config = defaultConfig(),
         )
@@ -157,12 +157,12 @@ class MultiCatalogMatcherTest {
             entries = listOf(entry("Lightning Bolt")),
             catalogs = mapOf(
                 Seller.USEA to Catalog(listOf(variant("Lightning Bolt", Seller.USEA, 220))),
-                Seller.TCGPLAYER to Catalog(listOf(variant("Lightning Bolt", Seller.TCGPLAYER, 150))),
+                Seller.MANAPOOL to Catalog(listOf(variant("Lightning Bolt", Seller.MANAPOOL, 150))),
             ),
             config = MultiCatalogMatcher.Config(proxyFirst = false),
         )
         // Real card is cheaper at 150 vs proxy at 220
-        assertEquals(Seller.TCGPLAYER, result[0].bestOption!!.seller)
+        assertEquals(Seller.MANAPOOL, result[0].bestOption!!.seller)
         assertEquals(150, result[0].bestOption!!.priceCents)
     }
 

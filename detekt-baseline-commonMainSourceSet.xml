@@ -31,6 +31,7 @@
     <ID>LongMethod:ResolveScreen.kt:@Composable fun ResolveScreen</ID>
     <ID>LongMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable fun ShoppingPlanScreen</ID>
+    <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerActionButtons</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerOrderCard</ID>
     <ID>LongMethod:StepperComponent.kt:@Composable fun PixelStepNode</ID>
     <ID>LongMethod:StepperComponent.kt:@Composable fun RowScope.PixelStepConnector</ID>
@@ -236,6 +237,8 @@
     <ID>MagicNumber:Theme.kt:0xFFFF9800</ID>
     <ID>MagicNumber:Theme.kt:0xFFFFEB3B</ID>
     <ID>MagicNumber:Theme.kt:0xFFFFF5F5</ID>
+    <ID>MagicNumber:UrlEncoding.kt:0xFF</ID>
+    <ID>MagicNumber:UrlEncoding.kt:16</ID>
     <ID>MatchingDeclarationName:ResultsScreen.kt:SortOption</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$)</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public</ID>
@@ -324,6 +327,7 @@
     <ID>MaxLineLength:SavedImportQueries.kt:SavedImportQueries$)</ID>
     <ID>MaxLineLength:SavedImportQueries.kt:SavedImportQueries.GetByIdQuery$override</ID>
     <ID>MaxLineLength:ScryfallImageEnricher.kt:ScryfallImageEnricher$log?.invoke("Fetching image for ${variant.nameOriginal} (${variant.setCode} #${variant.collectorNumber})")</ID>
+    <ID>MaxLineLength:ShoppingPlanScreen.kt:val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&amp;body=${encodeUrlParameter(exportText)}"</ID>
     <ID>PackageNaming:MtgPirateDatabaseImpl.kt:package org.srmarlins.mtgpirate.db.MtgPirate</ID>
     <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun extractValue: String?</ID>
     <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun parse: Catalog</ID>
@@ -340,6 +344,7 @@
     <ID>TooGenericExceptionCaught:PreferencesUseCase.kt:PreferencesUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScryfallApi.kt:ScryfallApi$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScryfallImageEnricher.kt:ScryfallImageEnricher$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:ManaPoolApi.kt:ManaPoolApi$throw Exception("ManaPool API HTTP ${response.status.value}: ${response.status.description}")</ID>
     <ID>TooGenericExceptionThrown:ScryfallApi.kt:ScryfallApi$throw Exception("HTTP ${response.status.value}: ${response.status.description}")</ID>
     <ID>TooManyFunctions:MviViewModel.kt:MviViewModel</ID>
     <ID>TooManyFunctions:PixelComponents.kt:ui.PixelComponents.kt</ID>

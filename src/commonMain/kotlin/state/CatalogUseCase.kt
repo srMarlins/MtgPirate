@@ -2,9 +2,8 @@ package state
 
 import catalog.BootlegMageCatalogSource
 import catalog.CatalogSource
+import catalog.ManaPoolCatalogSource
 import catalog.ScryfallImageEnricher
-import catalog.ScryfallPricingSource
-import catalog.ScryfallApi
 import database.CatalogStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -77,7 +76,7 @@ class CatalogUseCase(
     val sourceRegistry = CatalogSourceRegistry(
         listOf(
             BootlegMageCatalogSource(),
-            ScryfallPricingSource(ScryfallApi),
+            ManaPoolCatalogSource(),
         )
     )
     /**
