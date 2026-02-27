@@ -145,7 +145,11 @@ fun IosNavigationHost(
                     navigateTo(IosScreen.RESULTS)
                 },
                 isDarkTheme = state.isDarkTheme,
-                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) }
+                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
+                enabledSellers = state.preferences.enabledSellers,
+                proxyFirst = state.preferences.proxyFirst,
+                onEnabledSellersChange = { viewModel.processIntent(ViewIntent.UpdateEnabledSellers(it)) },
+                onProxyFirstChange = { viewModel.processIntent(ViewIntent.UpdateProxyFirst(it)) },
             )
             
             IosScreen.RESULTS -> IosResultsScreen(
@@ -174,6 +178,7 @@ fun IosNavigationHost(
                 onOverrideSeller = { matchIndex, seller ->
                     viewModel.processIntent(ViewIntent.OverrideCardSeller(matchIndex, seller))
                 },
+                searchProgress = state.searchProgress,
             )
             
                 IosScreen.RESOLVE -> {
