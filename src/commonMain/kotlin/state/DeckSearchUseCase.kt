@@ -126,9 +126,14 @@ class DeckSearchUseCase(
                             var allVariants = source.fetchCatalog()
 
                             // If fetchCatalog returned empty and source supports bulk search,
-                            // fall back to searchBulk with deck card names
+                            // fall back to searchBulk with deck card names.
+                            // Include canonical names for alternate-name cards so the API
+                            // can find e.g. "Arcane Signet" when the deck has "Earth's Mightiest Emblem".
                             if (allVariants.isEmpty() && source.supportsBulkSearch) {
-                                val cardNames = includedEntries.map { it.cardName }
+                                val cardNames = includedEntries.flatMap { entry ->
+                                    val canonical = Matcher.resolveAlternateName(entry.cardName)
+                                    if (canonical != null) listOf(entry.cardName, canonical) else listOf(entry.cardName)
+                                }
                                 allVariants = source.searchBulk(cardNames)
                             }
 
