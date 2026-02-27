@@ -71,6 +71,13 @@ class CatalogStore(private val database: Database) {
     }
 
     /**
+     * Get all card variants currently stored in the database (blocking read).
+     */
+    fun getAllVariants(): List<CardVariant> {
+        return database.getAllVariants()
+    }
+
+    /**
      * Replace catalog data for a specific seller.
      * Deletes all existing variants for the seller, then inserts the new ones.
      */

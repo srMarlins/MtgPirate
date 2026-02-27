@@ -19,6 +19,7 @@
     <ID>LongMethod:CatalogCsvParser.kt:CatalogCsvParser$fun parse: Catalog</ID>
     <ID>LongMethod:CatalogParser.kt:CatalogParser$fun parse: Catalog</ID>
     <ID>LongMethod:CatalogScreen.kt:@Composable fun CatalogScreen</ID>
+    <ID>LongMethod:DeckSearchUseCase.kt:DeckSearchUseCase$fun search: Flow&lt;SearchProgress&gt;</ID>
     <ID>LongMethod:DecklistParser.kt:DecklistParser$fun parse: List&lt;DeckEntry&gt;</ID>
     <ID>LongMethod:ExportScreen.kt:@Composable fun ExportScreen</ID>
     <ID>LongMethod:MatchesScreen.kt:@Composable fun MatchesScreen</ID>
@@ -351,6 +352,7 @@
     <ID>TooGenericExceptionCaught:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogSourceRegistry$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogUseCase$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DeckSearchUseCase.kt:DeckSearchUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ImportExportUseCase.kt:ImportExportUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:MviViewModel.kt:MviViewModel$e: Exception</ID>
