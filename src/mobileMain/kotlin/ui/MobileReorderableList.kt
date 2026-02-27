@@ -1,31 +1,53 @@
 package ui
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import platform.IosHapticFeedback
+import platform.HapticFeedback
 
 /**
  * State holder for drag operations
  */
-internal data class HybridDragState<T>(
+internal data class MobileDragState<T>(
     val draggedItem: T,
     val startIndex: Int,
     val targetIndex: Int,
@@ -49,14 +71,14 @@ private fun calculateItemOffset(
 }
 
 /**
- * Modern iOS reorderable list with pixel design integration.
- * 
- * This component combines cutting-edge iOS UX patterns with the existing pixel art aesthetic:
- * - Modern iOS gestures and haptic feedback
+ * Mobile reorderable list with pixel design integration.
+ *
+ * This component combines modern mobile UX patterns with the pixel art aesthetic:
+ * - Touch gestures and haptic feedback
  * - Smooth spring-based animations
  * - Pixel art borders and styling
  * - Card-based layout with elevation
- * 
+ *
  * @param items List of items to display
  * @param onReorder Callback when items are reordered
  * @param modifier Modifier for the container
@@ -64,7 +86,7 @@ private fun calculateItemOffset(
  * @param itemContent Composable to render each item
  */
 @Composable
-fun <T> ModernIosReorderableListWithPixelStyle(
+fun <T> MobileReorderableListWithPixelStyle(
     items: List<T>,
     onReorder: (List<T>) -> Unit,
     modifier: Modifier = Modifier,
@@ -72,14 +94,14 @@ fun <T> ModernIosReorderableListWithPixelStyle(
     itemContent: @Composable (item: T, index: Int, totalItems: Int, isDragging: Boolean) -> Unit
 ) {
     // Drag state management
-    var dragState by remember { mutableStateOf<HybridDragState<T>?>(null) }
-    
+    var dragState by remember { mutableStateOf<MobileDragState<T>?>(null) }
+
     val density = LocalDensity.current
     val itemHeightDp = 72.dp
     val itemSpacingDp = 12.dp
     val totalItemHeightDp = itemHeightDp + itemSpacingDp
     val totalItemHeightPx = with(density) { totalItemHeightDp.toPx() }
-    
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(itemSpacingDp)
@@ -87,7 +109,7 @@ fun <T> ModernIosReorderableListWithPixelStyle(
         items.forEachIndexed { index, item ->
             val isDragging = dragState?.draggedItem == item
             val currentDragState = dragState
-            
+
             // Calculate visual offset for smooth animations
             val targetOffset = if (currentDragState != null && !isDragging) {
                 calculateItemOffset(
@@ -99,17 +121,17 @@ fun <T> ModernIosReorderableListWithPixelStyle(
             } else {
                 0f
             }
-            
-            HybridReorderableItem(
+
+            MobileReorderableItem(
                 item = item,
                 isDragging = isDragging,
                 targetOffset = targetOffset,
                 usePixelStyle = usePixelStyle,
                 onDragStart = {
-                    IosHapticFeedback.prepareImpact(IosHapticFeedback.ImpactStyle.MEDIUM)
-                    IosHapticFeedback.triggerImpact(IosHapticFeedback.ImpactStyle.MEDIUM)
-                    
-                    dragState = HybridDragState(
+                    HapticFeedback.prepareImpact(HapticFeedback.ImpactStyle.MEDIUM)
+                    HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
+
+                    dragState = MobileDragState(
                         draggedItem = item,
                         startIndex = index,
                         targetIndex = index,
@@ -122,11 +144,11 @@ fun <T> ModernIosReorderableListWithPixelStyle(
                         val offsetInItems = (newOffset / totalItemHeightPx).toInt()
                         val newTargetIndex = (state.startIndex + offsetInItems)
                             .coerceIn(0, items.size - 1)
-                        
+
                         if (newTargetIndex != state.targetIndex) {
-                            IosHapticFeedback.triggerSelection()
+                            HapticFeedback.triggerSelection()
                         }
-                        
+
                         dragState = state.copy(
                             cumulativeOffset = newOffset,
                             targetIndex = newTargetIndex
@@ -140,13 +162,13 @@ fun <T> ModernIosReorderableListWithPixelStyle(
                             val draggedItem = newList.removeAt(state.startIndex)
                             newList.add(state.targetIndex, draggedItem)
                             onReorder(newList)
-                            
-                            IosHapticFeedback.triggerNotification(IosHapticFeedback.NotificationType.SUCCESS)
+
+                            HapticFeedback.triggerNotification(HapticFeedback.NotificationType.SUCCESS)
                         } else {
-                            IosHapticFeedback.triggerImpact(IosHapticFeedback.ImpactStyle.LIGHT)
+                            HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.LIGHT)
                         }
                     }
-                    
+
                     dragState = null
                 }
             ) {
@@ -157,10 +179,10 @@ fun <T> ModernIosReorderableListWithPixelStyle(
 }
 
 /**
- * Hybrid reorderable item that can use either pixel or modern styling
+ * Reorderable item that can use either pixel or modern styling
  */
 @Composable
-private fun <T> HybridReorderableItem(
+private fun <T> MobileReorderableItem(
     item: T,
     isDragging: Boolean,
     targetOffset: Float,
@@ -172,9 +194,9 @@ private fun <T> HybridReorderableItem(
 ) {
     val colors = MaterialTheme.colors
     val density = LocalDensity.current
-    
+
     var dragOffset by remember { mutableStateOf(0f) }
-    
+
     // Smooth spring animation
     val animatedOffset by animateFloatAsState(
         targetValue = targetOffset,
@@ -183,7 +205,7 @@ private fun <T> HybridReorderableItem(
             stiffness = Spring.StiffnessMedium
         )
     )
-    
+
     // Lift animation
     val scale by animateFloatAsState(
         targetValue = if (isDragging) 1.03f else 1f,
@@ -192,7 +214,7 @@ private fun <T> HybridReorderableItem(
             stiffness = Spring.StiffnessMedium
         )
     )
-    
+
     // Elevation
     val elevation by animateDpAsState(
         targetValue = if (isDragging) 12.dp else 2.dp,
@@ -201,7 +223,7 @@ private fun <T> HybridReorderableItem(
             stiffness = Spring.StiffnessMedium
         )
     )
-    
+
     // Glow animation
     val infiniteTransition = rememberInfiniteTransition()
     val glowAlpha by infiniteTransition.animateFloat(
@@ -212,7 +234,7 @@ private fun <T> HybridReorderableItem(
             repeatMode = RepeatMode.Reverse
         )
     )
-    
+
     // Background gradient
     val backgroundColor = if (isDragging) {
         Brush.horizontalGradient(
@@ -227,11 +249,11 @@ private fun <T> HybridReorderableItem(
             colors = listOf(colors.surface, colors.surface)
         )
     }
-    
+
     val finalOffsetDp = with(density) {
         if (isDragging) dragOffset.toDp() else animatedOffset.toDp()
     }
-    
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -296,7 +318,7 @@ private fun <T> HybridReorderableItem(
             ) {
                 content()
             }
-            
+
             // Glow overlay when dragging
             if (isDragging) {
                 Box(
@@ -315,7 +337,8 @@ private fun <T> HybridReorderableItem(
 }
 
 /**
- * Pre-built variant priority item with modern iOS design and pixel styling option
+ * Pre-built variant priority item with pixel styling option.
+ * Used by the preferences screen for drag-and-drop variant ordering.
  */
 @Composable
 fun HybridVariantPriorityItem(
@@ -327,7 +350,7 @@ fun HybridVariantPriorityItem(
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colors
-    
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -346,13 +369,13 @@ fun HybridVariantPriorityItem(
                         .size(28.dp)
                 )
             } else {
-                ModernDragHandle(
+                MobileDragHandle(
                     modifier = Modifier
                         .padding(end = 12.dp)
                         .size(24.dp)
                 )
             }
-            
+
             // Position badge
             Box(
                 modifier = Modifier
@@ -376,9 +399,9 @@ fun HybridVariantPriorityItem(
                     fontWeight = FontWeight.Bold
                 )
             }
-            
+
             Spacer(modifier = Modifier.width(12.dp))
-            
+
             // Variant name
             Text(
                 text = variantName,
@@ -387,7 +410,7 @@ fun HybridVariantPriorityItem(
                 modifier = Modifier.weight(1f)
             )
         }
-        
+
         // Variant-specific icon
         Text(
             text = getVariantIcon(variantName),
@@ -403,27 +426,27 @@ fun HybridVariantPriorityItem(
 private fun getVariantIcon(variantName: String): String {
     return when {
         variantName.contains("foil", ignoreCase = true) -> "✨"
-        variantName.contains("holo", ignoreCase = true) || 
+        variantName.contains("holo", ignoreCase = true) ||
         variantName.contains("rainbow", ignoreCase = true) -> "🌈"
-        variantName.contains("extended", ignoreCase = true) || 
+        variantName.contains("extended", ignoreCase = true) ||
         variantName.contains("borderless", ignoreCase = true) ||
         variantName.contains("showcase", ignoreCase = true) ||
         variantName.contains("etched", ignoreCase = true) -> "⭐"
-        variantName.contains("regular", ignoreCase = true) || 
+        variantName.contains("regular", ignoreCase = true) ||
         variantName.contains("normal", ignoreCase = true) -> "📄"
         else -> "🃏"
     }
 }
 
 /**
- * Modern iOS-style drag handle
+ * Modern drag handle with rounded lines
  */
 @Composable
-private fun ModernDragHandle(
+private fun MobileDragHandle(
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colors
-    
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(3.dp),

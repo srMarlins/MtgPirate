@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.detekt)
+    alias(libs.plugins.android.application)
 }
 
 group = "org.srmarlins"
@@ -33,6 +34,7 @@ repositories {
 kotlin {
     jvmToolchain(17)
     jvm("desktop")
+    androidTarget()
     iosX64 {
         binaries.framework {
             baseName = "shared"
@@ -54,7 +56,7 @@ kotlin {
             linkerOpts("-lsqlite3")
         }
     }
-    
+
     applyDefaultHierarchyTemplate()
     sourceSets {
         val commonMain by getting {
@@ -92,6 +94,17 @@ kotlin {
             }
         }
 
+        // Shared mobile source set for iOS + Android
+        val mobileMain by creating {
+            dependsOn(commonMain)
+            dependencies {
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material)
+                implementation(compose.ui)
+            }
+        }
+
         // Use default Kotlin hierarchy template for intermediate source sets
         // Default hierarchy automatically creates appleMain for iOS + macOS targets
         // See: https://kotlinlang.org/docs/multiplatform/multiplatform-hierarchy.html
@@ -102,6 +115,39 @@ kotlin {
                 implementation(libs.ktor.client.darwin)
             }
         }
+
+        // Wire iosMain to depend on mobileMain
+        val iosMain by getting {
+            dependsOn(mobileMain)
+        }
+
+        val androidMain by getting {
+            dependsOn(mobileMain)
+            dependencies {
+                implementation(libs.sqldelight.driver.android)
+                implementation(libs.ktor.client.okhttp)
+                implementation(libs.androidx.activity.compose)
+                implementation(libs.kotlinx.coroutines.android)
+            }
+        }
+    }
+}
+
+android {
+    namespace = "org.srmarlins.mtgpirate"
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "org.srmarlins.mtgpirate"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 1
+        versionName = appVersion
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -116,15 +162,15 @@ compose.desktop {
             )
             packageName = "MtgPirate"
             packageVersion = appVersionCore
-            
+
             // Include all required runtime modules (from suggestRuntimeModules task)
             modules("java.instrument", "java.management", "java.sql", "jdk.unsupported")
-            
+
             // ProGuard rules to prevent breaking SQLite and other reflection-based code
             buildTypes.release.proguard {
                 configurationFiles.from(project.file("compose-desktop.pro"))
             }
-            
+
             macOS {
                 iconFile.set(project.file("src/desktopMain/resources/icon.icns"))
             }

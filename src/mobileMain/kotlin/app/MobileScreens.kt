@@ -41,6 +41,7 @@ import model.OrderItem
 import model.Seller
 import model.SellerOrder
 import model.ShoppingPlan
+import platform.HapticFeedback
 import ui.AnimatedLoadingDots
 import ui.BlinkingCursor
 import ui.CatalogScreen
@@ -52,7 +53,7 @@ import ui.LazyListScrollIndicators
 import ui.MatchesScreen
 import ui.MobilePixelImageModal
 import ui.MobileResultsScreen
-import ui.ModernIosReorderableListWithPixelStyle
+import ui.MobileReorderableListWithPixelStyle
 import ui.PixelBadge
 import ui.PixelButton
 import ui.PixelButtonVariant
@@ -71,12 +72,12 @@ import util.encodeUrlParameter
 import util.formatPrice
 
 /**
- * iOS Import Screen - Step 1 of the wizard.
+ * Mobile Import Screen - Step 1 of the wizard.
  * Allows users to paste their decklist with pixel design styling.
  * Optimized for mobile portrait layout and safe area insets.
  */
 @Composable
-fun IosImportScreen(
+fun MobileImportScreen(
     deckText: String,
     onDeckTextChange: (String) -> Unit,
     onNext: () -> Unit,
@@ -105,14 +106,14 @@ fun IosImportScreen(
             verticalArrangement = Arrangement.Top
         ) {
             // Inline header with MTG PIRATE branding, stepper, and theme toggle
-            IosInlineHeader(
+            MobileInlineHeader(
                 currentStep = 1,
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme
             )
 
             Spacer(Modifier.height(8.dp))
-            
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -137,13 +138,13 @@ fun IosImportScreen(
             }
 
             Spacer(Modifier.height(12.dp))
-            
+
             // Inline loading indicator when catalog is loading
             InlineLoadingCard(
                 message = "Loading catalog...",
                 visible = isLoadingCatalog
             )
-            
+
             if (isLoadingCatalog) {
                 Spacer(Modifier.height(12.dp))
             }
@@ -194,11 +195,11 @@ fun IosImportScreen(
 }
 
 /**
- * iOS Preferences Screen - Step 2 of the wizard.
+ * Mobile Preferences Screen - Step 2 of the wizard.
  * Mobile-optimized layout for portrait screens and safe area insets.
  */
 @Composable
-fun IosPreferencesScreen(
+fun MobilePreferencesScreen(
     includeSideboard: Boolean,
     includeCommanders: Boolean,
     includeTokens: Boolean,
@@ -220,14 +221,14 @@ fun IosPreferencesScreen(
                 .fillMaxSize()
         ) {
             // Inline header with MTG PIRATE branding, stepper, and theme toggle
-            IosInlineHeader(
+            MobileInlineHeader(
                 currentStep = 2,
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme
             )
 
             Spacer(Modifier.height(8.dp))
-            
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -282,8 +283,8 @@ fun IosPreferencesScreen(
                         )
                         PixelToggle(
                             checked = includeCommanders,
-                            onCheckedChange = { 
-                                platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.LIGHT)
+                            onCheckedChange = {
+                                HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.LIGHT)
                                 onIncludeCommandersChange(it)
                             }
                         )
@@ -302,7 +303,7 @@ fun IosPreferencesScreen(
                         PixelToggle(
                             checked = includeSideboard,
                             onCheckedChange = {
-                                platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.LIGHT)
+                                HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.LIGHT)
                                 onIncludeSideboardChange(it)
                             }
                         )
@@ -321,7 +322,7 @@ fun IosPreferencesScreen(
                         PixelToggle(
                             checked = includeTokens,
                             onCheckedChange = {
-                                platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.LIGHT)
+                                HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.LIGHT)
                                 onIncludeTokensChange(it)
                             }
                         )
@@ -350,7 +351,7 @@ fun IosPreferencesScreen(
                 )
                 Spacer(Modifier.height(8.dp))
 
-                // Modern iOS reorderable list with haptic feedback and smooth animations
+                // Modern reorderable list with haptic feedback and smooth animations
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -364,8 +365,8 @@ fun IosPreferencesScreen(
                         .padding(8.dp)
                 ) {
                     val variants = variantPriority.ifEmpty { listOf("Regular", "Foil", "Holo") }
-                    
-                    ModernIosReorderableListWithPixelStyle(
+
+                    MobileReorderableListWithPixelStyle(
                         items = variants,
                         onReorder = onVariantPriorityChange,
                         usePixelStyle = true,
@@ -409,11 +410,11 @@ fun IosPreferencesScreen(
 }
 
 /**
- * iOS Results Screen - Step 3 of the wizard.
+ * Mobile Results Screen - Step 3 of the wizard.
  * Mobile-optimized for portrait layout and safe area insets.
  */
 @Composable
-fun IosResultsScreen(
+fun MobileResultsScreenWrapper(
     matches: List<model.DeckEntryMatch>,
     onResolve: (Int) -> Unit,
     onBack: () -> Unit,
@@ -435,7 +436,7 @@ fun IosResultsScreen(
 
         Column(modifier = Modifier.fillMaxSize()) {
             // Inline header with MTG PIRATE branding, stepper, and theme toggle
-            IosInlineHeader(
+            MobileInlineHeader(
                 currentStep = 3,
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme
@@ -464,11 +465,11 @@ fun IosResultsScreen(
 }
 
 /**
- * iOS Resolve Screen - Card variant selection.
+ * Mobile Resolve Screen - Card variant selection.
  * Mobile-optimized for portrait layout with vertical card design.
  */
 @Composable
-fun IosResolveScreen(
+fun MobileResolveScreen(
     match: model.DeckEntryMatch,
     onSelect: (model.CardVariant) -> Unit,
     onBack: () -> Unit,
@@ -503,7 +504,7 @@ fun IosResolveScreen(
                         maxLines = 1
                     )
                 }
-                
+
                 // Candidate count badge
                 if (match.candidates.isNotEmpty()) {
                     PixelBadge(
@@ -539,10 +540,10 @@ fun IosResolveScreen(
                 }
             } else {
                 // Candidates list with vertical cards
-                val sorted = remember(match.candidates) { 
-                    match.candidates.sortedBy { it.score } 
+                val sorted = remember(match.candidates) {
+                    match.candidates.sortedBy { it.score }
                 }
-                
+
                 PixelCard(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
                     glowing = false
@@ -556,14 +557,14 @@ fun IosResolveScreen(
                         ) {
                             items(sorted, key = { it.uniqueIdentifier }) { cand: model.MatchCandidate ->
                                 val variant = cand.variant
-                                
+
                                 // Trigger image enrichment
-                                androidx.compose.runtime.LaunchedEffect(variant.sku) {
+                                LaunchedEffect(variant.sku) {
                                     if (variant.imageUrl == null) {
                                         onEnrichVariant?.invoke(variant)
                                     }
                                 }
-                                
+
                                 // Candidate card
                                 Box(
                                     modifier = Modifier
@@ -584,7 +585,7 @@ fun IosResolveScreen(
                                     Column(modifier = Modifier.fillMaxWidth()) {
                                         // Image preview and card info row
                                         var showImageModal by remember { mutableStateOf(false) }
-                                        
+
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -596,7 +597,7 @@ fun IosResolveScreen(
                                                 cardName = variant.nameOriginal,
                                                 onClick = { showImageModal = true }
                                             )
-                                            
+
                                             // Card details and price
                                             Column(
                                                 modifier = Modifier.weight(1f),
@@ -628,7 +629,7 @@ fun IosResolveScreen(
                                                     fontWeight = FontWeight.Bold
                                                 )
                                             }
-                                            
+
                                             // Compact icon select button - centered with image
                                             Box(
                                                 modifier = Modifier
@@ -636,8 +637,8 @@ fun IosResolveScreen(
                                                     .clip(PixelShape(cornerSize = 6.dp))
                                                     .background(MaterialTheme.colors.secondary, shape = PixelShape(cornerSize = 6.dp))
                                                     .clickable {
-                                                        platform.IosHapticFeedback.triggerImpact(
-                                                            platform.IosHapticFeedback.ImpactStyle.MEDIUM
+                                                        HapticFeedback.triggerImpact(
+                                                            HapticFeedback.ImpactStyle.MEDIUM
                                                         )
                                                         onSelect(variant)
                                                     }
@@ -652,7 +653,7 @@ fun IosResolveScreen(
                                                 )
                                             }
                                         }
-                                        
+
                                         // Image modal
                                         if (showImageModal) {
                                             MobilePixelImageModal(
@@ -693,12 +694,12 @@ private const val BOOTLEG_MAGE_DECK_IMPORT_URL = "https://bootlegmage.com/deck-i
 
 
 /**
- * iOS Shopping Plan Screen - Step 4 of the wizard.
+ * Mobile Shopping Plan Screen - Step 4 of the wizard.
  * Mobile-optimized multi-seller shopping plan with per-seller order cards,
  * expandable item lists, and checkout action buttons.
  */
 @Composable
-fun IosShoppingPlanScreen(
+fun MobileShoppingPlanScreen(
     shoppingPlan: ShoppingPlan?,
     multiMatches: List<MultiMatch>,
     onOptimize: () -> Unit,
@@ -721,7 +722,7 @@ fun IosShoppingPlanScreen(
 
         Column(modifier = Modifier.fillMaxSize()) {
             // Inline header with MTG PIRATE branding, stepper, and theme toggle
-            IosInlineHeader(
+            MobileInlineHeader(
                 currentStep = 4,
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme
@@ -973,7 +974,7 @@ private fun MobileSellerOrderCard(
             // Expand/collapse toggle for card list
             Row(
                 Modifier.fillMaxWidth().clickable {
-                    platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.LIGHT)
+                    HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.LIGHT)
                     expanded = !expanded
                 },
                 verticalAlignment = Alignment.CenterVertically
@@ -1105,7 +1106,7 @@ private fun MobileSellerActionButtons(
                 PixelButton(
                     text = "Copy CSV",
                     onClick = {
-                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
                         val exportText = formatForExport(Seller.USEA, order.items)
                         onCopyToClipboard(exportText)
                     },
@@ -1115,7 +1116,7 @@ private fun MobileSellerActionButtons(
                 PixelButton(
                     text = "Email",
                     onClick = {
-                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
                         val exportText = formatForExport(Seller.USEA, order.items)
                         val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
                         val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&body=${encodeUrlParameter(exportText)}"
@@ -1129,7 +1130,7 @@ private fun MobileSellerActionButtons(
                 PixelButton(
                     text = "Open Deck Import",
                     onClick = {
-                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
                         onOpenUrl(BOOTLEG_MAGE_DECK_IMPORT_URL)
                     },
                     variant = PixelButtonVariant.PRIMARY,
@@ -1140,7 +1141,7 @@ private fun MobileSellerActionButtons(
                 PixelButton(
                     text = "Mass Entry",
                     onClick = {
-                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
                         onOpenUrl(TCGPLAYER_MASS_ENTRY_URL)
                     },
                     variant = PixelButtonVariant.PRIMARY,
@@ -1149,7 +1150,7 @@ private fun MobileSellerActionButtons(
                 PixelButton(
                     text = "Copy List",
                     onClick = {
-                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
                         val exportText = formatForExport(Seller.TCGPLAYER, order.items)
                         onCopyToClipboard(exportText)
                     },
@@ -1161,7 +1162,7 @@ private fun MobileSellerActionButtons(
                 PixelButton(
                     text = "Open ManaPool",
                     onClick = {
-                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
                         onOpenUrl("https://manapool.com")
                     },
                     variant = PixelButtonVariant.PRIMARY,
@@ -1170,7 +1171,7 @@ private fun MobileSellerActionButtons(
                 PixelButton(
                     text = "Copy List",
                     onClick = {
-                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
                         val exportText = formatForExport(Seller.MANAPOOL, order.items)
                         onCopyToClipboard(exportText)
                     },
@@ -1183,10 +1184,10 @@ private fun MobileSellerActionButtons(
 }
 
 /**
- * iOS Catalog Screen - View all catalog entries.
+ * Mobile Catalog Screen - View all catalog entries.
  */
 @Composable
-fun IosCatalogScreen(
+fun MobileCatalogScreen(
     catalog: model.Catalog,
     onBack: () -> Unit,
     onEnrichVariant: ((model.CardVariant) -> Unit)? = null
@@ -1201,10 +1202,10 @@ fun IosCatalogScreen(
 }
 
 /**
- * iOS Matches Screen - View all matches.
+ * Mobile Matches Screen - View all matches.
  */
 @Composable
-fun IosMatchesScreen(
+fun MobileMatchesScreen(
     matches: List<model.DeckEntryMatch>,
     onBack: () -> Unit,
     onEnrichVariant: ((model.CardVariant) -> Unit)? = null
