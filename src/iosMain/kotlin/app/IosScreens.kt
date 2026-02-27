@@ -1136,7 +1136,7 @@ private fun MobileSellerActionButtons(
                     modifier = Modifier.weight(1f).height(40.dp)
                 )
             }
-            @Suppress("DEPRECATION") Seller.TCGPLAYER -> {
+            Seller.TCGPLAYER -> {
                 PixelButton(
                     text = "Mass Entry",
                     onClick = {
@@ -1150,7 +1150,6 @@ private fun MobileSellerActionButtons(
                     text = "Copy List",
                     onClick = {
                         platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
-                        @Suppress("DEPRECATION")
                         val exportText = formatForExport(Seller.TCGPLAYER, order.items)
                         onCopyToClipboard(exportText)
                     },

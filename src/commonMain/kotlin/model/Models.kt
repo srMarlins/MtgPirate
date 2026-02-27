@@ -22,7 +22,6 @@ enum class VariantType(val displayName: String, val defaultPriceInCents: Int) {
 enum class Seller(val displayName: String, val isProxy: Boolean) {
     USEA("USEA MTG Proxy", true),
     BOOTLEG_MAGE("Bootleg Mage", true),
-    @Deprecated("Use MANAPOOL instead")
     TCGPLAYER("TCGPlayer", false),
     MANAPOOL("ManaPool", false);
 }

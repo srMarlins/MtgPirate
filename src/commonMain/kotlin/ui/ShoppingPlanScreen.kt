@@ -52,7 +52,7 @@ private const val MANAPOOL_URL = "https://manapool.com"
 fun sellerColor(seller: Seller): Color = when (seller) {
     Seller.USEA -> SellerUsea
     Seller.BOOTLEG_MAGE -> SellerBootlegMage
-    @Suppress("DEPRECATION") Seller.TCGPLAYER -> SellerTcgPlayer
+    Seller.TCGPLAYER -> SellerTcgPlayer
     Seller.MANAPOOL -> SellerManaPool
 }
 
@@ -75,7 +75,7 @@ internal fun formatForExport(seller: Seller, items: List<OrderItem>): String = w
         // Bootleg Mage deck import format: "qty CardName" per line
         items.joinToString("\n") { "${it.qty} ${it.variant.nameOriginal}" }
     }
-    @Suppress("DEPRECATION") Seller.TCGPLAYER,
+    Seller.TCGPLAYER,
     Seller.MANAPOOL -> {
         // Mass entry format: "1 Lightning Bolt [M11]"
         items.joinToString("\n") {
@@ -518,7 +518,7 @@ private fun SellerActionButtons(
                     modifier = Modifier.weight(1f)
                 )
             }
-            @Suppress("DEPRECATION") Seller.TCGPLAYER -> {
+            Seller.TCGPLAYER -> {
                 PixelButton(
                     text = "Open Mass Entry",
                     onClick = { onOpenUrl(TCGPLAYER_MASS_ENTRY_URL) },
@@ -528,7 +528,6 @@ private fun SellerActionButtons(
                 PixelButton(
                     text = "Copy List",
                     onClick = {
-                        @Suppress("DEPRECATION")
                         val exportText = formatForExport(Seller.TCGPLAYER, order.items)
                         onCopyToClipboard(exportText)
                     },
