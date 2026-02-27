@@ -127,31 +127,48 @@ class CatalogUseCase(
         withContext(Dispatchers.IO) {
             val loadedSellers = mutableListOf<Seller>()
 
-            // Load USEA via existing platform path
-            try {
-                log("Loading USEA catalog via platform services...", "INFO")
-                val useaCatalog = platformServices.fetchCatalogFromRemote { msg -> log(msg, "INFO") }
-                if (useaCatalog != null && useaCatalog.variants.isNotEmpty()) {
-                    val taggedVariants = useaCatalog.variants.map { it.copy(seller = Seller.USEA) }
-                    catalogStore.replaceCatalogForSeller(Seller.USEA, taggedVariants)
-                    log("USEA: stored ${taggedVariants.size} variants", "INFO")
-                    loadedSellers.add(Seller.USEA)
-                } else {
-                    log("USEA: returned empty catalog, skipping", "WARNING")
+            // Load USEA and registry sources in parallel
+            coroutineScope {
+                val useaDeferred = async {
+                    try {
+                        log("Loading USEA catalog via platform services...", "INFO")
+                        val useaCatalog = platformServices.fetchCatalogFromRemote { msg -> log(msg, "INFO") }
+                        if (useaCatalog != null && useaCatalog.variants.isNotEmpty()) {
+                            val taggedVariants = useaCatalog.variants.map { it.copy(seller = Seller.USEA) }
+                            Seller.USEA to taggedVariants
+                        } else {
+                            log("USEA: returned empty catalog, skipping", "WARNING")
+                            null
+                        }
+                    } catch (e: Exception) {
+                        log("USEA: failed to load catalog -- ${e.message}", "ERROR")
+                        null
+                    }
                 }
-            } catch (e: Exception) {
-                log("USEA: failed to load catalog -- ${e.message}", "ERROR")
-            }
 
-            // Load all registry sources in parallel
-            val registryResults = sourceRegistry.loadAll(log)
-            for ((seller, variants) in registryResults) {
-                try {
+                val registryDeferred = async {
+                    sourceRegistry.loadAll(log)
+                }
+
+                // Await USEA and store
+                val useaResult = useaDeferred.await()
+                if (useaResult != null) {
+                    val (seller, variants) = useaResult
                     catalogStore.replaceCatalogForSeller(seller, variants)
-                    log("${seller.displayName}: stored ${variants.size} variants in database", "INFO")
+                    log("USEA: stored ${variants.size} variants", "INFO")
                     loadedSellers.add(seller)
-                } catch (e: Exception) {
-                    log("${seller.displayName}: failed to store catalog -- ${e.message}", "ERROR")
+                }
+
+                // Await registry sources and store
+                val registryResults = registryDeferred.await()
+                for ((seller, variants) in registryResults) {
+                    try {
+                        catalogStore.replaceCatalogForSeller(seller, variants)
+                        log("${seller.displayName}: stored ${variants.size} variants in database", "INFO")
+                        loadedSellers.add(seller)
+                    } catch (e: Exception) {
+                        log("${seller.displayName}: failed to store catalog -- ${e.message}", "ERROR")
+                    }
                 }
             }
 

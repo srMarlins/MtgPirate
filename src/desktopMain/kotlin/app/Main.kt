@@ -377,7 +377,7 @@ fun main() = application {
                                 }
                             }
                         } else {
-                            viewModel.processIntent(ViewIntent.LoadCatalog)
+                            viewModel.processIntent(ViewIntent.LoadAllCatalogs)
                         }
                     },
                     onExportClick = { viewModel.processIntent(ViewIntent.ExportCsv) },

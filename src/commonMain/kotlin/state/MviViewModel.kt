@@ -123,7 +123,8 @@ class MviViewModel(
                 multiMatches = localState.multiMatches,
                 shoppingPlan = localState.shoppingPlan,
                 availableSellers = localState.availableSellers,
-                loadingMultiCatalogs = localState.loadingMultiCatalogs
+                loadingMultiCatalogs = localState.loadingMultiCatalogs,
+                catalogsLoadedThisSession = localState.catalogsLoadedThisSession
             )
         }.onEach { newState ->
             _viewState.update { newState }
@@ -210,8 +211,8 @@ class MviViewModel(
             try {
                 val variantCount = catalogUseCase.getVariantCount()
                 if (variantCount == 0L) {
-                    log("Catalog is empty, loading from remote...", "INFO")
-                    loadCatalog()
+                    log("Catalog is empty, loading from all sources...", "INFO")
+                    loadAllCatalogs()
                 } else {
                     log("Catalog already loaded: $variantCount variants", "INFO")
                 }
@@ -505,24 +506,30 @@ class MviViewModel(
     // -----------------------------------------------------------------------
 
     private suspend fun loadAllCatalogs() {
+        // Guard against concurrent loads
+        if (_localState.value.loadingMultiCatalogs) {
+            log("loadAllCatalogs already in progress, skipping", "WARNING")
+            return
+        }
         withContext(Dispatchers.IO) {
             _localState.update { it.copy(loadingMultiCatalogs = true) }
             try {
                 val loadedSellers = catalogUseCase.loadAllCatalogs { msg, level -> log(msg, level) }
                 _localState.update { it.copy(availableSellers = loadedSellers) }
-                // Auto-trigger multi-match after catalogs load — now sequential, not racing!
+                // Auto-trigger matching after catalogs load
                 if (loadedSellers.isNotEmpty()) {
                     // Read catalog fresh from DB (viewState flow may not have propagated yet)
                     val catalog = database.observeCatalog().first()
                     val preferences = database.observePreferences().first() ?: Preferences()
                     val entries = _localState.value.deckEntries
                     runMultiMatch(entries, catalog, preferences)
+                    runMatchInternal(entries, catalog, preferences)
                 }
             } catch (e: Exception) {
                 log("Failed to load multi-catalogs: ${e.message}", "ERROR")
                 _viewEffects.emit(ViewEffect.ShowError("Failed to load catalogs from sellers"))
             } finally {
-                _localState.update { it.copy(loadingMultiCatalogs = false) }
+                _localState.update { it.copy(loadingMultiCatalogs = false, catalogsLoadedThisSession = true) }
             }
         }
     }
@@ -625,14 +632,26 @@ class MviViewModel(
         completeWizardStep(1)
     }
 
-    /** Step 2 → 3: Mark complete, run single-seller match, load multi-seller catalogs */
+    /** Step 2 → 3: Mark complete, load all catalogs, then match */
     private suspend fun wizardPreferencesToResults() {
         completeWizardStep(2)
-        // Re-parse with latest preferences, then match against existing catalog
+        // Re-parse with latest preferences
         parseDeck()
-        runMatch()
-        // Load all multi-seller catalogs (chains into runMultiMatch for alternatives)
-        loadAllCatalogs()
+
+        // Reload catalogs if not already loaded this session
+        if (!_localState.value.catalogsLoadedThisSession) {
+            loadAllCatalogs()
+        } else {
+            // Catalogs already loaded this session — just run matching against existing data
+            log("Catalogs already loaded this session, running match only", "INFO")
+            val catalog = withContext(Dispatchers.IO) { database.observeCatalog().first() }
+            val preferences = withContext(Dispatchers.IO) { database.observePreferences().first() } ?: Preferences()
+            val entries = _localState.value.deckEntries
+            if (catalog.variants.isNotEmpty() && entries.isNotEmpty()) {
+                runMultiMatch(entries, catalog, preferences)
+                runMatchInternal(entries, catalog, preferences)
+            }
+        }
     }
 
     /** Step 3 → 4: Mark step complete, optimize shopping plan */
@@ -703,7 +722,8 @@ data class ViewState(
     val multiMatches: List<MultiMatch> = emptyList(),
     val shoppingPlan: ShoppingPlan? = null,
     val availableSellers: List<Seller> = emptyList(),
-    val loadingMultiCatalogs: Boolean = false
+    val loadingMultiCatalogs: Boolean = false,
+    val catalogsLoadedThisSession: Boolean = false
 )
 
 /**
@@ -729,7 +749,8 @@ private data class LocalUiState(
     val multiMatches: List<MultiMatch> = emptyList(),
     val shoppingPlan: ShoppingPlan? = null,
     val availableSellers: List<Seller> = emptyList(),
-    val loadingMultiCatalogs: Boolean = false
+    val loadingMultiCatalogs: Boolean = false,
+    val catalogsLoadedThisSession: Boolean = false
 )
 
 /**
