@@ -10,6 +10,7 @@
     <ID>CyclomaticComplexMethod:Matcher.kt:Matcher$private fun matchEntry: DeckEntryMatch</ID>
     <ID>CyclomaticComplexMethod:MatchesScreen.kt:@Composable fun MatchesScreen</ID>
     <ID>CyclomaticComplexMethod:MviViewModel.kt:MviViewModel$fun processIntent</ID>
+    <ID>CyclomaticComplexMethod:PixelComponents.kt:@Composable private fun SellerStatusRow</ID>
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt:@Composable fun DraggableVariantItem</ID>
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt:@Composable fun PreferencesWizardScreen</ID>
     <ID>CyclomaticComplexMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
