@@ -152,4 +152,12 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
             }
         }
     }
+
+    fun upsertSellerCache(seller: String, lastFetchedAtMillis: Long) {
+        db.sellerCacheQueries.upsertCache(seller, lastFetchedAtMillis)
+    }
+
+    fun getSellerCacheTimestamp(seller: String): Long? {
+        return db.sellerCacheQueries.getCache(seller).executeAsOneOrNull()
+    }
 }

@@ -1,0 +1,16 @@
+CREATE TABLE SellerCacheEntity (
+    seller TEXT NOT NULL PRIMARY KEY,
+    lastFetchedAtMillis INTEGER NOT NULL
+);
+
+upsertCache:
+INSERT OR REPLACE INTO SellerCacheEntity (seller, lastFetchedAtMillis) VALUES (?, ?);
+
+getCache:
+SELECT lastFetchedAtMillis FROM SellerCacheEntity WHERE seller = ?;
+
+deleteCache:
+DELETE FROM SellerCacheEntity WHERE seller = ?;
+
+deleteAllCache:
+DELETE FROM SellerCacheEntity;

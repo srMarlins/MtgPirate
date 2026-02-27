@@ -23,6 +23,7 @@
     <ID>LongMethod:ExportScreen.kt:@Composable fun ExportScreen</ID>
     <ID>LongMethod:MatchesScreen.kt:@Composable fun MatchesScreen</ID>
     <ID>LongMethod:MobilePixelImageComponents.kt:@Composable fun MobilePixelImageModal</ID>
+    <ID>LongMethod:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$override fun create: QueryResult.Value&lt;Unit&gt;</ID>
     <ID>LongMethod:PixelComponents.kt:@Composable fun FantasyStarIcon</ID>
     <ID>LongMethod:PixelComponents.kt:@Composable fun PixelProgressAnimation</ID>
     <ID>LongMethod:PixelComponents.kt:@Composable private fun PixelDraggableItem</ID>
@@ -180,6 +181,10 @@
     <ID>MagicNumber:SavedImportQueries.kt:SavedImportQueries.GetByIdQuery$757_582_413</ID>
     <ID>MagicNumber:ScryfallApi.kt:ScryfallApi$75</ID>
     <ID>MagicNumber:ScryfallImageEnricher.kt:ScryfallImageEnricher$10</ID>
+    <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$1_517_078_527</ID>
+    <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$1_842_316_798</ID>
+    <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$2_054_145_787</ID>
+    <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries.GetCacheQuery$1_012_674_590</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:100_00</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:10_00</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:15</ID>
@@ -246,6 +251,7 @@
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$)</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public fun getByName: Query&lt;CardVariantEntity&gt;</ID>
+    <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$val</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries.GetByNameQuery$override</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries.SelectBySellerQuery$override</ID>
     <ID>MaxLineLength:CatalogCsvParser.kt:CatalogCsvParser$private</ID>
@@ -306,6 +312,7 @@
     <ID>MaxLineLength:MatchesScreen.kt:color = if (rowTotal != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)</ID>
     <ID>MaxLineLength:MatchesScreen.kt:val content = unmatched.joinToString("\n") { "${it.deckEntry.qty} ${it.deckEntry.cardName}" }</ID>
     <ID>MaxLineLength:MobilePixelImageComponents.kt:var loadState by remember { mutableStateOf&lt;AsyncImagePainter.State&gt;(AsyncImagePainter.State.Empty) }</ID>
+    <ID>MaxLineLength:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$driver.execute(null, "CREATE UNIQUE INDEX IF NOT EXISTS idx_variant_seller_sku ON CardVariantEntity(seller, sku)", 0)</ID>
     <ID>MaxLineLength:MviViewModel.kt:MviViewModel$private suspend</ID>
     <ID>MaxLineLength:PreferencesQueries.kt:PreferencesQueries$)</ID>
     <ID>MaxLineLength:PreferencesWizardScreen.kt:.</ID>
@@ -331,6 +338,8 @@
     <ID>MaxLineLength:SavedImportQueries.kt:SavedImportQueries$)</ID>
     <ID>MaxLineLength:SavedImportQueries.kt:SavedImportQueries.GetByIdQuery$override</ID>
     <ID>MaxLineLength:ScryfallImageEnricher.kt:ScryfallImageEnricher$log?.invoke("Fetching image for ${variant.nameOriginal} (${variant.setCode} #${variant.collectorNumber})")</ID>
+    <ID>MaxLineLength:SellerCacheQueries.kt:SellerCacheQueries$val</ID>
+    <ID>MaxLineLength:SellerCacheQueries.kt:SellerCacheQueries.GetCacheQuery$override</ID>
     <ID>MaxLineLength:ShoppingPlanScreen.kt:val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&amp;body=${encodeUrlParameter(exportText)}"</ID>
     <ID>PackageNaming:MtgPirateDatabaseImpl.kt:package org.srmarlins.mtgpirate.db.MtgPirate</ID>
     <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun extractValue: String?</ID>
