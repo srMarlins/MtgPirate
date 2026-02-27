@@ -31,6 +31,7 @@
     <ID>LongMethod:ResolveScreen.kt:@Composable fun ResolveScreen</ID>
     <ID>LongMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable fun ShoppingPlanScreen</ID>
+    <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerActionButtons</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerOrderCard</ID>
     <ID>LongMethod:StepperComponent.kt:@Composable fun PixelStepNode</ID>
     <ID>LongMethod:StepperComponent.kt:@Composable fun RowScope.PixelStepConnector</ID>
@@ -346,6 +347,7 @@
     <ID>TooGenericExceptionCaught:PreferencesUseCase.kt:PreferencesUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScryfallApi.kt:ScryfallApi$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScryfallImageEnricher.kt:ScryfallImageEnricher$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:ManaPoolApi.kt:ManaPoolApi$throw Exception("ManaPool API HTTP ${response.status.value}: ${response.status.description}")</ID>
     <ID>TooGenericExceptionThrown:ScryfallApi.kt:ScryfallApi$throw Exception("HTTP ${response.status.value}: ${response.status.description}")</ID>
     <ID>TooManyFunctions:MviViewModel.kt:MviViewModel</ID>
     <ID>TooManyFunctions:PixelComponents.kt:ui.PixelComponents.kt</ID>

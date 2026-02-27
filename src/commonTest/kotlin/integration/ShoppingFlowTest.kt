@@ -57,7 +57,7 @@ class ShoppingFlowTest {
         val entries = DecklistParser.parse(deckText, includeSideboard = true, includeCommanders = true)
         assertEquals(4, entries.size)
 
-        // 2. Create mock catalogs for USEA, BOOTLEG_MAGE, and TCGPLAYER
+        // 2. Create mock catalogs for USEA, BOOTLEG_MAGE, and MANAPOOL
         val useaCatalog = catalogOf(
             testVariant("Lightning Bolt", Seller.USEA, 220),
             testVariant("Counterspell", Seller.USEA, 220),
@@ -67,14 +67,14 @@ class ShoppingFlowTest {
             testVariant("Counterspell", Seller.BOOTLEG_MAGE, 250),
             testVariant("Black Lotus", Seller.BOOTLEG_MAGE, 500),
         )
-        val tcgplayerCatalog = catalogOf(
-            testVariant("Tarmogoyf", Seller.TCGPLAYER, 5000),
+        val manapoolCatalog = catalogOf(
+            testVariant("Tarmogoyf", Seller.MANAPOOL, 5000),
         )
 
         val catalogs = mapOf(
             Seller.USEA to useaCatalog,
             Seller.BOOTLEG_MAGE to bmCatalog,
-            Seller.TCGPLAYER to tcgplayerCatalog,
+            Seller.MANAPOOL to manapoolCatalog,
         )
 
         // 3. Run MultiCatalogMatcher
@@ -93,8 +93,8 @@ class ShoppingFlowTest {
         assertEquals(Seller.USEA, matches[1].bestOption?.seller)
         assertEquals(220, matches[1].bestOption?.priceCents)
 
-        // Tarmogoyf: Only in TCGPlayer
-        assertEquals(Seller.TCGPLAYER, matches[2].bestOption?.seller)
+        // Tarmogoyf: Only in ManaPool
+        assertEquals(Seller.MANAPOOL, matches[2].bestOption?.seller)
         assertEquals(5000, matches[2].bestOption?.priceCents)
 
         // Black Lotus: Only in BM
@@ -105,11 +105,11 @@ class ShoppingFlowTest {
         val plan = ShoppingOptimizer.optimize(matches)
 
         // 5. Assert: all cards matched, shopping plan has correct seller split, totals are correct
-        assertEquals(3, plan.orders.size) // USEA, BM, TCGPLAYER
+        assertEquals(3, plan.orders.size) // USEA, BM, MANAPOOL
 
         val useaOrder = plan.orders.find { it.seller == Seller.USEA }!!
         val bmOrder = plan.orders.find { it.seller == Seller.BOOTLEG_MAGE }!!
-        val tcgOrder = plan.orders.find { it.seller == Seller.TCGPLAYER }!!
+        val mpOrder = plan.orders.find { it.seller == Seller.MANAPOOL }!!
 
         // USEA Order: 4 Counterspell @ 220 = 880. Discount tier < 60_00 -> 0%. Shipping 10_00.
         // Wait, USEA_DISCOUNT_CONFIG has 0 -> 10_00 shipping if afterDiscount < 100_00.
@@ -124,10 +124,10 @@ class ShoppingFlowTest {
         assertEquals(0, bmOrder.shippingCents)
         assertEquals(1220, bmOrder.totalCents)
 
-        // TCGPlayer Order: 2 Tarmogoyf @ 5000 = 10000.
-        // TCGPLAYER_DISCOUNT_CONFIG: free shipping in mock config (actually "Varies by seller" but 0 in config).
-        assertEquals(10000, tcgOrder.subtotalCents)
-        assertEquals(10000, tcgOrder.totalCents)
+        // ManaPool Order: 2 Tarmogoyf @ 5000 = 10000.
+        // MANAPOOL_DISCOUNT_CONFIG: free shipping in mock config (actually "Varies by seller" but 0 in config).
+        assertEquals(10000, mpOrder.subtotalCents)
+        assertEquals(10000, mpOrder.totalCents)
 
         assertEquals(1880 + 1220 + 10000, plan.totalPriceCents)
     }

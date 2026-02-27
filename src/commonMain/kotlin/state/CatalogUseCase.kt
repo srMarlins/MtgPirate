@@ -2,9 +2,10 @@ package state
 
 import catalog.BootlegMageCatalogSource
 import catalog.CatalogSource
+import catalog.ManaPoolCatalogSource
+import catalog.ScryfallApi
 import catalog.ScryfallImageEnricher
 import catalog.ScryfallPricingSource
-import catalog.ScryfallApi
 import database.CatalogStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -70,13 +71,14 @@ class CatalogUseCase(
 ) {
     /**
      * Registry of multi-seller catalog sources.
-     * BootlegMageCatalogSource and ScryfallPricingSource are pure Ktor-based and
-     * can be instantiated directly. UseaCatalogSource uses the existing
-     * platformServices.fetchCatalogFromRemote() path and is handled separately.
+     * ManaPoolCatalogSource is the primary real card source (bulk pricing).
+     * ScryfallPricingSource provides TCGPlayer pricing via Scryfall API.
+     * UseaCatalogSource uses the existing platformServices path and is handled separately.
      */
     val sourceRegistry = CatalogSourceRegistry(
         listOf(
             BootlegMageCatalogSource(),
+            ManaPoolCatalogSource(),
             ScryfallPricingSource(ScryfallApi),
         )
     )

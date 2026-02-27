@@ -102,11 +102,14 @@ class MultiCatalogMatcherTest {
                 Seller.TCGPLAYER to Catalog(
                     listOf(variant("Lightning Bolt", Seller.TCGPLAYER, 150))
                 ),
+                Seller.MANAPOOL to Catalog(
+                    listOf(variant("Lightning Bolt", Seller.MANAPOOL, 140))
+                ),
             ),
             config = defaultConfig(),
         )
         val sellers = result[0].alternatives.map { it.seller }.toSet()
-        assertEquals(setOf(Seller.USEA, Seller.BOOTLEG_MAGE, Seller.TCGPLAYER), sellers)
+        assertEquals(setOf(Seller.USEA, Seller.BOOTLEG_MAGE, Seller.TCGPLAYER, Seller.MANAPOOL), sellers)
     }
 
     @Test

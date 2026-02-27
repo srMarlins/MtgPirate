@@ -44,6 +44,7 @@ import util.formatPrice
 
 private const val TCGPLAYER_MASS_ENTRY_URL = "https://www.tcgplayer.com/massentry?productline=Magic"
 private const val BOOTLEG_MAGE_DECK_IMPORT_URL = "https://bootlegmage.com/deck-import/"
+private const val MANAPOOL_URL = "https://manapool.com"
 
 /**
  * Returns the themed color for a given seller.
@@ -52,6 +53,7 @@ fun sellerColor(seller: Seller): Color = when (seller) {
     Seller.USEA -> SellerUsea
     Seller.BOOTLEG_MAGE -> SellerBootlegMage
     Seller.TCGPLAYER -> SellerTcgPlayer
+    Seller.MANAPOOL -> SellerManaPool
 }
 
 /**
@@ -73,8 +75,9 @@ internal fun formatForExport(seller: Seller, items: List<OrderItem>): String = w
         // Bootleg Mage deck import format: "qty CardName" per line
         items.joinToString("\n") { "${it.qty} ${it.variant.nameOriginal}" }
     }
-    Seller.TCGPLAYER -> {
-        // TCGPlayer mass entry format: "1 Lightning Bolt [M11]"
+    Seller.TCGPLAYER,
+    Seller.MANAPOOL -> {
+        // Mass entry format: "1 Lightning Bolt [M11]"
         items.joinToString("\n") {
             "${it.qty} ${it.variant.nameOriginal} [${it.variant.setCode}]"
         }
@@ -526,6 +529,23 @@ private fun SellerActionButtons(
                     text = "Copy List",
                     onClick = {
                         val exportText = formatForExport(Seller.TCGPLAYER, order.items)
+                        onCopyToClipboard(exportText)
+                    },
+                    variant = PixelButtonVariant.SECONDARY,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            Seller.MANAPOOL -> {
+                PixelButton(
+                    text = "Open ManaPool",
+                    onClick = { onOpenUrl(MANAPOOL_URL) },
+                    variant = PixelButtonVariant.PRIMARY,
+                    modifier = Modifier.weight(1f)
+                )
+                PixelButton(
+                    text = "Copy List",
+                    onClick = {
+                        val exportText = formatForExport(Seller.MANAPOOL, order.items)
                         onCopyToClipboard(exportText)
                     },
                     variant = PixelButtonVariant.SECONDARY,

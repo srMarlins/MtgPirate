@@ -1157,6 +1157,27 @@ private fun MobileSellerActionButtons(
                     modifier = Modifier.weight(1f).height(40.dp)
                 )
             }
+            Seller.MANAPOOL -> {
+                PixelButton(
+                    text = "Open ManaPool",
+                    onClick = {
+                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        onOpenUrl("https://manapool.com")
+                    },
+                    variant = PixelButtonVariant.PRIMARY,
+                    modifier = Modifier.weight(1f).height(40.dp)
+                )
+                PixelButton(
+                    text = "Copy List",
+                    onClick = {
+                        platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.MEDIUM)
+                        val exportText = formatForExport(Seller.MANAPOOL, order.items)
+                        onCopyToClipboard(exportText)
+                    },
+                    variant = PixelButtonVariant.SECONDARY,
+                    modifier = Modifier.weight(1f).height(40.dp)
+                )
+            }
         }
     }
 }
