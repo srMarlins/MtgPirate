@@ -543,6 +543,21 @@ class MviViewModel(
     }
 
     private suspend fun searchDeck() {
+        // Atomic check-and-set guard against concurrent searches
+        var wasAlreadySearching = false
+        _localState.update { state ->
+            if (state.searchProgress?.isSearching == true) {
+                wasAlreadySearching = true
+                state
+            } else {
+                state.copy(searchProgress = null)
+            }
+        }
+        if (wasAlreadySearching) {
+            log("searchDeck already in progress, skipping", "WARNING")
+            return
+        }
+
         val entries = _localState.value.deckEntries
         if (entries.isEmpty()) {
             log("No deck entries to search", "WARNING")

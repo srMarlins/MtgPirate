@@ -2,6 +2,7 @@ package state
 
 import catalog.CatalogSource
 import database.CatalogStore
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -74,7 +75,7 @@ class DeckSearchUseCase(
 
         // Mutable shared state protected by mutex
         val mutex = Mutex()
-        val sellerStatuses = mutableMapOf<Seller, SellerSearchStatus>()
+        val sellerStatuses = linkedMapOf<Seller, SellerSearchStatus>()
 
         // Initialize all sellers as PENDING
         for (source in sources) {
@@ -132,6 +133,8 @@ class DeckSearchUseCase(
                                 )
                             }
                         }
+                    } catch (e: CancellationException) {
+                        throw e
                     } catch (e: Exception) {
                         mutex.withLock {
                             sellerStatuses[source.seller] = SellerSearchStatus(
@@ -184,7 +187,7 @@ class DeckSearchUseCase(
         return SearchProgress(
             totalCards = includedEntries.size,
             cardsWithResults = cardsWithResults,
-            sellerStatuses = sellerStatuses.toMap(),
+            sellerStatuses = LinkedHashMap(sellerStatuses),
             multiMatches = multiMatches,
             isComplete = false,
         )
