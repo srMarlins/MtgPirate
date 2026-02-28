@@ -138,17 +138,55 @@ android {
     namespace = "com.deckloot.app"
     compileSdk = 35
 
+    // Load signing config from keystore.properties (if it exists)
+    val keystorePropertiesFile = rootProject.file("keystore.properties")
+    val keystoreProperties = java.util.Properties()
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(keystorePropertiesFile.inputStream())
+    }
+
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+            }
+        }
+    }
+
+    // Compute versionCode from semantic version: major*10000 + minor*100 + patch
+    val versionParts = appVersionCore.split(".")
+    val computedVersionCode = versionParts.getOrElse(0) { "1" }.toInt() * 10000 +
+        versionParts.getOrElse(1) { "0" }.toInt() * 100 +
+        versionParts.getOrElse(2) { "0" }.toInt()
+
     defaultConfig {
         applicationId = "com.deckloot.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
+        versionCode = computedVersionCode
         versionName = appVersion
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-android.pro"
+            )
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
     }
 }
 

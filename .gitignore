@@ -72,3 +72,7 @@ DerivedData/
 
 pirate.db
 
+# Android release signing
+keystore.properties
+*.jks
+*.keystore
