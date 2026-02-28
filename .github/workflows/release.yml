@@ -132,7 +132,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: MtgPirate-Windows-${{ needs.setup.outputs.APP_VERSION }}
+          name: DeckLoot-Windows-${{ needs.setup.outputs.APP_VERSION }}
           path: build/compose/binaries/**/*.exe
           if-no-files-found: error
 
@@ -178,7 +178,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: MtgPirate-macOS-${{ env.APP_VERSION }}
+          name: DeckLoot-macOS-${{ env.APP_VERSION }}
           path: build/compose/binaries/**/*.dmg
           if-no-files-found: error
 
@@ -224,25 +224,25 @@ jobs:
 
       - name: Build iOS Archive
         run: |
-          cd mtgPirate
-          xcodebuild -project mtgPirate.xcodeproj \
-            -scheme mtgPirate \
+          cd deckLoot
+          xcodebuild -project deckLoot.xcodeproj \
+            -scheme deckLoot \
             -sdk iphoneos \
             -configuration Release \
-            -archivePath $PWD/build/mtgPirate.xcarchive \
+            -archivePath $PWD/build/deckLoot.xcarchive \
             archive \
             CODE_SIGN_IDENTITY="${{ env.SIGN_IOS == 'true' && secrets.IOS_CODE_SIGN_IDENTITY || '' }}" \
             MARKETING_VERSION=$APP_VERSION
 
       - name: Zip iOS Archive
         run: |
-          cd mtgPirate/build
-          zip -r mtgPirate.xcarchive.zip mtgPirate.xcarchive
+          cd deckLoot/build
+          zip -r deckLoot.xcarchive.zip deckLoot.xcarchive
 
       - name: Export IPA (if signed)
         if: ${{ env.SIGN_IOS == 'true' }}
         run: |
-          cd mtgPirate
+          cd deckLoot
           # Generate export options plist (overwrites if exists)
           cat <<EOF > exportOptions.plist
           <?xml version="1.0" encoding="UTF-8"?>
@@ -256,17 +256,17 @@ jobs:
           EOF
           
           xcodebuild -exportArchive \
-            -archivePath $PWD/build/mtgPirate.xcarchive \
+            -archivePath $PWD/build/deckLoot.xcarchive \
             -exportOptionsPlist exportOptions.plist \
             -exportPath $PWD/build/ipa
 
       - name: Upload iOS Artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: MtgPirate-iOS-${{ env.APP_VERSION }}
+          name: DeckLoot-iOS-${{ env.APP_VERSION }}
           path: |
-            mtgPirate/build/mtgPirate.xcarchive.zip
-            mtgPirate/build/ipa/*.ipa
+            deckLoot/build/deckLoot.xcarchive.zip
+            deckLoot/build/ipa/*.ipa
           if-no-files-found: error
 
   attach-to-release:

@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  mtgPirate
+//  DeckLoot
 //
 //  Created by Jared Fowler on 11/14/25.
 //
