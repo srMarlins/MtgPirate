@@ -63,7 +63,7 @@ object ManaPoolApi {
     suspend fun fetchAllSingles(): List<ManaPoolSingle> {
         val client = getClient()
         val response = client.get("$BASE_URL/api/v1/prices/singles") {
-            header(HttpHeaders.UserAgent, "MtgPirate/1.0 (KMP)")
+            header(HttpHeaders.UserAgent, "DeckLoot/1.0 (KMP)")
             accept(ContentType.Application.Json)
         }
         if (response.status.isSuccess()) {
@@ -92,7 +92,7 @@ object ManaPoolApi {
     ) {
         val client = getClient()
         val response = client.get("$BASE_URL/api/v1/prices/singles") {
-            header(HttpHeaders.UserAgent, "MtgPirate/1.0 (KMP)")
+            header(HttpHeaders.UserAgent, "DeckLoot/1.0 (KMP)")
             accept(ContentType.Application.Json)
         }
         if (!response.status.isSuccess()) {

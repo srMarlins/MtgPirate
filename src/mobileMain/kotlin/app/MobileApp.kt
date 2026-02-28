@@ -297,7 +297,7 @@ fun MobileNavigationHost(
 }
 
 /**
- * Inline header combining MTG PIRATE branding, stepper, and theme toggle.
+ * Inline header combining DECK LOOT branding, stepper, and theme toggle.
  * Designed for compact mobile layout with all elements in one row.
  */
 @Composable
@@ -315,9 +315,9 @@ fun MobileInlineHeader(
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // MTG PIRATE branding on the left
+        // DECK LOOT branding on the left
         Text(
-            text = "MTG PIRATE",
+            text = "DECK LOOT",
             style = MaterialTheme.typography.subtitle2,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colors.primary,

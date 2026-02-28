@@ -263,7 +263,7 @@ object ScryfallApi {
     private suspend fun fetchUrl(url: String): String {
         val client = getClient()
         val response = client.get(url) {
-            header(HttpHeaders.UserAgent, "MtgPirate/1.0")
+            header(HttpHeaders.UserAgent, "DeckLoot/1.0")
             accept(ContentType.Application.Json)
         }
         

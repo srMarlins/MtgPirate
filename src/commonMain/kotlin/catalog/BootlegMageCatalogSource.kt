@@ -81,7 +81,7 @@ class BootlegMageCatalogSource(
             val response = http.get(WC_STORE_API_PRODUCTS) {
                 parameter("search", cardName)
                 parameter("per_page", PER_PAGE.toString())
-                header(HttpHeaders.UserAgent, "MtgPirate/1.0 (KMP)")
+                header(HttpHeaders.UserAgent, "DeckLoot/1.0 (KMP)")
                 accept(ContentType.Application.Json)
             }
             if (response.status.isSuccess()) {
@@ -95,7 +95,7 @@ class BootlegMageCatalogSource(
             val response = http.get(WC_API_PRODUCTS) {
                 parameter("search", cardName)
                 parameter("per_page", PER_PAGE.toString())
-                header(HttpHeaders.UserAgent, "MtgPirate/1.0 (KMP)")
+                header(HttpHeaders.UserAgent, "DeckLoot/1.0 (KMP)")
                 accept(ContentType.Application.Json)
             }
             if (response.status.isSuccess()) {
@@ -129,7 +129,7 @@ class BootlegMageCatalogSource(
                 val response = http.get(WC_STORE_API_PRODUCTS) {
                     parameter("per_page", PER_PAGE.toString())
                     parameter("page", page.toString())
-                    header(HttpHeaders.UserAgent, "MtgPirate/1.0 (KMP)")
+                    header(HttpHeaders.UserAgent, "DeckLoot/1.0 (KMP)")
                     accept(ContentType.Application.Json)
                 }
                 if (!response.status.isSuccess()) {
@@ -286,7 +286,7 @@ class BootlegMageCatalogSource(
                 val response = http.get(WC_API_PRODUCTS) {
                     parameter("per_page", PER_PAGE.toString())
                     parameter("page", page.toString())
-                    header(HttpHeaders.UserAgent, "MtgPirate/1.0 (KMP)")
+                    header(HttpHeaders.UserAgent, "DeckLoot/1.0 (KMP)")
                     accept(ContentType.Application.Json)
                 }
                 val status = response.status.value
@@ -365,7 +365,7 @@ class BootlegMageCatalogSource(
         return try {
             log("Bootleg Mage: fetching shop HTML")
             val response = http.get(SHOP_URL) {
-                header(HttpHeaders.UserAgent, "MtgPirate/1.0 (KMP)")
+                header(HttpHeaders.UserAgent, "DeckLoot/1.0 (KMP)")
                 accept(ContentType.Text.Html)
             }
             if (!response.status.isSuccess()) {
@@ -387,7 +387,7 @@ class BootlegMageCatalogSource(
             val response = http.get(SHOP_URL) {
                 parameter("s", cardName)
                 parameter("post_type", "product")
-                header(HttpHeaders.UserAgent, "MtgPirate/1.0 (KMP)")
+                header(HttpHeaders.UserAgent, "DeckLoot/1.0 (KMP)")
                 accept(ContentType.Text.Html)
             }
             if (!response.status.isSuccess()) return emptyList()

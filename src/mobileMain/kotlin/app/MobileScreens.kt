@@ -109,7 +109,7 @@ fun MobileImportScreen(
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Top
         ) {
-            // Inline header with MTG PIRATE branding, stepper, and theme toggle
+            // Inline header with DECK LOOT branding, stepper, and theme toggle
             MobileInlineHeader(
                 currentStep = 1,
                 isDarkTheme = isDarkTheme,
@@ -228,7 +228,7 @@ fun MobilePreferencesScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            // Inline header with MTG PIRATE branding, stepper, and theme toggle
+            // Inline header with DECK LOOT branding, stepper, and theme toggle
             MobileInlineHeader(
                 currentStep = 2,
                 isDarkTheme = isDarkTheme,
@@ -522,7 +522,7 @@ fun MobileResultsScreenWrapper(
         ScanlineEffect(alpha = 0.03f)
 
         Column(modifier = Modifier.fillMaxSize()) {
-            // Inline header with MTG PIRATE branding, stepper, and theme toggle
+            // Inline header with DECK LOOT branding, stepper, and theme toggle
             MobileInlineHeader(
                 currentStep = 3,
                 isDarkTheme = isDarkTheme,
@@ -807,7 +807,7 @@ fun MobileShoppingPlanScreen(
         ScanlineEffect(alpha = 0.03f)
 
         Column(modifier = Modifier.fillMaxSize()) {
-            // Inline header with MTG PIRATE branding, stepper, and theme toggle
+            // Inline header with DECK LOOT branding, stepper, and theme toggle
             MobileInlineHeader(
                 currentStep = 4,
                 isDarkTheme = isDarkTheme,
