@@ -21,10 +21,14 @@ import model.LogEntry
 import model.MatchStatus
 import model.MultiMatch
 import model.Preferences
+import model.ProFeature
+import model.ProStatus
+import model.PurchaseResult
 import model.SavedImport
 import model.Seller
 import model.ShoppingPlan
 import optimizer.ShoppingOptimizer
+import purchase.PurchaseManager
 import kotlin.time.Clock
 
 /**
@@ -49,7 +53,8 @@ class MviViewModel(
     private val database: Database,
     private val catalogStore: CatalogStore,
     private val importsStore: ImportsStore,
-    private val platformServices: MviPlatformServices
+    private val platformServices: MviPlatformServices,
+    private val purchaseManager: PurchaseManager? = null
 ) {
     // -- Use cases ----------------------------------------------------------
     private val catalogUseCase = CatalogUseCase(catalogStore, platformServices)
@@ -129,6 +134,8 @@ class MviViewModel(
                 availableSellers = localState.availableSellers,
                 loadingMultiCatalogs = localState.searchProgress?.isSearching ?: localState.loadingMultiCatalogs,
                 searchProgress = localState.searchProgress,
+                proStatus = localState.proStatus,
+                showUpgradePrompt = localState.showUpgradePrompt,
             )
         }.onEach { newState ->
             _viewState.update { newState }
@@ -156,6 +163,8 @@ class MviViewModel(
             is ViewIntent.CompleteWizardStep -> { completeWizardStep(intent.step); return }
             is ViewIntent.ToggleTheme -> { toggleTheme(); return }
             is ViewIntent.Log -> { log(intent.message, intent.level); return }
+            is ViewIntent.DismissUpgradePrompt -> { dismissUpgradePrompt(); return }
+            is ViewIntent.ShowUpgradePrompt -> { showUpgradePrompt(intent.feature); return }
             else -> {} // fall through to async
         }
         // Async intents — single launch per intent
@@ -191,6 +200,10 @@ class MviViewModel(
                 ViewIntent.WizardImportToPreferences -> wizardImportToPreferences()
                 ViewIntent.WizardPreferencesToResults -> wizardPreferencesToResults()
                 ViewIntent.WizardResultsToExport -> wizardResultsToExport()
+                // Pro purchase intents
+                ViewIntent.PurchasePro -> purchasePro()
+                ViewIntent.RestorePurchases -> restorePurchases()
+                ViewIntent.CheckProStatus -> checkProStatus()
                 // Sync intents already handled above — exhaustive match requires listing them
                 is ViewIntent.UpdateDeckText,
                 is ViewIntent.OpenResolve,
@@ -204,7 +217,9 @@ class MviViewModel(
                 is ViewIntent.ToggleTheme,
                 is ViewIntent.Log,
                 is ViewIntent.UpdateEnabledSellers,
-                is ViewIntent.UpdateProxyFirst -> {}
+                is ViewIntent.UpdateProxyFirst,
+                is ViewIntent.DismissUpgradePrompt,
+                is ViewIntent.ShowUpgradePrompt -> {}
             }
         }
     }
@@ -229,6 +244,7 @@ class MviViewModel(
                 _viewEffects.emit(ViewEffect.ShowError("Failed to initialize catalog"))
             }
         }
+        checkProStatus()
     }
 
     private fun updateDeckText(text: String) {
@@ -445,6 +461,12 @@ class MviViewModel(
     }
 
     private suspend fun updateEnabledSellers(sellers: List<String>) {
+        // Allow if only USEA is selected (free tier), empty list (unchecking all), or if Pro
+        val isOnlyUsea = sellers.size == 1 && sellers.first() == Seller.USEA.name
+        if (!isOnlyUsea && sellers.isNotEmpty() && !_localState.value.proStatus.isPro) {
+            _localState.update { it.copy(showUpgradePrompt = ProFeature.MULTI_SELLER) }
+            return
+        }
         preferencesUseCase.updateEnabledSellers(sellers)
             .onSuccess { log("Enabled sellers updated: ${sellers.joinToString()}", "INFO") }
             .onFailure {
@@ -471,6 +493,7 @@ class MviViewModel(
     }
 
     private fun toggleTheme() {
+        if (!requirePro(ProFeature.THEME_CUSTOMIZATION)) return
         _localState.update { it.copy(isDarkTheme = !it.isDarkTheme) }
     }
 
@@ -484,6 +507,7 @@ class MviViewModel(
         preferences: Preferences = _viewState.value.preferences,
         savedImports: List<SavedImport> = _viewState.value.savedImports
     ) {
+        if (!requirePro(ProFeature.IMPORT_HISTORY)) return
         importExportUseCase.saveCurrentImport(
             deckText, deckEntries, preferences, savedImports
         ).onSuccess { msg -> log(msg, "INFO") }
@@ -714,6 +738,7 @@ class MviViewModel(
     private suspend fun optimizeShoppingPlan(
         multiMatches: List<MultiMatch> = _localState.value.multiMatches
     ) {
+        if (!requirePro(ProFeature.SHOPPING_OPTIMIZER)) return
         withContext(Dispatchers.IO) {
             if (multiMatches.isEmpty()) {
                 log("No multi-matches available for optimization", "WARNING")
@@ -736,6 +761,7 @@ class MviViewModel(
     }
 
     private suspend fun overrideCardSeller(matchIndex: Int, seller: Seller) {
+        if (!requirePro(ProFeature.SELLER_OVERRIDE)) return
         _localState.update { state ->
             if (matchIndex !in state.multiMatches.indices) return@update state
 
@@ -779,6 +805,61 @@ class MviViewModel(
     private suspend fun wizardResultsToExport() {
         completeWizardStep(3)
         optimizeShoppingPlan()
+    }
+
+    // -----------------------------------------------------------------------
+    // Pro purchase handlers
+    // -----------------------------------------------------------------------
+
+    private fun requirePro(feature: ProFeature): Boolean {
+        if (_localState.value.proStatus.isPro) return true
+        _localState.update { it.copy(showUpgradePrompt = feature) }
+        return false
+    }
+
+    private fun showUpgradePrompt(feature: ProFeature) {
+        _localState.update { it.copy(showUpgradePrompt = feature) }
+    }
+
+    private fun dismissUpgradePrompt() {
+        _localState.update { it.copy(showUpgradePrompt = null) }
+    }
+
+    private suspend fun purchasePro() {
+        val manager = purchaseManager ?: return
+        val result = manager.purchase()
+        if (result == PurchaseResult.SUCCESS) {
+            _localState.update { it.copy(proStatus = ProStatus.Pro, showUpgradePrompt = null) }
+            database.updateIsPro(true)
+            log("Pro unlocked!", "INFO")
+        }
+    }
+
+    private suspend fun restorePurchases() {
+        val manager = purchaseManager ?: return
+        val status = manager.restorePurchases()
+        _localState.update { it.copy(proStatus = status, showUpgradePrompt = null) }
+        database.updateIsPro(status.isPro)
+        if (status.isPro) {
+            log("Pro restored!", "INFO")
+        }
+    }
+
+    private suspend fun checkProStatus() {
+        // First load from cache
+        val cached = withContext(Dispatchers.IO) {
+            database.observePreferences().first()
+        }
+        if (cached?.isPro == true) {
+            _localState.update { it.copy(proStatus = ProStatus.Pro) }
+        }
+        // Then verify with RevenueCat
+        val manager = purchaseManager ?: return
+        val status = withContext(Dispatchers.IO) {
+            manager.checkEntitlement()
+        }
+        _localState.update { it.copy(proStatus = status) }
+        database.updateIsPro(status.isPro)
     }
 
     // -----------------------------------------------------------------------
@@ -845,6 +926,8 @@ data class ViewState(
     val availableSellers: List<Seller> = emptyList(),
     val loadingMultiCatalogs: Boolean = false,
     val searchProgress: SearchProgress? = null,
+    val proStatus: ProStatus = ProStatus.Free,
+    val showUpgradePrompt: ProFeature? = null,
 )
 
 /**
@@ -873,6 +956,8 @@ private data class LocalUiState(
     val loadingMultiCatalogs: Boolean = false,
     val catalogsLoadedThisSession: Boolean = false,
     val searchProgress: SearchProgress? = null,
+    val proStatus: ProStatus = ProStatus.Free,
+    val showUpgradePrompt: ProFeature? = null,
 )
 
 /**
@@ -926,6 +1011,13 @@ sealed class ViewIntent {
     data object WizardImportToPreferences : ViewIntent()
     data object WizardPreferencesToResults : ViewIntent()
     data object WizardResultsToExport : ViewIntent()
+
+    // Pro purchase intents
+    data object PurchasePro : ViewIntent()
+    data object RestorePurchases : ViewIntent()
+    data object CheckProStatus : ViewIntent()
+    data class ShowUpgradePrompt(val feature: ProFeature) : ViewIntent()
+    data object DismissUpgradePrompt : ViewIntent()
 }
 
 /**
@@ -934,6 +1026,7 @@ sealed class ViewIntent {
 sealed class ViewEffect {
     data class ShowMessage(val message: String) : ViewEffect()
     data class ShowError(val message: String) : ViewEffect()
+    data class ShowUpgradePrompt(val feature: ProFeature) : ViewEffect()
 }
 
 /**
