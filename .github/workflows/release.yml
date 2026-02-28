@@ -30,6 +30,16 @@ on:
         type: boolean
         default: false
         required: false
+      run_android:
+        description: 'Build Android (.apk/.aab)'
+        type: boolean
+        default: true
+        required: false
+      sign_android:
+        description: 'Sign Android build (requires secrets)'
+        type: boolean
+        default: false
+        required: false
       export_method:
         description: 'iOS Export Method (app-store, ad-hoc, development)'
         type: string
@@ -50,6 +60,7 @@ jobs:
       RUN_WINDOWS: ${{ steps.filter.outputs.RUN_WINDOWS }}
       RUN_MACOS: ${{ steps.filter.outputs.RUN_MACOS }}
       RUN_IOS: ${{ steps.filter.outputs.RUN_IOS }}
+      RUN_ANDROID: ${{ steps.filter.outputs.RUN_ANDROID }}
       EXPORT_METHOD: ${{ steps.filter.outputs.EXPORT_METHOD }}
     steps:
       - name: Checkout repository
@@ -88,18 +99,21 @@ jobs:
           RUN_WINDOWS="true"
           RUN_MACOS="true"
           RUN_IOS="true"
+          RUN_ANDROID="true"
           EXPORT_METHOD="ad-hoc"
-          
+
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             RUN_WINDOWS="${{ inputs.run_windows }}"
             RUN_MACOS="${{ inputs.run_macos }}"
             RUN_IOS="${{ inputs.run_ios }}"
+            RUN_ANDROID="${{ inputs.run_android }}"
             EXPORT_METHOD="${{ inputs.export_method }}"
           fi
-          
+
           echo "RUN_WINDOWS=$RUN_WINDOWS" >> "$GITHUB_OUTPUT"
           echo "RUN_MACOS=$RUN_MACOS" >> "$GITHUB_OUTPUT"
           echo "RUN_IOS=$RUN_IOS" >> "$GITHUB_OUTPUT"
+          echo "RUN_ANDROID=$RUN_ANDROID" >> "$GITHUB_OUTPUT"
           echo "EXPORT_METHOD=$EXPORT_METHOD" >> "$GITHUB_OUTPUT"
 
   build-windows:
@@ -132,7 +146,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: MtgPirate-Windows-${{ needs.setup.outputs.APP_VERSION }}
+          name: DeckLoot-Windows-${{ needs.setup.outputs.APP_VERSION }}
           path: build/compose/binaries/**/*.exe
           if-no-files-found: error
 
@@ -178,7 +192,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: MtgPirate-macOS-${{ env.APP_VERSION }}
+          name: DeckLoot-macOS-${{ env.APP_VERSION }}
           path: build/compose/binaries/**/*.dmg
           if-no-files-found: error
 
@@ -224,25 +238,25 @@ jobs:
 
       - name: Build iOS Archive
         run: |
-          cd mtgPirate
-          xcodebuild -project mtgPirate.xcodeproj \
-            -scheme mtgPirate \
+          cd deckLoot
+          xcodebuild -project deckLoot.xcodeproj \
+            -scheme deckLoot \
             -sdk iphoneos \
             -configuration Release \
-            -archivePath $PWD/build/mtgPirate.xcarchive \
+            -archivePath $PWD/build/deckLoot.xcarchive \
             archive \
             CODE_SIGN_IDENTITY="${{ env.SIGN_IOS == 'true' && secrets.IOS_CODE_SIGN_IDENTITY || '' }}" \
             MARKETING_VERSION=$APP_VERSION
 
       - name: Zip iOS Archive
         run: |
-          cd mtgPirate/build
-          zip -r mtgPirate.xcarchive.zip mtgPirate.xcarchive
+          cd deckLoot/build
+          zip -r deckLoot.xcarchive.zip deckLoot.xcarchive
 
       - name: Export IPA (if signed)
         if: ${{ env.SIGN_IOS == 'true' }}
         run: |
-          cd mtgPirate
+          cd deckLoot
           # Generate export options plist (overwrites if exists)
           cat <<EOF > exportOptions.plist
           <?xml version="1.0" encoding="UTF-8"?>
@@ -256,23 +270,67 @@ jobs:
           EOF
           
           xcodebuild -exportArchive \
-            -archivePath $PWD/build/mtgPirate.xcarchive \
+            -archivePath $PWD/build/deckLoot.xcarchive \
             -exportOptionsPlist exportOptions.plist \
             -exportPath $PWD/build/ipa
 
       - name: Upload iOS Artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: MtgPirate-iOS-${{ env.APP_VERSION }}
+          name: DeckLoot-iOS-${{ env.APP_VERSION }}
           path: |
-            mtgPirate/build/mtgPirate.xcarchive.zip
-            mtgPirate/build/ipa/*.ipa
+            deckLoot/build/deckLoot.xcarchive.zip
+            deckLoot/build/ipa/*.ipa
+          if-no-files-found: error
+
+  build-android:
+    name: Build (Android .apk)
+    needs: setup
+    if: ${{ needs.setup.outputs.RUN_ANDROID == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      APP_VERSION: ${{ needs.setup.outputs.APP_VERSION }}
+      SIGN_ANDROID: ${{ (github.event_name == 'workflow_dispatch' && inputs.sign_android) || (secrets.SIGN_ANDROID == 'true') }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      - name: Decode Android keystore
+        if: ${{ env.SIGN_ANDROID == 'true' }}
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > /tmp/release.keystore
+          echo "storeFile=/tmp/release.keystore" > keystore.properties
+          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> keystore.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> keystore.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> keystore.properties
+
+      - name: Build release APK
+        run: ./gradlew -PappVersion=$APP_VERSION assembleRelease --stacktrace --no-daemon
+
+      - name: Upload Android artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: DeckLoot-Android-${{ env.APP_VERSION }}
+          path: |
+            build/outputs/apk/release/*.apk
           if-no-files-found: error
 
   attach-to-release:
     name: Attach artifacts to GitHub Release
-    needs: [setup, build-windows, build-macos, build-ios]
-    if: ${{ github.event_name == 'release' }}
+    needs: [setup, build-windows, build-macos, build-ios, build-android]
+    if: ${{ !cancelled() && needs.setup.result == 'success' && github.event_name == 'release' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -291,5 +349,6 @@ jobs:
             artifacts/**/*.dmg
             artifacts/**/*.ipa
             artifacts/**/*.xcarchive.zip
+            artifacts/**/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

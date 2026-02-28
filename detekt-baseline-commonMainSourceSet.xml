@@ -27,7 +27,7 @@
     <ID>LongMethod:ExportScreen.kt:@Composable fun ExportScreen</ID>
     <ID>LongMethod:MatchesScreen.kt:@Composable fun MatchesScreen</ID>
     <ID>LongMethod:MobilePixelImageComponents.kt:@Composable fun MobilePixelImageModal</ID>
-    <ID>LongMethod:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$override fun create: QueryResult.Value&lt;Unit&gt;</ID>
+    <ID>LongMethod:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$override fun create: QueryResult.Value&lt;Unit&gt;</ID>
     <ID>LongMethod:MviViewModel.kt:MviViewModel$fun processIntent</ID>
     <ID>LongMethod:MviViewModel.kt:MviViewModel$private suspend fun searchDeck</ID>
     <ID>LongMethod:PixelComponents.kt:@Composable fun FantasyStarIcon</ID>
@@ -115,8 +115,8 @@
     <ID>MagicNumber:Models.kt:VariantType.FOIL$350</ID>
     <ID>MagicNumber:Models.kt:VariantType.HOLO$300</ID>
     <ID>MagicNumber:Models.kt:VariantType.REGULAR$220</ID>
-    <ID>MagicNumber:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$3</ID>
-    <ID>MagicNumber:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$4</ID>
+    <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$3</ID>
+    <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$4</ID>
     <ID>MagicNumber:MviViewModel.kt:MviViewModel$3</ID>
     <ID>MagicNumber:PixelComponents.kt:0.2f</ID>
     <ID>MagicNumber:PixelComponents.kt:0.4f</ID>
@@ -334,8 +334,8 @@
     <ID>MaxLineLength:MatchesScreen.kt:color = if (rowTotal != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)</ID>
     <ID>MaxLineLength:MatchesScreen.kt:val content = unmatched.joinToString("\n") { "${it.deckEntry.qty} ${it.deckEntry.cardName}" }</ID>
     <ID>MaxLineLength:MobilePixelImageComponents.kt:var loadState by remember { mutableStateOf&lt;AsyncImagePainter.State&gt;(AsyncImagePainter.State.Empty) }</ID>
-    <ID>MaxLineLength:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$driver.execute(null, "ALTER TABLE PreferencesEntity ADD COLUMN enabledSellers TEXT NOT NULL DEFAULT 'USEA,BOOTLEG_MAGE,TCGPLAYER,MANAPOOL'", 0)</ID>
-    <ID>MaxLineLength:MtgPirateDatabaseImpl.kt:MtgPirateDatabaseImpl.Schema$driver.execute(null, "CREATE UNIQUE INDEX IF NOT EXISTS idx_variant_seller_sku ON CardVariantEntity(seller, sku)", 0)</ID>
+    <ID>MaxLineLength:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$driver.execute(null, "ALTER TABLE PreferencesEntity ADD COLUMN enabledSellers TEXT NOT NULL DEFAULT 'USEA,BOOTLEG_MAGE,TCGPLAYER,MANAPOOL'", 0)</ID>
+    <ID>MaxLineLength:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$driver.execute(null, "CREATE UNIQUE INDEX IF NOT EXISTS idx_variant_seller_sku ON CardVariantEntity(seller, sku)", 0)</ID>
     <ID>MaxLineLength:MviViewModel.kt:MviViewModel$private suspend</ID>
     <ID>MaxLineLength:PreferencesQueries.kt:PreferencesQueries$)</ID>
     <ID>MaxLineLength:PreferencesWizardScreen.kt:.</ID>
@@ -371,7 +371,7 @@
     <ID>MaxLineLength:ShoppingPlanScreen.kt:color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface</ID>
     <ID>MaxLineLength:ShoppingPlanScreen.kt:val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&amp;body=${encodeUrlParameter(exportText)}"</ID>
     <ID>NestedBlockDepth:ManaPoolApi.kt:ManaPoolApi$internal suspend fun parseDataArray</ID>
-    <ID>PackageNaming:MtgPirateDatabaseImpl.kt:package org.srmarlins.mtgpirate.db.MtgPirate</ID>
+    <ID>PackageNaming:DeckLootDatabaseImpl.kt:package com.deckloot.db.DeckLoot</ID>
     <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun extractValue: String?</ID>
     <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun parse: Catalog</ID>
     <ID>ReturnCount:Levenshtein.kt:Levenshtein$fun distance: Int</ID>

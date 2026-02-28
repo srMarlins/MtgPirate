@@ -102,7 +102,7 @@ class KtorRemoteCatalogDataSource(private val client: HttpClient? = null) : Cata
 
     private suspend fun fetchRaw(client: HttpClient, url: String, log: (String) -> Unit): String {
         val resp = client.get(url) {
-            header(HttpHeaders.UserAgent, "MtgPirate/1.0 (KMP)")
+            header(HttpHeaders.UserAgent, "DeckLoot/1.0 (KMP)")
             accept(ContentType.Any)
         }
         val code = resp.status.value

@@ -1,6 +1,6 @@
 //
-//  mtgPirateApp.swift
-//  mtgPirate
+//  DeckLootApp.swift
+//  DeckLoot
 //
 //  Created by Jared Fowler on 11/14/25.
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct mtgPirateApp: App {
+struct DeckLootApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

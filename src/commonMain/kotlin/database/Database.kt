@@ -12,7 +12,7 @@ import model.Catalog
 import model.LogEntry
 import model.Preferences
 import model.SavedImport
-import org.srmarlins.mtgpirate.db.MtgPirateDatabase
+import com.deckloot.db.DeckLootDatabase
 
 expect open class DatabaseDriverFactory {
     fun createDriver(): SqlDriver
@@ -20,7 +20,7 @@ expect open class DatabaseDriverFactory {
 
 class Database(databaseDriverFactory: DatabaseDriverFactory) {
     private val driver = databaseDriverFactory.createDriver()
-    private val db = MtgPirateDatabase(driver)
+    private val db = DeckLootDatabase(driver)
 
     fun observeCardVariants(): Flow<List<CardVariant>> =
         db.cardVariantQueries.selectAll().asFlow().mapToList(Dispatchers.IO)

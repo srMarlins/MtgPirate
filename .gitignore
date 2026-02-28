@@ -70,5 +70,9 @@ DerivedData/
 # Compose Multiplatform
 .compose/
 
-pirate.db
+deckloot.db
 
+# Android release signing
+keystore.properties
+*.jks
+*.keystore

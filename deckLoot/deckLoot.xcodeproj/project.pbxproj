@@ -20,26 +20,26 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		9F78BD092EC6F4DD005D557C /* mtgPirate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mtgPirate.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F78BD092EC6F4DD005D557C /* deckLoot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = deckLoot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		9FB15C9F2ECBA13500F73E28 /* Exceptions for "mtgPirate" folder in "mtgPirate" target */ = {
+		9FB15C9F2ECBA13500F73E28 /* Exceptions for "deckLoot" folder in "deckLoot" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 9F78BD082EC6F4DD005D557C /* mtgPirate */;
+			target = 9F78BD082EC6F4DD005D557C /* deckLoot */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		9F78BD0B2EC6F4DD005D557C /* mtgPirate */ = {
+		9F78BD0B2EC6F4DD005D557C /* deckLoot */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				9FB15C9F2ECBA13500F73E28 /* Exceptions for "mtgPirate" folder in "mtgPirate" target */,
+				9FB15C9F2ECBA13500F73E28 /* Exceptions for "deckLoot" folder in "deckLoot" target */,
 			);
-			path = mtgPirate;
+			path = deckLoot;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -58,7 +58,7 @@
 		9F78BD002EC6F4DD005D557C = {
 			isa = PBXGroup;
 			children = (
-				9F78BD0B2EC6F4DD005D557C /* mtgPirate */,
+				9F78BD0B2EC6F4DD005D557C /* deckLoot */,
 				9F78BD172EC6F91F005D557C /* Frameworks */,
 				9F78BD0A2EC6F4DD005D557C /* Products */,
 			);
@@ -67,7 +67,7 @@
 		9F78BD0A2EC6F4DD005D557C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				9F78BD092EC6F4DD005D557C /* mtgPirate.app */,
+				9F78BD092EC6F4DD005D557C /* deckLoot.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -82,9 +82,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		9F78BD082EC6F4DD005D557C /* mtgPirate */ = {
+		9F78BD082EC6F4DD005D557C /* deckLoot */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 9F78BD142EC6F4DF005D557C /* Build configuration list for PBXNativeTarget "mtgPirate" */;
+			buildConfigurationList = 9F78BD142EC6F4DF005D557C /* Build configuration list for PBXNativeTarget "deckLoot" */;
 			buildPhases = (
 				9F78BD1C2EC6F97D005D557C /* Kotlin MP */,
 				9F78BD052EC6F4DD005D557C /* Sources */,
@@ -97,13 +97,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				9F78BD0B2EC6F4DD005D557C /* mtgPirate */,
+				9F78BD0B2EC6F4DD005D557C /* deckLoot */,
 			);
-			name = mtgPirate;
+			name = deckLoot;
 			packageProductDependencies = (
 			);
-			productName = mtgPirate;
-			productReference = 9F78BD092EC6F4DD005D557C /* mtgPirate.app */;
+			productName = deckLoot;
+			productReference = 9F78BD092EC6F4DD005D557C /* deckLoot.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -121,7 +121,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 9F78BD042EC6F4DD005D557C /* Build configuration list for PBXProject "mtgPirate" */;
+			buildConfigurationList = 9F78BD042EC6F4DD005D557C /* Build configuration list for PBXProject "deckLoot" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -135,7 +135,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				9F78BD082EC6F4DD005D557C /* mtgPirate */,
+				9F78BD082EC6F4DD005D557C /* deckLoot */,
 			);
 		};
 /* End PBXProject section */
@@ -313,7 +313,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = mtgPirate/Info.plist;
+				INFOPLIST_FILE = deckLoot/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -323,9 +323,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				"OTHER_LDFLAGS[arch=*]" = "-lsqlite3";
-				PRODUCT_BUNDLE_IDENTIFIER = com.srmarlins.mtgPirate;
+				PRODUCT_BUNDLE_IDENTIFIER = com.deckloot.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -348,7 +348,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = mtgPirate/Info.plist;
+				INFOPLIST_FILE = deckLoot/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -358,9 +358,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				"OTHER_LDFLAGS[arch=*]" = "-lsqlite3";
-				PRODUCT_BUNDLE_IDENTIFIER = com.srmarlins.mtgPirate;
+				PRODUCT_BUNDLE_IDENTIFIER = com.deckloot.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -375,7 +375,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		9F78BD042EC6F4DD005D557C /* Build configuration list for PBXProject "mtgPirate" */ = {
+		9F78BD042EC6F4DD005D557C /* Build configuration list for PBXProject "deckLoot" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				9F78BD122EC6F4DF005D557C /* Debug */,
@@ -384,7 +384,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		9F78BD142EC6F4DF005D557C /* Build configuration list for PBXNativeTarget "mtgPirate" */ = {
+		9F78BD142EC6F4DF005D557C /* Build configuration list for PBXNativeTarget "deckLoot" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				9F78BD152EC6F4DF005D557C /* Debug */,

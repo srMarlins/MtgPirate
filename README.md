@@ -1,11 +1,11 @@
-# 🏴‍☠️ MTG PIRATE
+# DECK LOOT
 
 > _A Kotlin Multiplatform application for importing Magic: The Gathering decklists, intelligently matching cards against the USEA MTG Proxy catalog, and exporting optimized CSV orders._
 
 **Platforms:** Desktop (Windows • macOS • Linux) • iOS (iPhone • iPad)
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/2f6e4147-6a47-4de0-8e95-25e556a46ab9" alt="MtgPirate Demo" style="max-width: 70%;">
+  <img src="https://github.com/user-attachments/assets/2f6e4147-6a47-4de0-8e95-25e556a46ab9" alt="DeckLoot Demo" style="max-width: 70%;">
 </div>
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.21-purple.svg)](https://kotlinlang.org/)
@@ -69,8 +69,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/srMarlins/MtgPirate.git
-cd MtgPirate
+git clone https://github.com/srMarlins/MtgPirate.git DeckLoot
+cd DeckLoot
 
 # Run the application
 ./gradlew run
@@ -83,7 +83,7 @@ cd MtgPirate
 ./gradlew linkDebugFrameworkIosSimulatorArm64
 
 # Open Xcode project
-open mtgPirate/mtgPirate.xcodeproj
+open deckLoot/deckLoot.xcodeproj
 
 # Click Run in Xcode (⌘R)
 ```
@@ -203,7 +203,7 @@ Packages are output to `build/compose/binaries/main/`.
    ./gradlew linkReleaseFrameworkIosArm64          # Device
    ```
 
-2. Open `mtgPirate/mtgPirate.xcodeproj` in Xcode
+2. Open `deckLoot/deckLoot.xcodeproj` in Xcode
 
 3. Select target device/simulator and click Run
 
@@ -217,8 +217,8 @@ Packages are output to `build/compose/binaries/main/`.
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/srMarlins/MtgPirate.git
-   cd MtgPirate
+   git clone https://github.com/srMarlins/MtgPirate.git DeckLoot
+   cd DeckLoot
    ```
 
 2. **Open in IntelliJ IDEA**:
@@ -310,7 +310,7 @@ Planned features:
 
 ## 🏗️ Architecture
 
-MtgPirate uses **MVI (Model-View-Intent)** architecture with **SQLDelight** as the single source of truth.
+DeckLoot uses **MVI (Model-View-Intent)** architecture with **SQLDelight** as the single source of truth.
 
 ### MVI Pattern
 
@@ -385,7 +385,7 @@ MtgPirate uses **MVI (Model-View-Intent)** architecture with **SQLDelight** as t
 ## 🧩 Project Structure
 
 ```
-MtgPirate/
+DeckLoot/
 ├── src/
 │   ├── commonMain/kotlin/           # Shared business logic (12,500+ LOC)
 │   │   ├── catalog/                 # Catalog data sources
@@ -477,10 +477,10 @@ MtgPirate/
 │           ├── ModernIosReorderableListHybrid.kt  # Reorderable list
 │           └── PlatformUI.kt               # iOS UI actual
 │
-├── mtgPirate/                       # iOS Xcode project
-│   ├── mtgPirate.xcodeproj/
-│   └── mtgPirate/
-│       ├── mtgPirateApp.swift              # Swift app entry
+├── deckLoot/                        # iOS Xcode project
+│   ├── deckLoot.xcodeproj/
+│   └── deckLoot/
+│       ├── deckLootApp.swift               # Swift app entry
 │       └── ContentView.swift               # SwiftUI wrapper
 │
 ├── docs/                            # Documentation
@@ -513,7 +513,7 @@ MtgPirate/
 
 ## 🎨 Design System
 
-MtgPirate uses a custom **Pixel Design System** inspired by 8-bit/16-bit RPGs.
+DeckLoot uses a custom **Pixel Design System** inspired by 8-bit/16-bit RPGs.
 
 ### Philosophy: "Retro Soul, Modern Body"
 
@@ -686,7 +686,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ### Copyright
 
-Copyright © 2024 MtgPirate Contributors
+Copyright © 2024 DeckLoot Contributors
 
 ### Third-Party Acknowledgments
 
@@ -706,7 +706,7 @@ This tool is for **personal use** with USEA proxy card services. **Magic: The Ga
 
 <div align="center">
   
-**Made with ❤️ and 🤖 by the MtgPirate Team**
+**Made with ❤️ and 🤖 by the DeckLoot Team**
 
 [Report Bug](https://github.com/srMarlins/MtgPirate/issues) • [Request Feature](https://github.com/srMarlins/MtgPirate/issues) • [Documentation](docs/)
 

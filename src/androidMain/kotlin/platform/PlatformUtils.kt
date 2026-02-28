@@ -15,7 +15,7 @@ actual suspend fun copyToClipboard(text: String) {
     try {
         val ctx = AndroidApp.appContext ?: return
         val clipboard = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
-        val clip = ClipData.newPlainText("MtgPirate", text)
+        val clip = ClipData.newPlainText("DeckLoot", text)
         clipboard.setPrimaryClip(clip)
     } catch (_: Exception) {
         // Silently fail - not critical

@@ -6,8 +6,8 @@
 All feature work MUST use worktrees — never work directly on `main`.
 
 ```bash
-git worktree add ../MtgPirate-<feature-name> -b feature/<feature-name>
-git worktree remove ../MtgPirate-<feature-name>  # after merge
+git worktree add ../DeckLoot-<feature-name> -b feature/<feature-name>
+git worktree remove ../DeckLoot-<feature-name>  # after merge
 ```
 
 ### GitHub Issues First

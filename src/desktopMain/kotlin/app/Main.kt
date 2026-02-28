@@ -96,7 +96,7 @@ fun FrameWindowScope.CustomTitleBar(
                         color = MaterialTheme.colors.primary
                     )
                     Text(
-                        "MTG PIRATE",
+                        "DECK LOOT",
                         style = MaterialTheme.typography.subtitle1,
                         color = if (isDarkTheme) Slate100 else Color.White,
                         fontWeight = FontWeight.Bold,
@@ -351,7 +351,7 @@ fun main() = application {
 
     Window(
         onCloseRequest = ::exitApplication,
-        title = "MTG Pirate",
+        title = "DeckLoot",
         state = windowState,
         undecorated = true
     ) {

@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -10,7 +11,7 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
-group = "org.srmarlins"
+group = "com.deckloot"
 
 // Retrieve the app version from:
 // 1. Gradle property 'appVersion' (passed via -PappVersion=...)
@@ -135,20 +136,63 @@ kotlin {
 }
 
 android {
-    namespace = "org.srmarlins.mtgpirate"
+    namespace = "com.deckloot.app"
     compileSdk = 35
 
+    // Load signing config from keystore.properties (if it exists)
+    val keystorePropertiesFile = rootProject.file("keystore.properties")
+    val keystoreProperties = Properties().apply {
+        if (keystorePropertiesFile.exists()) {
+            keystorePropertiesFile.inputStream().use { load(it) }
+        }
+    }
+
+    if (keystorePropertiesFile.exists()) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
+    // Compute versionCode from semantic version: major*10000 + minor*100 + patch
+    val versionParts = appVersionCore.split(".")
+    val computedVersionCode = versionParts.getOrElse(0) { "1" }.toInt() * 10000 +
+        versionParts.getOrElse(1) { "0" }.toInt() * 100 +
+        versionParts.getOrElse(2) { "0" }.toInt()
+
     defaultConfig {
-        applicationId = "org.srmarlins.mtgpirate"
+        applicationId = "com.deckloot.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
+        versionCode = computedVersionCode
         versionName = appVersion
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError = false
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-android.pro"
+            )
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
     }
 }
 
@@ -161,8 +205,10 @@ compose.desktop {
                 TargetFormat.Exe,
                 TargetFormat.Deb
             )
-            packageName = "MtgPirate"
+            packageName = "DeckLoot"
             packageVersion = appVersionCore
+            vendor = "DeckLoot"
+            description = "MTG card shopping optimizer - compare prices across sellers"
 
             // Include all required runtime modules (from suggestRuntimeModules task)
             modules("java.instrument", "java.management", "java.sql", "jdk.unsupported")
@@ -174,9 +220,11 @@ compose.desktop {
 
             macOS {
                 iconFile.set(project.file("src/desktopMain/resources/icon.icns"))
+                bundleID = "com.deckloot.app"
             }
             windows {
                 iconFile.set(project.file("src/desktopMain/resources/icon.png"))
+                upgradeUuid = "b7e3f1a2-8c4d-4e5f-9a6b-1c2d3e4f5a6b"
             }
             linux {
                 iconFile.set(project.file("src/desktopMain/resources/icon.png"))
@@ -187,8 +235,8 @@ compose.desktop {
 
 sqldelight {
     databases {
-        create("MtgPirateDatabase") {
-            packageName.set("org.srmarlins.mtgpirate.db")
+        create("DeckLootDatabase") {
+            packageName.set("com.deckloot.db")
             schemaOutputDirectory.set(file("src/commonMain/sqldelight/migrations"))
         }
     }

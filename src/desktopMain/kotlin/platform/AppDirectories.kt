@@ -7,12 +7,12 @@ import kotlin.io.path.exists
 /**
  * Provides platform-specific application directories for storing user data.
  *
- * On macOS: ~/Library/Application Support/MtgPirate
- * On Windows: %APPDATA%/MtgPirate
- * On Linux: ~/.local/share/MtgPirate
+ * On macOS: ~/Library/Application Support/DeckLoot
+ * On Windows: %APPDATA%/DeckLoot
+ * On Linux: ~/.local/share/DeckLoot
  */
 object AppDirectories {
-    private const val APP_NAME = "MtgPirate"
+    private const val APP_NAME = "DeckLoot"
 
     /**
      * Returns the platform-specific application data directory.
