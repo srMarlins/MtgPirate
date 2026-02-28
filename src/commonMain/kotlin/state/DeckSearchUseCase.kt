@@ -113,17 +113,18 @@ class DeckSearchUseCase(
                         // Check if cache is fresh AND has actual data.
                         // A seller with 0 cached variants should always re-fetch
                         // (could be stale from a failed previous session).
-                        val cachedVariantCount = if (isSellerCacheFresh(source.seller)) {
-                            getAllVariants().count { it.seller == source.seller }
-                        } else 0
+                        val cachedVariants = if (isSellerCacheFresh(source.seller)) {
+                            getAllVariants().filter { it.seller == source.seller }
+                        } else emptyList()
 
-                        if (isSellerCacheFresh(source.seller) && cachedVariantCount > 0) {
+                        if (isSellerCacheFresh(source.seller) && cachedVariants.isNotEmpty()) {
                             // Cache is fresh with data — skip API call; serialize status update
+                            val matchCount = cachedVariants.count { it.nameNormalized in deckNormalizedNames }
                             mutex.withLock {
                                 sellerStatuses[source.seller] = SellerSearchStatus(
                                     seller = source.seller,
                                     state = SearchState.DONE,
-                                    cardsFound = cachedVariantCount,
+                                    cardsFound = matchCount,
                                 )
                             }
                         } else {

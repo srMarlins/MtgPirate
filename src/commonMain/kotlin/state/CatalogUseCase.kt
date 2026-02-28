@@ -200,9 +200,8 @@ class CatalogUseCase(
                         catalogStore.replaceCatalogForSeller(seller, emptyList())
                     }
                     sourceRegistry.streamAll(
-                        storeBatch = { seller, batch ->
-                            val tagged = batch.map { it.copy(seller = seller) }
-                            catalogStore.insertVariantBatch(tagged)
+                        storeBatch = { _, batch ->
+                            catalogStore.insertVariantBatch(batch)
                         },
                         log = log,
                     )

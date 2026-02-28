@@ -3,6 +3,8 @@ package catalog
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.compression.ContentEncoding
+import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.ensureActive
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
@@ -171,6 +173,7 @@ object ManaPoolApi {
             objectRanges.add(objStart to pos)
 
             if (objectRanges.size >= batchSize) {
+                coroutineContext.ensureActive()
                 emitChunk(body, objectRanges, onBatch)
                 objectRanges.clear()
             }
