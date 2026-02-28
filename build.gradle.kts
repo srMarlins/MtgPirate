@@ -201,6 +201,8 @@ compose.desktop {
             )
             packageName = "DeckLoot"
             packageVersion = appVersionCore
+            vendor = "DeckLoot"
+            description = "MTG card shopping optimizer - compare prices across sellers"
 
             // Include all required runtime modules (from suggestRuntimeModules task)
             modules("java.instrument", "java.management", "java.sql", "jdk.unsupported")
@@ -212,9 +214,11 @@ compose.desktop {
 
             macOS {
                 iconFile.set(project.file("src/desktopMain/resources/icon.icns"))
+                bundleID = "com.deckloot.app"
             }
             windows {
                 iconFile.set(project.file("src/desktopMain/resources/icon.png"))
+                upgradeUuid = "b7e3f1a2-8c4d-4e5f-9a6b-1c2d3e4f5a6b"
             }
             linux {
                 iconFile.set(project.file("src/desktopMain/resources/icon.png"))
