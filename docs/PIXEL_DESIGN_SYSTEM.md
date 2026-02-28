@@ -2,7 +2,7 @@
 
 > **Philosophy**: "Retro Soul, Modern Body"
 
-The MtgPirate design system combines the nostalgic aesthetic of 8-bit/16-bit RPGs with the fluidity and responsiveness of modern UI frameworks. It is not a low-resolution emulation; rather, it is a high-fidelity reinterpretation of pixel art principles using vector paths and smooth animations.
+The DeckLoot design system combines the nostalgic aesthetic of 8-bit/16-bit RPGs with the fluidity and responsiveness of modern UI frameworks. It is not a low-resolution emulation; rather, it is a high-fidelity reinterpretation of pixel art principles using vector paths and smooth animations.
 
 ## Core Principles
 

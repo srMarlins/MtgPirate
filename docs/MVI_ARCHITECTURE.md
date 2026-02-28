@@ -14,7 +14,7 @@
 
 ## Overview
 
-MtgPirate implements **MVI (Model-View-Intent)** for state management, providing:
+DeckLoot implements **MVI (Model-View-Intent)** for state management, providing:
 
 - ✅ **Reactive** - UI automatically updates when state changes
 - ✅ **Predictable** - Single source of truth with unidirectional flow

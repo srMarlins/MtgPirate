@@ -213,7 +213,7 @@ val dbPath = "${documentsDir?.path}/pirate.db"
 ### UI Testing (Xcode)
 
 ```swift
-class MtgPirateUITests: XCTestCase {
+class DeckLootUITests: XCTestCase {
     func testImportFlow() {
         let app = XCUIApplication()
         app.launch()

@@ -1,6 +1,6 @@
-# Contributing to MtgPirate
+# Contributing to DeckLoot
 
-Thank you for your interest in contributing to MtgPirate! We welcome contributions from the community to help make this tool better for everyone.
+Thank you for your interest in contributing to DeckLoot! We welcome contributions from the community to help make this tool better for everyone.
 
 ## Code of Conduct
 
