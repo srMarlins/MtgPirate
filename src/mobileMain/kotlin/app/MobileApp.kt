@@ -1,0 +1,350 @@
+package app
+
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import database.CatalogStore
+import database.Database
+import database.ImportsStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import state.MviPlatformServices
+import state.MviViewModel
+import state.ViewIntent
+import ui.AppTheme
+import ui.PixelShape
+import ui.SavedImportsDialog
+import ui.ScanlineEffect
+import ui.pixelBorder
+
+/**
+ * Mobile screen enum for navigation.
+ */
+enum class MobileScreen {
+    IMPORT,
+    PREFERENCES,
+    RESULTS,
+    RESOLVE,
+    EXPORT,
+    CATALOG,
+    MATCHES
+}
+
+/**
+ * Shared mobile app composable used by both iOS and Android.
+ * Accepts the database and platform services from the platform entry point
+ * to ensure a single shared database instance.
+ */
+@Composable
+fun MobileApp(database: Database, platformServices: MviPlatformServices) {
+    // Create app-level coroutine scope
+    val scope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
+
+    // Initialize stores from shared database
+    val catalogStore = remember { CatalogStore(database) }
+    val importsStore = remember { ImportsStore(database) }
+
+    // Create MVI ViewModel
+    val viewModel = remember {
+        MviViewModel(
+            scope = scope,
+            database = database,
+            catalogStore = catalogStore,
+            importsStore = importsStore,
+            platformServices = platformServices
+        )
+    }
+
+    // Clean up coroutine scope when composable leaves composition
+    DisposableEffect(Unit) {
+        onDispose {
+            scope.coroutineContext[Job]?.cancel()
+        }
+    }
+
+    // Collect view state
+    val state by viewModel.viewState.collectAsState()
+
+    // Initialize on first launch
+    LaunchedEffect(Unit) {
+        viewModel.processIntent(ViewIntent.Init)
+    }
+
+    // Apply pixel theme
+    AppTheme(darkTheme = state.isDarkTheme) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colors.background
+        ) {
+            // Main navigation with wizard flow
+            MobileNavigationHost(
+                viewModel = viewModel,
+                state = state,
+                scope = scope,
+                platformServices = platformServices
+            )
+        }
+    }
+}
+
+/**
+ * Mobile navigation host managing wizard flow and screens.
+ */
+@Composable
+fun MobileNavigationHost(
+    viewModel: MviViewModel,
+    state: state.ViewState,
+    scope: CoroutineScope,
+    platformServices: MviPlatformServices,
+) {
+    // Track current screen
+    var currentScreen by remember { mutableStateOf(MobileScreen.IMPORT) }
+
+    // Navigation helper
+    fun navigateTo(screen: MobileScreen) {
+        currentScreen = screen
+    }
+
+    Box(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+        // Background scanline effect
+        ScanlineEffect(alpha = 0.02f)
+
+        // Render current screen with crossfade animation to prevent jumping
+        Crossfade(
+            targetState = currentScreen,
+            modifier = Modifier.fillMaxSize()
+        ) { screen ->
+            when (screen) {
+                MobileScreen.IMPORT -> MobileImportScreen(
+                deckText = state.deckText,
+                onDeckTextChange = { viewModel.processIntent(ViewIntent.UpdateDeckText(it)) },
+                onNext = {
+                    viewModel.processIntent(ViewIntent.WizardImportToPreferences)
+                    navigateTo(MobileScreen.PREFERENCES)
+                },
+                onShowSavedImports = {
+                    viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(true))
+                },
+                isLoadingCatalog = state.loadingCatalog,
+                isDarkTheme = state.isDarkTheme,
+                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) }
+            )
+
+            MobileScreen.PREFERENCES -> MobilePreferencesScreen(
+                includeSideboard = state.includeSideboard,
+                includeCommanders = state.includeCommanders,
+                includeTokens = state.includeTokens,
+                variantPriority = state.preferences.variantPriority,
+                onIncludeSideboardChange = { viewModel.processIntent(ViewIntent.ToggleIncludeSideboard(it)) },
+                onIncludeCommandersChange = { viewModel.processIntent(ViewIntent.ToggleIncludeCommanders(it)) },
+                onIncludeTokensChange = { viewModel.processIntent(ViewIntent.ToggleIncludeTokens(it)) },
+                onVariantPriorityChange = { viewModel.processIntent(ViewIntent.UpdateVariantPriority(it)) },
+                onBack = { navigateTo(MobileScreen.IMPORT) },
+                onNext = {
+                    viewModel.processIntent(ViewIntent.WizardPreferencesToResults)
+                    navigateTo(MobileScreen.RESULTS)
+                },
+                isDarkTheme = state.isDarkTheme,
+                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) }
+            )
+
+            MobileScreen.RESULTS -> MobileResultsScreenWrapper(
+                matches = state.matches,
+                onResolve = { idx ->
+                    viewModel.processIntent(ViewIntent.OpenResolve(idx))
+                    navigateTo(MobileScreen.RESOLVE)
+                },
+                onBack = { navigateTo(MobileScreen.PREFERENCES) },
+                onNext = {
+                    viewModel.processIntent(ViewIntent.WizardResultsToExport)
+                    navigateTo(MobileScreen.EXPORT)
+                },
+                onEnrichVariant = { variant ->
+                    viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                },
+                isLoadingCatalog = state.loadingCatalog,
+                isMatching = state.isMatching,
+                matchedCount = state.matchedCount,
+                unmatchedCount = state.unmatchedCount,
+                ambiguousCount = state.ambiguousCount,
+                isDarkTheme = state.isDarkTheme,
+                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
+                multiMatches = state.multiMatches,
+                availableSellers = state.availableSellers,
+                onOverrideSeller = { matchIndex, seller ->
+                    viewModel.processIntent(ViewIntent.OverrideCardSeller(matchIndex, seller))
+                },
+            )
+
+                MobileScreen.RESOLVE -> {
+                    val index = state.showCandidatesFor
+                    val match = index?.let { state.matches.getOrNull(it) }
+                    if (index != null && match != null) {
+                        MobileResolveScreen(
+                            match = match,
+                            onSelect = { variant ->
+                                viewModel.processIntent(ViewIntent.ResolveCandidate(index, variant))
+                                viewModel.processIntent(ViewIntent.CloseResolve)
+                                navigateTo(MobileScreen.RESULTS)
+                            },
+                            onBack = {
+                                viewModel.processIntent(ViewIntent.CloseResolve)
+                                navigateTo(MobileScreen.RESULTS)
+                            },
+                            onEnrichVariant = { variant ->
+                                viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                            }
+                        )
+                    } else {
+                        // If data is missing, show empty box to prevent flash
+                        Box(modifier = Modifier.fillMaxSize())
+                    }
+                }
+
+                MobileScreen.EXPORT -> MobileShoppingPlanScreen(
+                    shoppingPlan = state.shoppingPlan,
+                    multiMatches = state.multiMatches,
+                    onOptimize = {
+                        viewModel.processIntent(ViewIntent.OptimizeShoppingPlan)
+                    },
+                    onCopyToClipboard = { text ->
+                        scope.launch { platformServices.copyToClipboard(text) }
+                    },
+                    onOpenUrl = { url ->
+                        scope.launch { platformServices.openUrl(url) }
+                    },
+                    onBack = { navigateTo(MobileScreen.RESULTS) },
+                    isLoading = state.isMatching,
+                    isDarkTheme = state.isDarkTheme,
+                    onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
+                )
+
+                MobileScreen.CATALOG -> {
+                    val catalog = state.catalog
+                    if (catalog != null) {
+                        MobileCatalogScreen(
+                            catalog = catalog,
+                            onBack = { navigateTo(MobileScreen.IMPORT) },
+                            onEnrichVariant = { variant ->
+                                viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                            }
+                        )
+                    } else {
+                        // If catalog is missing, show empty box to prevent flash
+                        Box(modifier = Modifier.fillMaxSize())
+                    }
+                }
+
+                MobileScreen.MATCHES -> MobileMatchesScreen(
+                    matches = state.matches,
+                    onBack = { navigateTo(MobileScreen.RESULTS) },
+                    onEnrichVariant = { variant ->
+                        viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                    }
+                )
+            }
+        }
+
+        // Saved imports dialog
+        if (state.showSavedImportsWindow) {
+            SavedImportsDialog(
+                savedImports = state.savedImports,
+                onDismiss = {
+                    viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(false))
+                },
+                onSelectImport = { importId ->
+                    viewModel.processIntent(ViewIntent.LoadSavedImport(importId))
+                    navigateTo(MobileScreen.IMPORT)
+                },
+                onDeleteImport = { importId ->
+                    viewModel.processIntent(ViewIntent.DeleteSavedImport(importId))
+                }
+            )
+        }
+    }
+}
+
+/**
+ * Inline header combining MTG PIRATE branding, stepper, and theme toggle.
+ * Designed for compact mobile layout with all elements in one row.
+ */
+@Composable
+fun MobileInlineHeader(
+    currentStep: Int,
+    totalSteps: Int = 4,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // MTG PIRATE branding on the left
+        Text(
+            text = "MTG PIRATE",
+            style = MaterialTheme.typography.subtitle2,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colors.primary,
+            fontSize = 12.sp,
+            modifier = Modifier.padding(end = 8.dp)
+        )
+
+        // Compact stepper in the center
+        CompactStepper(
+            currentStep = currentStep,
+            totalSteps = totalSteps,
+            modifier = Modifier.weight(1f)
+        )
+
+        // Smaller inline theme toggle on the right
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
+                .background(MaterialTheme.colors.primary, shape = PixelShape(cornerSize = 6.dp))
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() },
+                    onClick = onToggleTheme
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = if (isDarkTheme) "☀" else "☾",
+                fontSize = 16.sp,
+                color = MaterialTheme.colors.onPrimary
+            )
+        }
+    }
+}

@@ -2,28 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>CyclomaticComplexMethod:MobileResultsScreen.kt:@Composable fun MobileResultsScreen</ID>
     <ID>FunctionNaming:Main.kt:fun MainViewController</ID>
-    <ID>LongMethod:IosSavedImportsDialog.kt:@Composable actual fun SavedImportsDialog</ID>
-    <ID>LongMethod:IosSavedImportsDialog.kt:@Composable fun MobileSavedImportCard</ID>
-    <ID>LongMethod:IosScreens.kt:@Composable fun IosImportScreen</ID>
-    <ID>LongMethod:IosScreens.kt:@Composable fun IosPreferencesScreen</ID>
-    <ID>LongMethod:IosScreens.kt:@Composable fun IosResolveScreen</ID>
-    <ID>LongMethod:IosScreens.kt:@Composable fun IosShoppingPlanScreen</ID>
-    <ID>LongMethod:IosScreens.kt:@Composable private fun MobileSellerActionButtons</ID>
-    <ID>LongMethod:IosScreens.kt:@Composable private fun MobileSellerOrderCard</ID>
-    <ID>LongMethod:Main.kt:@Composable fun IosNavigationHost</ID>
-    <ID>LongMethod:MobileResultsScreen.kt:@Composable fun MobileResultsScreen</ID>
-    <ID>LongMethod:ModernIosReorderableListHybrid.kt:@Composable fun &lt;T&gt; ModernIosReorderableListWithPixelStyle</ID>
-    <ID>LongMethod:ModernIosReorderableListHybrid.kt:@Composable fun HybridVariantPriorityItem</ID>
-    <ID>LongMethod:ModernIosReorderableListHybrid.kt:@Composable private fun &lt;T&gt; HybridReorderableItem</ID>
-    <ID>MagicNumber:IosSavedImportsDialog.kt:200</ID>
-    <ID>MagicNumber:IosSavedImportsDialog.kt:3</ID>
-    <ID>MagicNumber:IosScreens.kt:100</ID>
-    <ID>MagicNumber:MobileResultsScreen.kt:3</ID>
-    <ID>MagicNumber:ModernIosReorderableListHybrid.kt:1000</ID>
-    <ID>MagicNumber:ModernIosReorderableListHybrid.kt:10f</ID>
-    <ID>MagicNumber:ModernIosReorderableListHybrid.kt:3</ID>
     <ID>MagicNumber:PlatformUtils.kt:1000</ID>
     <ID>MatchingDeclarationName:ModernIosReorderableListHybrid.kt:HybridDragState&lt;T&gt;</ID>
     <ID>MaxLineLength:IosScreens.kt:.</ID>
@@ -38,24 +17,8 @@
     <ID>MaxLineLength:MobileResultsScreen.kt:proxyFiltered.filter { it.selectedVariant == null || it.selectedVariant?.variantType == variantTypeFilter }</ID>
     <ID>SwallowedException:IosHapticFeedback.kt:IosHapticFeedback$e: Exception</ID>
     <ID>SwallowedException:IosMviPlatformServices.kt:IosMviPlatformServices$e: Exception</ID>
-    <ID>SwallowedException:IosSavedImportsDialog.kt:e: Exception</ID>
     <ID>TooGenericExceptionCaught:IosHapticFeedback.kt:IosHapticFeedback$e: Exception</ID>
     <ID>TooGenericExceptionCaught:IosMviPlatformServices.kt:IosMviPlatformServices$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:IosSavedImportsDialog.kt:e: Exception</ID>
-    <ID>UnusedParameter:MobileResultsScreen.kt:matchedCount: Int = 0</ID>
-    <ID>UnusedParameter:ModernIosReorderableListHybrid.kt:totalItems: Int</ID>
-    <ID>WildcardImport:IosCompactStepper.kt:import androidx.compose.foundation.layout.*</ID>
-    <ID>WildcardImport:IosCompactStepper.kt:import ui.*</ID>
     <ID>WildcardImport:IosMviPlatformServices.kt:import io.ktor.client.plugins.logging.*</ID>
-    <ID>WildcardImport:IosSavedImportsDialog.kt:import androidx.compose.foundation.layout.*</ID>
-    <ID>WildcardImport:IosSavedImportsDialog.kt:import androidx.compose.material.*</ID>
-    <ID>WildcardImport:IosSavedImportsDialog.kt:import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:Main.kt:import androidx.compose.foundation.layout.*</ID>
-    <ID>WildcardImport:Main.kt:import androidx.compose.material.*</ID>
-    <ID>WildcardImport:Main.kt:import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:Main.kt:import ui.*</ID>
-    <ID>WildcardImport:ModernIosReorderableListHybrid.kt:import androidx.compose.animation.core.*</ID>
-    <ID>WildcardImport:ModernIosReorderableListHybrid.kt:import androidx.compose.foundation.layout.*</ID>
-    <ID>WildcardImport:ModernIosReorderableListHybrid.kt:import androidx.compose.runtime.*</ID>
   </CurrentIssues>
 </SmellBaseline>

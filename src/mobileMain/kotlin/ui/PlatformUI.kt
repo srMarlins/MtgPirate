@@ -4,7 +4,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * iOS platform-specific UI constants optimized for mobile portrait screens.
+ * Mobile platform-specific UI constants optimized for portrait screens.
+ * Shared by both iOS and Android.
  */
 actual object PlatformUI {
     actual val screenPadding: Dp = 12.dp
@@ -14,4 +15,3 @@ actual object PlatformUI {
     actual val headerSize: String = "h5"
     actual val showBlinkingCursor: Boolean = false // Save screen space on mobile
 }
-
