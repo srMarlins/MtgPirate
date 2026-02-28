@@ -64,6 +64,7 @@ val PixelOrange = Color(0xFFFF9800)
 val PixelGrey = Color(0xFF9E9E9E)
 val PixelBlue = Color(0xFF2196F3)
 val PixelYellow = Color(0xFFFFEB3B)
+val PixelGold = Color(0xFFFBBF24)
 
 // Seller Colors
 val SellerUsea = Color(0xFFB794F6)        // Purple — proxy seller

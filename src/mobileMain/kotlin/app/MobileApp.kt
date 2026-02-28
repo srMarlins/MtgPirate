@@ -292,7 +292,7 @@ fun MobileNavigationHost(
         }
 
         // Upgrade prompt dialog
-        if (state.showUpgradePrompt != null) {
+        state.showUpgradePrompt?.let { feature ->
             Box(
                 modifier = Modifier.fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.5f))
@@ -300,7 +300,7 @@ fun MobileNavigationHost(
                 contentAlignment = Alignment.Center,
             ) {
                 UpgradeDialog(
-                    feature = state.showUpgradePrompt!!,
+                    feature = feature,
                     onPurchase = { viewModel.processIntent(ViewIntent.PurchasePro) },
                     onRestore = { viewModel.processIntent(ViewIntent.RestorePurchases) },
                     onDismiss = { viewModel.processIntent(ViewIntent.DismissUpgradePrompt) },

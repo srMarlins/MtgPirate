@@ -828,10 +828,19 @@ class MviViewModel(
     private suspend fun purchasePro() {
         val manager = purchaseManager ?: return
         val result = manager.purchase()
-        if (result == PurchaseResult.SUCCESS) {
-            _localState.update { it.copy(proStatus = ProStatus.Pro, showUpgradePrompt = null) }
-            database.updateIsPro(true)
-            log("Pro unlocked!", "INFO")
+        when (result) {
+            PurchaseResult.SUCCESS -> {
+                _localState.update { it.copy(proStatus = ProStatus.Pro, showUpgradePrompt = null) }
+                database.updateIsPro(true)
+                log("Pro unlocked!", "INFO")
+            }
+            PurchaseResult.ERROR -> {
+                log("Purchase failed", "ERROR")
+                _viewEffects.emit(ViewEffect.ShowError("Purchase failed. Please try again."))
+            }
+            PurchaseResult.CANCELLED -> {
+                // User cancelled — no action needed
+            }
         }
     }
 
@@ -1026,7 +1035,6 @@ sealed class ViewIntent {
 sealed class ViewEffect {
     data class ShowMessage(val message: String) : ViewEffect()
     data class ShowError(val message: String) : ViewEffect()
-    data class ShowUpgradePrompt(val feature: ProFeature) : ViewEffect()
 }
 
 /**

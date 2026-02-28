@@ -172,7 +172,6 @@
     <ID>MagicNumber:PreferencesWizardScreen.kt:600</ID>
     <ID>MagicNumber:PreferencesWizardScreen.kt:64f</ID>
     <ID>MagicNumber:Price.kt:100.0</ID>
-    <ID>MagicNumber:ProComponents.kt:0xFFFBBF24</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$100</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$100_00</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$10_00</ID>
@@ -400,7 +399,6 @@
     <ID>TooManyFunctions:MviViewModel.kt:MviViewModel</ID>
     <ID>TooManyFunctions:PixelComponents.kt:ui.PixelComponents.kt</ID>
     <ID>UnusedParameter:PixelComponents.kt:index: Int</ID>
-    <ID>UnusedParameter:ProComponents.kt:feature: ProFeature</ID>
     <ID>UnusedParameter:ResultsScreen.kt:matchedCount: Int = 0</ID>
     <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.material.*</ID>

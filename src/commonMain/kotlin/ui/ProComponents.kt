@@ -15,16 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import model.ProFeature
 import model.ProStatus
-
-/** Gold color for Pro branding elements. */
-val PixelGold = Color(0xFFFBBF24)
 
 /** Small lock icon badge for Pro-gated controls. */
 @Composable
@@ -153,7 +149,6 @@ fun UpgradeDialog(
 @Composable
 fun ProGate(
     proStatus: ProStatus,
-    feature: ProFeature,
     onUpgradeClick: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
