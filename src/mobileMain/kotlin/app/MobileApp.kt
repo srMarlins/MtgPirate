@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import database.CatalogStore
@@ -35,10 +36,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import model.ProFeature
+import purchase.PurchaseManager
 import state.MviPlatformServices
 import state.MviViewModel
 import state.ViewIntent
 import ui.AppTheme
+import ui.UpgradeDialog
 import ui.PixelShape
 import ui.SavedImportsDialog
 import ui.ScanlineEffect
@@ -61,7 +65,11 @@ enum class MobileScreen {
  * to ensure a single shared database instance.
  */
 @Composable
-fun MobileApp(database: Database, platformServices: MviPlatformServices) {
+fun MobileApp(
+    database: Database,
+    platformServices: MviPlatformServices,
+    purchaseManager: PurchaseManager? = null,
+) {
     // Create app-level coroutine scope
     val scope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
 
@@ -76,7 +84,8 @@ fun MobileApp(database: Database, platformServices: MviPlatformServices) {
             database = database,
             catalogStore = catalogStore,
             importsStore = importsStore,
-            platformServices = platformServices
+            platformServices = platformServices,
+            purchaseManager = purchaseManager,
         )
     }
 
@@ -266,6 +275,23 @@ fun MobileNavigationHost(
                     viewModel.processIntent(ViewIntent.DeleteSavedImport(importId))
                 }
             )
+        }
+
+        // Upgrade prompt dialog
+        if (state.showUpgradePrompt != null) {
+            Box(
+                modifier = Modifier.fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable { viewModel.processIntent(ViewIntent.DismissUpgradePrompt) },
+                contentAlignment = Alignment.Center,
+            ) {
+                UpgradeDialog(
+                    feature = state.showUpgradePrompt!!,
+                    onPurchase = { viewModel.processIntent(ViewIntent.PurchasePro) },
+                    onRestore = { viewModel.processIntent(ViewIntent.RestorePurchases) },
+                    onDismiss = { viewModel.processIntent(ViewIntent.DismissUpgradePrompt) },
+                )
+            }
         }
     }
 }

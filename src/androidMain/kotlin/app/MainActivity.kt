@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import database.Database
 import database.DatabaseDriverFactory
 import platform.AndroidMviPlatformServices
+import purchase.AndroidPurchaseManager
 
 class MainActivity : ComponentActivity() {
     private var platformServices: AndroidMviPlatformServices? = null
@@ -17,9 +18,10 @@ class MainActivity : ComponentActivity() {
         val database = Database(DatabaseDriverFactory())
         val services = AndroidMviPlatformServices(database, this)
         platformServices = services
+        val purchaseManager = AndroidPurchaseManager()
 
         setContent {
-            MobileApp(database, services)
+            MobileApp(database, services, purchaseManager)
         }
     }
 

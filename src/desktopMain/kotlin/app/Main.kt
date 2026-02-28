@@ -39,6 +39,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import platform.DesktopMviPlatformServices
+import purchase.DesktopPurchaseManager
 import state.MviViewModel
 import state.ViewIntent
 import state.ViewState
@@ -279,7 +280,8 @@ fun main() = application {
     val catalogStore = remember { CatalogStore(database) }
     val importsStore = remember { ImportsStore(database) }
     val platformServices = remember { DesktopMviPlatformServices(database) }
-    
+    val purchaseManager = remember { DesktopPurchaseManager() }
+
     // Create MVI ViewModel
     val viewModel = remember {
         MviViewModel(
@@ -287,7 +289,8 @@ fun main() = application {
             database = database,
             catalogStore = catalogStore,
             importsStore = importsStore,
-            platformServices = platformServices
+            platformServices = platformServices,
+            purchaseManager = purchaseManager,
         )
     }
     
@@ -857,6 +860,23 @@ fun main() = application {
                                         viewModel.processIntent(ViewIntent.DeleteSavedImport(importId))
                                     }
                                 )
+                            }
+
+                            // Upgrade prompt dialog
+                            if (state.showUpgradePrompt != null) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize()
+                                        .background(Color.Black.copy(alpha = 0.5f))
+                                        .clickable { viewModel.processIntent(ViewIntent.DismissUpgradePrompt) },
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    UpgradeDialog(
+                                        feature = state.showUpgradePrompt!!,
+                                        onPurchase = { viewModel.processIntent(ViewIntent.PurchasePro) },
+                                        onRestore = { viewModel.processIntent(ViewIntent.RestorePurchases) },
+                                        onDismiss = { viewModel.processIntent(ViewIntent.DismissUpgradePrompt) },
+                                    )
+                                }
                             }
                         } // Close Box
                     } // Close Column
