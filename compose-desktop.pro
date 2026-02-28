@@ -21,11 +21,11 @@
 -keepclassmembers class * implements kotlinx.serialization.KSerializer {
     *;
 }
--keep,includedescriptorclasses class org.srmarlins.**$$serializer { *; }
--keepclassmembers class org.srmarlins.** {
+-keep,includedescriptorclasses class com.deckloot.**$$serializer { *; }
+-keepclassmembers class com.deckloot.** {
     *** Companion;
 }
--keepclasseswithmembers class org.srmarlins.** {
+-keepclasseswithmembers class com.deckloot.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 

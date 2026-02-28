@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
-group = "org.srmarlins"
+group = "com.deckloot"
 
 // Retrieve the app version from:
 // 1. Gradle property 'appVersion' (passed via -PappVersion=...)
@@ -135,11 +135,11 @@ kotlin {
 }
 
 android {
-    namespace = "org.srmarlins.mtgpirate"
+    namespace = "com.deckloot.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "org.srmarlins.mtgpirate"
+        applicationId = "com.deckloot.app"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -161,7 +161,7 @@ compose.desktop {
                 TargetFormat.Exe,
                 TargetFormat.Deb
             )
-            packageName = "MtgPirate"
+            packageName = "DeckLoot"
             packageVersion = appVersionCore
 
             // Include all required runtime modules (from suggestRuntimeModules task)
@@ -187,8 +187,8 @@ compose.desktop {
 
 sqldelight {
     databases {
-        create("MtgPirateDatabase") {
-            packageName.set("org.srmarlins.mtgpirate.db")
+        create("DeckLootDatabase") {
+            packageName.set("com.deckloot.db")
             schemaOutputDirectory.set(file("src/commonMain/sqldelight/migrations"))
         }
     }
