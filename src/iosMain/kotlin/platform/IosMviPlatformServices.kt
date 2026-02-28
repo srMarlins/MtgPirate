@@ -5,7 +5,8 @@ import database.Database
 import export.CsvGenerator
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.darwin.Darwin
-import io.ktor.client.plugins.logging.*
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -98,14 +99,24 @@ class IosMviPlatformServices(
                 val foundCsv = CsvGenerator.generateFoundCardsCsv(matches)
                 val unfoundTxt = CsvGenerator.generateUnfoundCardsTxt(matches)
 
-                // Copy found cards to clipboard
-                if (foundCsv.isNotEmpty()) {
-                    copyToClipboard(foundCsv)
+                // Combine found and unfound into a single clipboard payload
+                val clipboardContent = buildString {
+                    if (foundCsv.isNotEmpty()) {
+                        append(foundCsv)
+                    }
+                    if (unfoundTxt.isNotEmpty()) {
+                        if (isNotEmpty()) append("\n\n--- UNFOUND CARDS ---\n\n")
+                        append(unfoundTxt)
+                    }
+                }
+
+                if (clipboardContent.isNotEmpty()) {
+                    copyToClipboard(clipboardContent)
                 }
 
                 onComplete(
                     if (foundCsv.isNotEmpty()) "Found cards CSV copied to clipboard" else null,
-                    if (unfoundTxt.isNotEmpty()) "Unfound cards available" else null
+                    if (unfoundTxt.isNotEmpty()) "Unfound cards included in clipboard" else null
                 )
             } catch (e: Exception) {
                 onComplete(null, "Export failed: ${e.message}")
@@ -123,7 +134,7 @@ class IosMviPlatformServices(
         withContext(Dispatchers.Main) {
             try {
                 val nsUrl = platform.Foundation.NSURL(string = url) ?: return@withContext
-                platform.UIKit.UIApplication.sharedApplication.openURL(nsUrl)
+                platform.UIKit.UIApplication.sharedApplication.openURL(nsUrl, emptyMap<Any?, Any>(), null)
             } catch (e: Exception) {
                 // Log handled by caller
             }

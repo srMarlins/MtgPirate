@@ -45,13 +45,11 @@ import model.ShoppingPlan
 import platform.HapticFeedback
 import ui.AnimatedLoadingDots
 import ui.BlinkingCursor
-import ui.CatalogScreen
 import ui.CompactPixelImagePreview
 import ui.formatForExport
 import ui.HybridVariantPriorityItem
 import ui.InlineLoadingCard
 import ui.LazyListScrollIndicators
-import ui.MatchesScreen
 import ui.MobilePixelImageModal
 import ui.MobileResultsScreen
 import ui.MobileReorderableListWithPixelStyle
@@ -1309,38 +1307,3 @@ private fun MobileSellerActionButtons(
     }
 }
 
-/**
- * Mobile Catalog Screen - View all catalog entries.
- */
-@Composable
-fun MobileCatalogScreen(
-    catalog: model.Catalog,
-    onBack: () -> Unit,
-    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
-) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        CatalogScreen(
-            catalog = catalog,
-            onClose = onBack,
-            onEnrichVariant = onEnrichVariant
-        )
-    }
-}
-
-/**
- * Mobile Matches Screen - View all matches.
- */
-@Composable
-fun MobileMatchesScreen(
-    matches: List<model.DeckEntryMatch>,
-    onBack: () -> Unit,
-    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
-) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        MatchesScreen(
-            matches = matches,
-            onClose = onBack,
-            onEnrichVariant = onEnrichVariant
-        )
-    }
-}

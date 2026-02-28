@@ -8,6 +8,6 @@
     <ID>SwallowedException:IosMviPlatformServices.kt:IosMviPlatformServices$e: Exception</ID>
     <ID>TooGenericExceptionCaught:IosHapticFeedback.kt:IosHapticFeedback$e: Exception</ID>
     <ID>TooGenericExceptionCaught:IosMviPlatformServices.kt:IosMviPlatformServices$e: Exception</ID>
-    <ID>WildcardImport:IosMviPlatformServices.kt:import io.ktor.client.plugins.logging.*</ID>
+
   </CurrentIssues>
 </SmellBaseline>

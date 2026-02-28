@@ -53,8 +53,6 @@ enum class MobileScreen {
     RESULTS,
     RESOLVE,
     EXPORT,
-    CATALOG,
-    MATCHES
 }
 
 /**
@@ -249,30 +247,6 @@ fun MobileNavigationHost(
                     isLoading = state.isMatching,
                     isDarkTheme = state.isDarkTheme,
                     onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
-                )
-
-                MobileScreen.CATALOG -> {
-                    val catalog = state.catalog
-                    if (catalog != null) {
-                        MobileCatalogScreen(
-                            catalog = catalog,
-                            onBack = { navigateTo(MobileScreen.IMPORT) },
-                            onEnrichVariant = { variant ->
-                                viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
-                            }
-                        )
-                    } else {
-                        // If catalog is missing, show empty box to prevent flash
-                        Box(modifier = Modifier.fillMaxSize())
-                    }
-                }
-
-                MobileScreen.MATCHES -> MobileMatchesScreen(
-                    matches = state.matches,
-                    onBack = { navigateTo(MobileScreen.RESULTS) },
-                    onEnrichVariant = { variant ->
-                        viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
-                    }
                 )
             }
         }
