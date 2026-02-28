@@ -27,6 +27,26 @@ class ManaPoolCatalogSource(
         return variants
     }
 
+    override suspend fun streamCatalog(
+        onBatch: suspend (List<CardVariant>) -> Unit,
+        log: (String) -> Unit,
+    ) {
+        log("Fetching ManaPool catalog (gzip)...")
+
+        // Stream singles from the API with lazy JSON parsing — each batch of
+        // ManaPoolSingle objects is parsed individually from the JSON body string,
+        // avoiding the ~511MB peak from deserializing all 95K objects at once.
+        var totalVariants = 0
+        api.streamSingles(batchSize = 500) { singlesBatch ->
+            val variants = singlesBatch.flatMap { it.toCardVariants() }
+            totalVariants += variants.size
+            if (variants.isNotEmpty()) {
+                onBatch(variants)
+            }
+        }
+        log("ManaPool: $totalVariants variants total")
+    }
+
     override suspend fun search(cardName: String): List<CardVariant> {
         // No public search endpoint — catalog-only
         return emptyList()

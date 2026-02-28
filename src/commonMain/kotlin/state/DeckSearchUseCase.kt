@@ -110,36 +110,45 @@ class DeckSearchUseCase(
                             )
                         }
 
-                        if (isSellerCacheFresh(source.seller)) {
-                            // Cache is fresh — skip API call; serialize DB read + status update
+                        // Check if cache is fresh AND has actual data.
+                        // A seller with 0 cached variants should always re-fetch
+                        // (could be stale from a failed previous session).
+                        val cachedVariantCount = if (isSellerCacheFresh(source.seller)) {
+                            getAllVariants().count { it.seller == source.seller }
+                        } else 0
+
+                        if (isSellerCacheFresh(source.seller) && cachedVariantCount > 0) {
+                            // Cache is fresh with data — skip API call; serialize status update
                             mutex.withLock {
-                                val existingVariants = getAllVariants()
-                                    .filter { it.seller == source.seller }
                                 sellerStatuses[source.seller] = SellerSearchStatus(
                                     seller = source.seller,
                                     state = SearchState.DONE,
-                                    cardsFound = existingVariants.count { it.nameNormalized in deckNormalizedNames },
+                                    cardsFound = cachedVariantCount,
                                 )
                             }
                         } else {
-                            // Fetch from API (parallel — outside lock)
-                            var allVariants = source.fetchCatalog()
+                            // Stream from API with per-batch filtering to avoid OOM
+                            val matchingVariants = mutableListOf<CardVariant>()
+                            source.streamCatalog(
+                                onBatch = { batch ->
+                                    val filtered = batch.filter { it.nameNormalized in deckNormalizedNames }
+                                    matchingVariants.addAll(filtered)
+                                },
+                            )
 
-                            // If fetchCatalog returned empty and source supports bulk search,
+                            // If streaming returned nothing and source supports bulk search,
                             // fall back to searchBulk with deck card names.
                             // Include canonical names for alternate-name cards so the API
                             // can find e.g. "Arcane Signet" when the deck has "Earth's Mightiest Emblem".
-                            if (allVariants.isEmpty() && source.supportsBulkSearch) {
+                            if (matchingVariants.isEmpty() && source.supportsBulkSearch) {
                                 val cardNames = includedEntries.flatMap { entry ->
                                     val canonical = Matcher.resolveAlternateName(entry.cardName)
                                     if (canonical != null) listOf(entry.cardName, canonical) else listOf(entry.cardName)
                                 }
-                                allVariants = source.searchBulk(cardNames)
-                            }
-
-                            // Filter to only cards matching deck entries
-                            val matchingVariants = allVariants.filter { variant ->
-                                variant.nameNormalized in deckNormalizedNames
+                                val bulkResults = source.searchBulk(cardNames)
+                                matchingVariants.addAll(
+                                    bulkResults.filter { it.nameNormalized in deckNormalizedNames }
+                                )
                             }
 
                             // Serialize DB writes + status update to avoid concurrent SQLite access

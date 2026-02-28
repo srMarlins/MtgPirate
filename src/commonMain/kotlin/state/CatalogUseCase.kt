@@ -59,6 +59,47 @@ class CatalogSourceRegistry(
         }
         results.awaitAll().filterNotNull().toMap()
     }
+
+    /**
+     * Stream catalogs from all sources in parallel directly into the database.
+     * Uses [CatalogSource.streamCatalog] so memory-intensive sources (like ManaPool)
+     * never hold the full catalog in memory.
+     *
+     * @param storeBatch callback to persist a batch of variants for a seller
+     * @param log callback for progress/error messages
+     * @return list of [Seller]s that successfully loaded
+     */
+    suspend fun streamAll(
+        storeBatch: suspend (Seller, List<CardVariant>) -> Unit,
+        log: (String, String) -> Unit,
+    ): List<Seller> = coroutineScope {
+        val results = sources.map { source ->
+            async {
+                try {
+                    log("Streaming catalog from ${source.seller.displayName}...", "INFO")
+                    var count = 0
+                    source.streamCatalog(
+                        onBatch = { batch ->
+                            count += batch.size
+                            storeBatch(source.seller, batch)
+                        },
+                        log = { msg -> log(msg, "INFO") },
+                    )
+                    if (count > 0) {
+                        log("${source.seller.displayName}: streamed $count variants", "INFO")
+                        source.seller
+                    } else {
+                        log("${source.seller.displayName}: returned empty catalog, skipping", "WARNING")
+                        null
+                    }
+                } catch (e: Exception) {
+                    log("${source.seller.displayName}: failed to stream catalog -- ${e.message}", "ERROR")
+                    null
+                }
+            }
+        }
+        results.awaitAll().filterNotNull()
+    }
 }
 
 /**
@@ -153,7 +194,18 @@ class CatalogUseCase(
                 }
 
                 val registryDeferred = async {
-                    sourceRegistry.loadAll(log)
+                    // Clear seller data upfront, then stream batches directly into DB
+                    val sellersToStream = sourceRegistry.allSources.map { it.seller }
+                    for (seller in sellersToStream) {
+                        catalogStore.replaceCatalogForSeller(seller, emptyList())
+                    }
+                    sourceRegistry.streamAll(
+                        storeBatch = { seller, batch ->
+                            val tagged = batch.map { it.copy(seller = seller) }
+                            catalogStore.insertVariantBatch(tagged)
+                        },
+                        log = log,
+                    )
                 }
 
                 // Await USEA and store
@@ -165,16 +217,11 @@ class CatalogUseCase(
                     loadedSellers.add(seller)
                 }
 
-                // Await registry sources and store
-                val registryResults = registryDeferred.await()
-                for ((seller, variants) in registryResults) {
-                    try {
-                        catalogStore.replaceCatalogForSeller(seller, variants)
-                        log("${seller.displayName}: stored ${variants.size} variants in database", "INFO")
-                        loadedSellers.add(seller)
-                    } catch (e: Exception) {
-                        log("${seller.displayName}: failed to store catalog -- ${e.message}", "ERROR")
-                    }
+                // Await registry streaming results
+                val streamedSellers = registryDeferred.await()
+                for (seller in streamedSellers) {
+                    log("${seller.displayName}: stored variants in database via streaming", "INFO")
+                    loadedSellers.add(seller)
                 }
             }
 

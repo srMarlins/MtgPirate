@@ -7,6 +7,7 @@
     <ID>CyclomaticComplexMethod:CatalogParser.kt:CatalogParser$fun parse: Catalog</ID>
     <ID>CyclomaticComplexMethod:DecklistParser.kt:DecklistParser$fun parse: List&lt;DeckEntry&gt;</ID>
     <ID>CyclomaticComplexMethod:ExportScreen.kt:@Composable fun ExportScreen</ID>
+    <ID>CyclomaticComplexMethod:ManaPoolApi.kt:ManaPoolApi$internal suspend fun parseDataArray</ID>
     <ID>CyclomaticComplexMethod:Matcher.kt:Matcher$private fun matchEntry: DeckEntryMatch</ID>
     <ID>CyclomaticComplexMethod:MatchesScreen.kt:@Composable fun MatchesScreen</ID>
     <ID>CyclomaticComplexMethod:MviViewModel.kt:MviViewModel$fun processIntent</ID>
@@ -100,7 +101,9 @@
     <ID>MagicNumber:LogEntryQueries.kt:LogEntryQueries$407_997_744</ID>
     <ID>MagicNumber:Logging.kt:Logging$300</ID>
     <ID>MagicNumber:ManaPoolApi.kt:ManaPoolApi$120_000</ID>
+    <ID>MagicNumber:ManaPoolApi.kt:ManaPoolApi$300</ID>
     <ID>MagicNumber:ManaPoolApi.kt:ManaPoolApi$30_000</ID>
+    <ID>MagicNumber:ManaPoolApi.kt:ManaPoolApi$6</ID>
     <ID>MagicNumber:MatchSorting.kt:MatchSorting$15</ID>
     <ID>MagicNumber:MatchSorting.kt:MatchSorting$3</ID>
     <ID>MagicNumber:MatchesScreen.kt:0.10f</ID>
@@ -217,6 +220,7 @@
     <ID>MagicNumber:SellerDiscountConfig.kt:60_00</ID>
     <ID>MagicNumber:ShoppingOptimizer.kt:ShoppingOptimizer$100</ID>
     <ID>MagicNumber:ShoppingPlanScreen.kt:100</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:2000</ID>
     <ID>MagicNumber:StepperComponent.kt:1200</ID>
     <ID>MagicNumber:StepperComponent.kt:12f</ID>
     <ID>MagicNumber:StepperComponent.kt:4f</ID>
@@ -366,6 +370,7 @@
     <ID>MaxLineLength:SellerCacheQueries.kt:SellerCacheQueries.GetCacheQuery$override</ID>
     <ID>MaxLineLength:ShoppingPlanScreen.kt:color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface</ID>
     <ID>MaxLineLength:ShoppingPlanScreen.kt:val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&amp;body=${encodeUrlParameter(exportText)}"</ID>
+    <ID>NestedBlockDepth:ManaPoolApi.kt:ManaPoolApi$internal suspend fun parseDataArray</ID>
     <ID>PackageNaming:MtgPirateDatabaseImpl.kt:package org.srmarlins.mtgpirate.db.MtgPirate</ID>
     <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun extractValue: String?</ID>
     <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun parse: Catalog</ID>
@@ -384,7 +389,10 @@
     <ID>TooGenericExceptionCaught:ScryfallApi.kt:ScryfallApi$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScryfallImageEnricher.kt:ScryfallImageEnricher$e: Exception</ID>
     <ID>TooGenericExceptionThrown:ManaPoolApi.kt:ManaPoolApi$throw Exception("ManaPool API HTTP ${response.status.value}: ${response.status.description}")</ID>
+    <ID>TooGenericExceptionThrown:ManaPoolApi.kt:ManaPoolApi$throw Exception("ManaPool JSON missing \"data\" key")</ID>
+    <ID>TooGenericExceptionThrown:ManaPoolApi.kt:ManaPoolApi$throw Exception("ManaPool JSON missing data array")</ID>
     <ID>TooGenericExceptionThrown:ScryfallApi.kt:ScryfallApi$throw Exception("HTTP ${response.status.value}: ${response.status.description}")</ID>
+    <ID>TooManyFunctions:Database.kt:Database</ID>
     <ID>TooManyFunctions:MviViewModel.kt:MviViewModel</ID>
     <ID>TooManyFunctions:PixelComponents.kt:ui.PixelComponents.kt</ID>
     <ID>UnusedParameter:PixelComponents.kt:index: Int</ID>

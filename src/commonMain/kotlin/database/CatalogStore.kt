@@ -86,6 +86,30 @@ class CatalogStore(private val database: Database) {
     }
 
     /**
+     * Insert a batch of variants in a single transaction.
+     * Used by streaming catalog loads to persist incrementally.
+     */
+    fun insertVariantBatch(variants: List<CardVariant>) {
+        database.insertVariantBatch(variants)
+    }
+
+    /**
+     * Replace catalog data for a seller using a streaming function.
+     * Clears existing variants first, then calls [streamFn] which should invoke
+     * the batch callback to insert variants incrementally.
+     */
+    suspend fun replaceSellerStreaming(
+        seller: Seller,
+        streamFn: suspend (onBatch: suspend (List<CardVariant>) -> Unit) -> Unit,
+    ) {
+        database.clearVariantsBySeller(seller.name)
+        streamFn { batch ->
+            val tagged = batch.map { it.copy(seller = seller) }
+            database.insertVariantBatch(tagged)
+        }
+    }
+
+    /**
      * Check whether the cached data for a seller is still fresh based on its TTL.
      * Returns false if no cache entry exists for the seller.
      */
