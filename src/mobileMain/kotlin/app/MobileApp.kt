@@ -37,11 +37,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import model.ProFeature
+import model.ProStatus
 import purchase.PurchaseManager
 import state.MviPlatformServices
 import state.MviViewModel
 import state.ViewIntent
 import ui.AppTheme
+import ui.ProBadge
 import ui.UpgradeDialog
 import ui.PixelShape
 import ui.SavedImportsDialog
@@ -157,11 +159,16 @@ fun MobileNavigationHost(
                     navigateTo(MobileScreen.PREFERENCES)
                 },
                 onShowSavedImports = {
-                    viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(true))
+                    if (state.proStatus.isPro) {
+                        viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(true))
+                    } else {
+                        viewModel.processIntent(ViewIntent.ShowUpgradePrompt(ProFeature.IMPORT_HISTORY))
+                    }
                 },
                 isLoadingCatalog = state.loadingCatalog,
                 isDarkTheme = state.isDarkTheme,
-                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) }
+                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
+                proStatus = state.proStatus,
             )
 
             MobileScreen.PREFERENCES -> MobilePreferencesScreen(
@@ -215,6 +222,10 @@ fun MobileNavigationHost(
                 onOverrideSeller = { matchIndex, seller ->
                     viewModel.processIntent(ViewIntent.OverrideCardSeller(matchIndex, seller))
                 },
+                proStatus = state.proStatus,
+                onShowUpgradePrompt = { feature ->
+                    viewModel.processIntent(ViewIntent.ShowUpgradePrompt(feature))
+                },
             )
 
                 MobileScreen.RESOLVE -> {
@@ -258,6 +269,7 @@ fun MobileNavigationHost(
                     isLoading = state.isMatching,
                     isDarkTheme = state.isDarkTheme,
                     onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
+                    proStatus = state.proStatus,
                 )
             }
         }
@@ -308,6 +320,7 @@ fun MobileInlineHeader(
     totalSteps: Int = 4,
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
+    proStatus: ProStatus = ProStatus.Free,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -334,24 +347,32 @@ fun MobileInlineHeader(
             modifier = Modifier.weight(1f)
         )
 
-        // Smaller inline theme toggle on the right
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
-                .background(MaterialTheme.colors.primary, shape = PixelShape(cornerSize = 6.dp))
-                .clickable(
-                    indication = null,
-                    interactionSource = remember { MutableInteractionSource() },
-                    onClick = onToggleTheme
-                ),
-            contentAlignment = Alignment.Center
+        // Smaller inline theme toggle on the right with Pro badge
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)
         ) {
-            Text(
-                text = if (isDarkTheme) "☀" else "☾",
-                fontSize = 16.sp,
-                color = MaterialTheme.colors.onPrimary
-            )
+            if (!proStatus.isPro) {
+                ProBadge()
+            }
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
+                    .background(MaterialTheme.colors.primary, shape = PixelShape(cornerSize = 6.dp))
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = onToggleTheme
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (isDarkTheme) "☀" else "☾",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colors.onPrimary
+                )
+            }
         }
     }
 }

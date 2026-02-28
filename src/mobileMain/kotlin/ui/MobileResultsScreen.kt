@@ -39,6 +39,8 @@ import model.CardVariant
 import model.DeckEntryMatch
 import model.MatchStatus
 import model.MultiMatch
+import model.ProFeature
+import model.ProStatus
 import model.Seller
 import model.VariantType
 import state.SearchProgress
@@ -64,6 +66,8 @@ fun MobileResultsScreen(
     multiMatches: List<MultiMatch> = emptyList(),
     availableSellers: List<Seller> = emptyList(),
     onOverrideSeller: (Int, Seller) -> Unit = { _, _ -> },
+    proStatus: ProStatus = ProStatus.Free,
+    onShowUpgradePrompt: (ProFeature) -> Unit = {},
 ) {
     val totalMatched = matches.filter { it.selectedVariant != null }
     val missed = unmatchedCount
@@ -656,20 +660,32 @@ fun MobileResultsScreen(
                                                             style = MaterialTheme.typography.body2
                                                         )
                                                     }
-                                                    PixelButton(
-                                                        text = "Use",
-                                                        onClick = {
-                                                            val mmIndex = multiMatches.indexOfFirst {
-                                                                it.deckEntry.id == m.deckEntry.id
-                                                            }
-                                                            if (mmIndex >= 0) {
-                                                                onOverrideSeller(mmIndex, alt.seller)
-                                                            }
-                                                            expandedRows = expandedRows - m.deckEntry.id
-                                                        },
-                                                        variant = PixelButtonVariant.SURFACE,
-                                                        modifier = Modifier.height(28.dp)
-                                                    )
+                                                    Row(
+                                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                    ) {
+                                                        if (!proStatus.isPro) {
+                                                            ProBadge()
+                                                        }
+                                                        PixelButton(
+                                                            text = "Use",
+                                                            onClick = {
+                                                                if (proStatus.isPro) {
+                                                                    val mmIndex = multiMatches.indexOfFirst {
+                                                                        it.deckEntry.id == m.deckEntry.id
+                                                                    }
+                                                                    if (mmIndex >= 0) {
+                                                                        onOverrideSeller(mmIndex, alt.seller)
+                                                                    }
+                                                                    expandedRows = expandedRows - m.deckEntry.id
+                                                                } else {
+                                                                    onShowUpgradePrompt(ProFeature.SELLER_OVERRIDE)
+                                                                }
+                                                            },
+                                                            variant = PixelButtonVariant.SURFACE,
+                                                            modifier = Modifier.height(28.dp)
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }

@@ -89,7 +89,8 @@ fun MobileImportScreen(
     onShowSavedImports: () -> Unit,
     isLoadingCatalog: Boolean = false,
     isDarkTheme: Boolean = false,
-    onToggleTheme: () -> Unit = {}
+    onToggleTheme: () -> Unit = {},
+    proStatus: ProStatus = ProStatus.Free,
 ) {
     // Dismiss keyboard when tapping outside the text field
     val focusManager = LocalFocusManager.current
@@ -114,7 +115,8 @@ fun MobileImportScreen(
             MobileInlineHeader(
                 currentStep = 1,
                 isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme
+                onToggleTheme = onToggleTheme,
+                proStatus = proStatus,
             )
 
             Spacer(Modifier.height(8.dp))
@@ -235,7 +237,8 @@ fun MobilePreferencesScreen(
             MobileInlineHeader(
                 currentStep = 2,
                 isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme
+                onToggleTheme = onToggleTheme,
+                proStatus = proStatus,
             )
 
             Spacer(Modifier.height(8.dp))
@@ -531,6 +534,8 @@ fun MobileResultsScreenWrapper(
     multiMatches: List<MultiMatch> = emptyList(),
     availableSellers: List<Seller> = emptyList(),
     onOverrideSeller: (Int, Seller) -> Unit = { _, _ -> },
+    proStatus: ProStatus = ProStatus.Free,
+    onShowUpgradePrompt: (ProFeature) -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
@@ -540,7 +545,8 @@ fun MobileResultsScreenWrapper(
             MobileInlineHeader(
                 currentStep = 3,
                 isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme
+                onToggleTheme = onToggleTheme,
+                proStatus = proStatus,
             )
 
             // Results screen content - will handle its own padding and loading display
@@ -560,6 +566,8 @@ fun MobileResultsScreenWrapper(
                     multiMatches = multiMatches,
                     availableSellers = availableSellers,
                     onOverrideSeller = onOverrideSeller,
+                    proStatus = proStatus,
+                    onShowUpgradePrompt = onShowUpgradePrompt,
                 )
             }
         }
@@ -809,6 +817,7 @@ fun MobileShoppingPlanScreen(
     isLoading: Boolean = false,
     isDarkTheme: Boolean = false,
     onToggleTheme: () -> Unit = {},
+    proStatus: ProStatus = ProStatus.Free,
 ) {
     // Auto-trigger optimization if plan is null but multiMatches exist
     LaunchedEffect(shoppingPlan, multiMatches) {
@@ -825,7 +834,8 @@ fun MobileShoppingPlanScreen(
             MobileInlineHeader(
                 currentStep = 4,
                 isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme
+                onToggleTheme = onToggleTheme,
+                proStatus = proStatus,
             )
 
             Spacer(Modifier.height(8.dp))
