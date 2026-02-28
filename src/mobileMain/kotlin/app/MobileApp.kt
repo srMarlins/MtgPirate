@@ -177,6 +177,8 @@ fun MobileNavigationHost(
                 proxyFirst = state.preferences.proxyFirst,
                 onEnabledSellersChange = { viewModel.processIntent(ViewIntent.UpdateEnabledSellers(it)) },
                 onProxyFirstChange = { viewModel.processIntent(ViewIntent.UpdateProxyFirst(it)) },
+                proStatus = state.proStatus,
+                onShowUpgradePrompt = { feature -> viewModel.processIntent(ViewIntent.ShowUpgradePrompt(feature)) },
                 onBack = { navigateTo(MobileScreen.IMPORT) },
                 onNext = {
                     viewModel.processIntent(ViewIntent.WizardPreferencesToResults)

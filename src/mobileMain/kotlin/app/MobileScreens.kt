@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import model.MultiMatch
 import state.SearchProgress
 import model.OrderItem
+import model.ProFeature
+import model.ProStatus
 import model.Seller
 import model.SellerOrder
 import model.ShoppingPlan
@@ -53,6 +55,7 @@ import ui.LazyListScrollIndicators
 import ui.MobilePixelImageModal
 import ui.MobileResultsScreen
 import ui.MobileReorderableListWithPixelStyle
+import ui.ProBadge
 import ui.PixelBadge
 import ui.PixelButton
 import ui.PixelButtonVariant
@@ -218,6 +221,8 @@ fun MobilePreferencesScreen(
     proxyFirst: Boolean = true,
     onEnabledSellersChange: (List<String>) -> Unit = {},
     onProxyFirstChange: (Boolean) -> Unit = {},
+    proStatus: ProStatus = ProStatus.Free,
+    onShowUpgradePrompt: (ProFeature) -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
@@ -357,6 +362,7 @@ fun MobilePreferencesScreen(
                 ) {
                     Seller.entries.forEach { seller ->
                         val isEnabled = seller.name in enabledSellers
+                        val isLocked = seller != Seller.USEA && !proStatus.isPro
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -369,15 +375,25 @@ fun MobilePreferencesScreen(
                                 Text(
                                     seller.displayName,
                                     style = MaterialTheme.typography.body2,
+                                    color = if (isLocked) MaterialTheme.colors.onSurface.copy(alpha = 0.4f)
+                                            else MaterialTheme.colors.onSurface,
                                 )
                                 PixelBadge(
                                     text = if (seller.isProxy) "P" else "R",
                                     color = if (seller.isProxy) PixelOrange else PixelGreen
                                 )
+                                if (isLocked) {
+                                    ProBadge(onClick = { onShowUpgradePrompt(ProFeature.MULTI_SELLER) })
+                                }
                             }
                             PixelToggle(
                                 checked = isEnabled,
+                                enabled = !isLocked,
                                 onCheckedChange = { checked ->
+                                    if (isLocked) {
+                                        onShowUpgradePrompt(ProFeature.MULTI_SELLER)
+                                        return@PixelToggle
+                                    }
                                     if (!checked && enabledSellers.size <= 1) return@PixelToggle
                                     HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.LIGHT)
                                     val updated = if (checked) {

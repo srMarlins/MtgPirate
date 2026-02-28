@@ -623,6 +623,8 @@ fun main() = application {
                                         variantPriority = state.preferences.variantPriority,
                                         enabledSellers = state.preferences.enabledSellers,
                                         proxyFirst = state.preferences.proxyFirst,
+                                        proStatus = state.proStatus,
+                                        onShowUpgradePrompt = { feature -> viewModel.processIntent(ViewIntent.ShowUpgradePrompt(feature)) },
                                         onIncludeSideboardChange = {
                                             viewModel.processIntent(ViewIntent.ToggleIncludeSideboard(it))
                                         },

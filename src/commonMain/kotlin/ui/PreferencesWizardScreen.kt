@@ -17,6 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.delay
+import model.ProFeature
+import model.ProStatus
 import model.Seller
 
 @Composable
@@ -27,6 +29,8 @@ fun PreferencesWizardScreen(
     variantPriority: List<String>,
     enabledSellers: List<String> = Seller.entries.map { it.name },
     proxyFirst: Boolean = true,
+    proStatus: ProStatus = ProStatus.Free,
+    onShowUpgradePrompt: (ProFeature) -> Unit = {},
     onIncludeSideboardChange: (Boolean) -> Unit,
     onIncludeCommandersChange: (Boolean) -> Unit,
     onIncludeTokensChange: (Boolean) -> Unit,
@@ -118,24 +122,39 @@ fun PreferencesWizardScreen(
                     )
                     Seller.entries.forEach { seller ->
                         val isEnabled = seller.name in enabledSellers
+                        val isLocked = seller != Seller.USEA && !proStatus.isPro
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(
                                 checked = isEnabled,
                                 onCheckedChange = { checked ->
-                                    val newList = if (checked) {
-                                        enabledSellers + seller.name
+                                    if (isLocked) {
+                                        onShowUpgradePrompt(ProFeature.MULTI_SELLER)
                                     } else {
-                                        enabledSellers - seller.name
+                                        val newList = if (checked) {
+                                            enabledSellers + seller.name
+                                        } else {
+                                            enabledSellers - seller.name
+                                        }
+                                        onEnabledSellersChange(newList)
                                     }
-                                    onEnabledSellersChange(newList)
-                                }
+                                },
+                                enabled = !isLocked,
                             )
-                            Text(seller.displayName, style = MaterialTheme.typography.body2)
+                            Text(
+                                seller.displayName,
+                                style = MaterialTheme.typography.body2,
+                                color = if (isLocked) MaterialTheme.colors.onSurface.copy(alpha = 0.4f)
+                                        else MaterialTheme.colors.onSurface,
+                            )
                             Spacer(Modifier.width(6.dp))
                             PixelBadge(
                                 text = if (seller.isProxy) "P" else "R",
                                 color = if (seller.isProxy) PixelOrange else PixelGreen
                             )
+                            if (isLocked) {
+                                Spacer(Modifier.width(4.dp))
+                                ProBadge(onClick = { onShowUpgradePrompt(ProFeature.MULTI_SELLER) })
+                            }
                         }
                     }
 

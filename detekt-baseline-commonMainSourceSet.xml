@@ -36,6 +36,7 @@
     <ID>LongMethod:PixelComponents.kt:@Composable private fun SellerStatusRow</ID>
     <ID>LongMethod:PreferencesWizardScreen.kt:@Composable fun DraggableVariantItem</ID>
     <ID>LongMethod:PreferencesWizardScreen.kt:@Composable fun PreferencesWizardScreen</ID>
+    <ID>LongMethod:ProComponents.kt:@Composable fun UpgradeDialog</ID>
     <ID>LongMethod:ResolveScreen.kt:@Composable fun ResolveScreen</ID>
     <ID>LongMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable fun ShoppingPlanScreen</ID>
@@ -171,6 +172,7 @@
     <ID>MagicNumber:PreferencesWizardScreen.kt:600</ID>
     <ID>MagicNumber:PreferencesWizardScreen.kt:64f</ID>
     <ID>MagicNumber:Price.kt:100.0</ID>
+    <ID>MagicNumber:ProComponents.kt:0xFFFBBF24</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$100</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$100_00</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$10_00</ID>
@@ -398,6 +400,7 @@
     <ID>TooManyFunctions:MviViewModel.kt:MviViewModel</ID>
     <ID>TooManyFunctions:PixelComponents.kt:ui.PixelComponents.kt</ID>
     <ID>UnusedParameter:PixelComponents.kt:index: Int</ID>
+    <ID>UnusedParameter:ProComponents.kt:feature: ProFeature</ID>
     <ID>UnusedParameter:ResultsScreen.kt:matchedCount: Int = 0</ID>
     <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.material.*</ID>
