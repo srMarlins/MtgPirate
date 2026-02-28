@@ -6,21 +6,23 @@ import model.PurchaseResult
 /**
  * Desktop purchase manager using RevenueCat REST API + Stripe Checkout.
  * TODO: Implement REST API calls after RevenueCat account setup.
+ *
+ * Supports a debug override: launch with `./gradlew run -PdebugPro=true`
+ * to unlock Pro features without a real purchase flow.
  */
 class DesktopPurchaseManager : PurchaseManager {
 
+    private val debugPro: Boolean = System.getProperty("debugPro")?.toBoolean() ?: false
+
     override suspend fun checkEntitlement(): ProStatus {
-        // Stub: will call RevenueCat REST API
-        return ProStatus.Free
+        return if (debugPro) ProStatus.Pro else ProStatus.Free
     }
 
     override suspend fun purchase(): PurchaseResult {
-        // Stub: will open Stripe Checkout in browser
-        return PurchaseResult.CANCELLED
+        return if (debugPro) PurchaseResult.SUCCESS else PurchaseResult.CANCELLED
     }
 
     override suspend fun restorePurchases(): ProStatus {
-        // Stub: will call RevenueCat REST API
-        return ProStatus.Free
+        return if (debugPro) ProStatus.Pro else ProStatus.Free
     }
 }
