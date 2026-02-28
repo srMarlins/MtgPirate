@@ -311,12 +311,10 @@ jobs:
         if: ${{ env.SIGN_ANDROID == 'true' }}
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > /tmp/release.keystore
-          cat <<EOF > keystore.properties
-          storeFile=/tmp/release.keystore
-          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
-          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
-          EOF
+          echo "storeFile=/tmp/release.keystore" > keystore.properties
+          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> keystore.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> keystore.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> keystore.properties
 
       - name: Build release APK
         run: ./gradlew -PappVersion=$APP_VERSION assembleRelease --stacktrace --no-daemon
@@ -332,7 +330,7 @@ jobs:
   attach-to-release:
     name: Attach artifacts to GitHub Release
     needs: [setup, build-windows, build-macos, build-ios, build-android]
-    if: ${{ github.event_name == 'release' }}
+    if: ${{ !cancelled() && needs.setup.result == 'success' && github.event_name == 'release' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:

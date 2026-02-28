@@ -178,11 +178,11 @@ Options for populating catalog:
 1. **Use Desktop App:**
    ```bash
    ./gradlew run  # Fetch catalog
-   cp data/pirate.db ios/resources/
+   cp data/deckloot.db ios/resources/
    ```
 
 2. **Bundle Pre-filled Database:**
-   - Include `pirate.db` in iOS app bundle
+   - Include `deckloot.db` in iOS app bundle
    - Copy to documents on first launch
 
 3. **Backend Sync:**
@@ -195,7 +195,7 @@ Options for populating catalog:
 val documentsDir = NSFileManager.defaultManager.URLForDirectory(
     NSDocumentDirectory, NSUserDomainMask, null, true, null
 )
-val dbPath = "${documentsDir?.path}/pirate.db"
+val dbPath = "${documentsDir?.path}/deckloot.db"
 ```
 
 ## Testing

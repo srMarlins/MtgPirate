@@ -69,7 +69,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/srMarlins/MtgPirate.git
+git clone https://github.com/srMarlins/MtgPirate.git DeckLoot
 cd DeckLoot
 
 # Run the application
@@ -217,7 +217,7 @@ Packages are output to `build/compose/binaries/main/`.
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/srMarlins/MtgPirate.git
+   git clone https://github.com/srMarlins/MtgPirate.git DeckLoot
    cd DeckLoot
    ```
 
