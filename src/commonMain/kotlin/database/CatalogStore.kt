@@ -86,6 +86,15 @@ class CatalogStore(private val database: Database) {
     }
 
     /**
+     * Insert a batch of variants in a single transaction.
+     * Used by streaming catalog loads to persist incrementally.
+     */
+    fun insertVariantBatch(variants: List<CardVariant>) {
+        database.insertVariantBatch(variants)
+    }
+
+
+    /**
      * Check whether the cached data for a seller is still fresh based on its TTL.
      * Returns false if no cache entry exists for the seller.
      */

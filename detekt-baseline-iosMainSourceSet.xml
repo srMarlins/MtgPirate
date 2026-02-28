@@ -4,17 +4,6 @@
   <CurrentIssues>
     <ID>FunctionNaming:Main.kt:fun MainViewController</ID>
     <ID>MagicNumber:PlatformUtils.kt:1000</ID>
-    <ID>MatchingDeclarationName:ModernIosReorderableListHybrid.kt:HybridDragState&lt;T&gt;</ID>
-    <ID>MaxLineLength:IosScreens.kt:.</ID>
-    <ID>MaxLineLength:IosScreens.kt:color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface</ID>
-    <ID>MaxLineLength:IosScreens.kt:platform.IosHapticFeedback.triggerImpact(platform.IosHapticFeedback.ImpactStyle.LIGHT)</ID>
-    <ID>MaxLineLength:IosScreens.kt:val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&amp;body=${encodeUrlParameter(exportText)}"</ID>
-    <ID>MaxLineLength:MobileResultsScreen.kt:2 -&gt; sellerFiltered.filter { it.selectedVariant == null || it.selectedVariant?.seller?.isProxy == false }</ID>
-    <ID>MaxLineLength:MobileResultsScreen.kt:Text("${m.deckEntry.qty}", Modifier.width(40.dp), style = MaterialTheme.typography.body2)</ID>
-    <ID>MaxLineLength:MobileResultsScreen.kt:color = if (ambiguous &gt; 0) PixelOrange else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)</ID>
-    <ID>MaxLineLength:MobileResultsScreen.kt:if</ID>
-    <ID>MaxLineLength:MobileResultsScreen.kt:if (filterMode == 0) MaterialTheme.colors.primary.copy(alpha = 0.2f) else MaterialTheme.colors.surface</ID>
-    <ID>MaxLineLength:MobileResultsScreen.kt:proxyFiltered.filter { it.selectedVariant == null || it.selectedVariant?.variantType == variantTypeFilter }</ID>
     <ID>SwallowedException:IosHapticFeedback.kt:IosHapticFeedback$e: Exception</ID>
     <ID>SwallowedException:IosMviPlatformServices.kt:IosMviPlatformServices$e: Exception</ID>
     <ID>TooGenericExceptionCaught:IosHapticFeedback.kt:IosHapticFeedback$e: Exception</ID>

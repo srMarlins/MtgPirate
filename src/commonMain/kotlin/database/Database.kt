@@ -135,6 +135,25 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
         }
     }
 
+    fun insertVariantBatch(variants: List<CardVariant>) {
+        db.transaction {
+            variants.forEach { variant ->
+                db.cardVariantQueries.insertVariant(
+                    nameOriginal = variant.nameOriginal,
+                    nameNormalized = variant.nameNormalized,
+                    setCode = variant.setCode,
+                    sku = variant.sku,
+                    variantType = variant.variantType.displayName,
+                    priceInCents = variant.priceInCents.toLong(),
+                    collectorNumber = variant.collectorNumber,
+                    imageUrl = variant.imageUrl,
+                    seller = variant.seller.name,
+                    purchaseUri = variant.purchaseUri,
+                )
+            }
+        }
+    }
+
     suspend fun clearVariantsBySeller(seller: String) {
         db.cardVariantQueries.deleteAllBySeller(seller)
     }

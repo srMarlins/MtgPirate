@@ -166,6 +166,10 @@ fun MobileNavigationHost(
                 onIncludeCommandersChange = { viewModel.processIntent(ViewIntent.ToggleIncludeCommanders(it)) },
                 onIncludeTokensChange = { viewModel.processIntent(ViewIntent.ToggleIncludeTokens(it)) },
                 onVariantPriorityChange = { viewModel.processIntent(ViewIntent.UpdateVariantPriority(it)) },
+                enabledSellers = state.preferences.enabledSellers,
+                proxyFirst = state.preferences.proxyFirst,
+                onEnabledSellersChange = { viewModel.processIntent(ViewIntent.UpdateEnabledSellers(it)) },
+                onProxyFirstChange = { viewModel.processIntent(ViewIntent.UpdateProxyFirst(it)) },
                 onBack = { navigateTo(MobileScreen.IMPORT) },
                 onNext = {
                     viewModel.processIntent(ViewIntent.WizardPreferencesToResults)
