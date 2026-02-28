@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import model.MultiMatch
+import state.SearchProgress
 import model.OrderItem
 import model.Seller
 import model.SellerOrder
@@ -507,6 +508,7 @@ fun MobileResultsScreenWrapper(
     onEnrichVariant: ((model.CardVariant) -> Unit)? = null,
     isLoadingCatalog: Boolean = false,
     isMatching: Boolean = false,
+    searchProgress: SearchProgress? = null,
     matchedCount: Int = 0,
     unmatchedCount: Int = 0,
     ambiguousCount: Int = 0,
@@ -515,7 +517,6 @@ fun MobileResultsScreenWrapper(
     multiMatches: List<MultiMatch> = emptyList(),
     availableSellers: List<Seller> = emptyList(),
     onOverrideSeller: (Int, Seller) -> Unit = { _, _ -> },
-    searchProgress: state.SearchProgress? = null,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
@@ -537,14 +538,14 @@ fun MobileResultsScreenWrapper(
                     onClose = onBack,
                     onExport = onNext,
                     onEnrichVariant = onEnrichVariant,
-                    isLoading = isLoadingCatalog || isMatching,
+                    isLoading = isLoadingCatalog || isMatching || (searchProgress != null && searchProgress.isSearching),
+                    searchProgress = searchProgress,
                     matchedCount = matchedCount,
                     unmatchedCount = unmatchedCount,
                     ambiguousCount = ambiguousCount,
                     multiMatches = multiMatches,
                     availableSellers = availableSellers,
                     onOverrideSeller = onOverrideSeller,
-                    searchProgress = searchProgress,
                 )
             }
         }

@@ -191,6 +191,7 @@ fun MobileNavigationHost(
                 },
                 isLoadingCatalog = state.loadingCatalog,
                 isMatching = state.isMatching,
+                searchProgress = state.searchProgress,
                 matchedCount = state.matchedCount,
                 unmatchedCount = state.unmatchedCount,
                 ambiguousCount = state.ambiguousCount,

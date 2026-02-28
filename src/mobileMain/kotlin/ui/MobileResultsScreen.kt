@@ -45,7 +45,7 @@ import state.SearchProgress
 import util.formatPrice
 
 /**
- * Mobile-optimized Results Screen for iOS.
+ * Mobile-optimized Results Screen.
  * Designed for portrait mode with condensed layout.
  */
 @Composable
@@ -57,13 +57,13 @@ fun MobileResultsScreen(
     onExport: () -> Unit = {},
     onEnrichVariant: ((CardVariant) -> Unit)? = null,
     isLoading: Boolean = false,
+    searchProgress: SearchProgress? = null,
     matchedCount: Int = 0,
     unmatchedCount: Int = 0,
     ambiguousCount: Int = 0,
     multiMatches: List<MultiMatch> = emptyList(),
     availableSellers: List<Seller> = emptyList(),
     onOverrideSeller: (Int, Seller) -> Unit = { _, _ -> },
-    searchProgress: SearchProgress? = null,
 ) {
     val totalMatched = matches.filter { it.selectedVariant != null }
     val missed = unmatchedCount
@@ -83,170 +83,152 @@ fun MobileResultsScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Scanline effect
-        ScanlineEffect(alpha = 0.03f)
-
         Column(Modifier.fillMaxSize().padding(12.dp)) {
-            // Header with pixel styling - compact layout
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "▸ RESULTS",
-                    style = MaterialTheme.typography.h4,
-                    color = MaterialTheme.colors.primary,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(Modifier.width(8.dp))
-                PixelBadge(text = "STEP 3/4", color = MaterialTheme.colors.secondary)
-                Spacer(Modifier.width(8.dp))
-                BlinkingCursor()
-            }
-            Spacer(Modifier.height(4.dp))
-            Text(
-                "└─ Click cards to filter • Review and resolve any issues",
-                style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-            )
-            Spacer(Modifier.height(12.dp))
+            // Summary Cards as clickable filters — 2×2 grid
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // First row: ALL + MATCHED
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // All Cards
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(PixelShape(cornerSize = 9.dp))
+                            .background(
+                                if (filterMode == 0) MaterialTheme.colors.primary.copy(alpha = 0.2f) else MaterialTheme.colors.surface,
+                                shape = PixelShape(cornerSize = 9.dp)
+                            )
+                            .clickable { filterMode = 0 }
+                            .pixelBorder(
+                                borderWidth = if (filterMode == 0) 3.dp else 2.dp,
+                                cornerSize = 9.dp,
+                                enabled = true,
+                                glowAlpha = if (filterMode == 0) 0.5f else 0.1f
+                            )
+                            .padding(8.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "ALL",
+                                style = MaterialTheme.typography.caption,
+                                color = MaterialTheme.colors.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                "${matches.size}",
+                                style = MaterialTheme.typography.body1,
+                                color = MaterialTheme.colors.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
 
-            // Summary Cards as clickable filters (4 cards, no TOTAL)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                // All Cards
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(PixelShape(cornerSize = 9.dp))
-                        .background(
-                            if (filterMode == 0) MaterialTheme.colors.primary.copy(alpha = 0.2f) else MaterialTheme.colors.surface,
-                            shape = PixelShape(cornerSize = 9.dp)
-                        )
-                        .clickable { filterMode = 0 }
-                        .pixelBorder(
-                            borderWidth = if (filterMode == 0) 3.dp else 2.dp,
-                            cornerSize = 9.dp,
-                            enabled = true,
-                            glowAlpha = if (filterMode == 0) 0.5f else 0.1f
-                        )
-                        .padding(12.dp)
-                ) {
-                    Column {
-                        Text(
-                            "ALL",
-                            style = MaterialTheme.typography.caption,
-                            color = MaterialTheme.colors.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "${matches.size}",
-                            style = MaterialTheme.typography.h5,
-                            color = MaterialTheme.colors.primary,
-                            fontWeight = FontWeight.Bold
-                        )
+                    // Matched Cards
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(PixelShape(cornerSize = 9.dp))
+                            .background(
+                                if (filterMode == 1) PixelGreen.copy(alpha = 0.2f) else MaterialTheme.colors.surface,
+                                shape = PixelShape(cornerSize = 9.dp)
+                            )
+                            .clickable { filterMode = 1 }
+                            .pixelBorder(
+                                borderWidth = if (filterMode == 1) 3.dp else 2.dp,
+                                cornerSize = 9.dp,
+                                enabled = true,
+                                glowAlpha = if (filterMode == 1) 0.5f else if (totalMatched.isNotEmpty()) 0.3f else 0.1f
+                            )
+                            .padding(8.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "MATCHED",
+                                style = MaterialTheme.typography.caption,
+                                color = PixelGreen,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                "${totalMatched.size}",
+                                style = MaterialTheme.typography.body1,
+                                color = PixelGreen,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
 
-                // Matched Cards
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(PixelShape(cornerSize = 9.dp))
-                        .background(
-                            if (filterMode == 1) PixelGreen.copy(alpha = 0.2f) else MaterialTheme.colors.surface,
-                            shape = PixelShape(cornerSize = 9.dp)
-                        )
-                        .clickable { filterMode = 1 }
-                        .pixelBorder(
-                            borderWidth = if (filterMode == 1) 3.dp else 2.dp,
-                            cornerSize = 9.dp,
-                            enabled = true,
-                            glowAlpha = if (filterMode == 1) 0.5f else if (totalMatched.isNotEmpty()) 0.3f else 0.1f
-                        )
-                        .padding(12.dp)
-                ) {
-                    Column {
-                        Text(
-                            "MATCHED",
-                            style = MaterialTheme.typography.caption,
-                            color = PixelGreen,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "${totalMatched.size}",
-                            style = MaterialTheme.typography.h5,
-                            color = PixelGreen,
-                            fontWeight = FontWeight.Bold
-                        )
+                // Second row: UNMATCHED + AMBIGUOUS
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Unmatched Cards
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(PixelShape(cornerSize = 9.dp))
+                            .background(
+                                if (filterMode == 2) PixelRed.copy(alpha = 0.2f) else MaterialTheme.colors.surface,
+                                shape = PixelShape(cornerSize = 9.dp)
+                            )
+                            .clickable { filterMode = 2 }
+                            .pixelBorder(
+                                borderWidth = if (filterMode == 2) 3.dp else 2.dp,
+                                cornerSize = 9.dp,
+                                enabled = true,
+                                glowAlpha = if (filterMode == 2) 0.5f else if (missed > 0) 0.3f else 0.1f
+                            )
+                            .padding(8.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "UNMATCHED",
+                                style = MaterialTheme.typography.caption,
+                                color = if (missed > 0) PixelRed else MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                "$missed",
+                                style = MaterialTheme.typography.body1,
+                                color = if (missed > 0) PixelRed else MaterialTheme.colors.onSurface,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
-                }
 
-                // Unmatched Cards
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(PixelShape(cornerSize = 9.dp))
-                        .background(
-                            if (filterMode == 2) PixelRed.copy(alpha = 0.2f) else MaterialTheme.colors.surface,
-                            shape = PixelShape(cornerSize = 9.dp)
-                        )
-                        .clickable { filterMode = 2 }
-                        .pixelBorder(
-                            borderWidth = if (filterMode == 2) 3.dp else 2.dp,
-                            cornerSize = 9.dp,
-                            enabled = true,
-                            glowAlpha = if (filterMode == 2) 0.5f else if (missed > 0) 0.3f else 0.1f
-                        )
-                        .padding(12.dp)
-                ) {
-                    Column {
-                        Text(
-                            "UNMATCHED",
-                            style = MaterialTheme.typography.caption,
-                            color = if (missed > 0) PixelRed else MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "$missed",
-                            style = MaterialTheme.typography.h5,
-                            color = if (missed > 0) PixelRed else MaterialTheme.colors.onSurface,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                // Ambiguous Cards
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(PixelShape(cornerSize = 9.dp))
-                        .background(
-                            if (filterMode == 3) PixelOrange.copy(alpha = 0.2f) else MaterialTheme.colors.surface,
-                            shape = PixelShape(cornerSize = 9.dp)
-                        )
-                        .clickable { filterMode = 3 }
-                        .pixelBorder(
-                            borderWidth = if (filterMode == 3) 3.dp else 2.dp,
-                            cornerSize = 9.dp,
-                            enabled = true,
-                            glowAlpha = if (filterMode == 3) 0.5f else if (ambiguous > 0) 0.3f else 0.1f
-                        )
-                        .padding(12.dp)
-                ) {
-                    Column {
-                        Text(
-                            "AMBIGUOUS",
-                            style = MaterialTheme.typography.caption,
-                            color = if (ambiguous > 0) PixelOrange else MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "$ambiguous",
-                            style = MaterialTheme.typography.h5,
-                            color = if (ambiguous > 0) PixelOrange else MaterialTheme.colors.onSurface,
-                            fontWeight = FontWeight.Bold
-                        )
+                    // Ambiguous Cards
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(PixelShape(cornerSize = 9.dp))
+                            .background(
+                                if (filterMode == 3) PixelOrange.copy(alpha = 0.2f) else MaterialTheme.colors.surface,
+                                shape = PixelShape(cornerSize = 9.dp)
+                            )
+                            .clickable { filterMode = 3 }
+                            .pixelBorder(
+                                borderWidth = if (filterMode == 3) 3.dp else 2.dp,
+                                cornerSize = 9.dp,
+                                enabled = true,
+                                glowAlpha = if (filterMode == 3) 0.5f else if (ambiguous > 0) 0.3f else 0.1f
+                            )
+                            .padding(8.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "AMBIGUOUS",
+                                style = MaterialTheme.typography.caption,
+                                color = if (ambiguous > 0) PixelOrange else MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                "$ambiguous",
+                                style = MaterialTheme.typography.body1,
+                                color = if (ambiguous > 0) PixelOrange else MaterialTheme.colors.onSurface,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
@@ -354,34 +336,32 @@ fun MobileResultsScreen(
                 }
             }
 
-            // Search progress indicator (per-seller streaming)
-            if (searchProgress != null && searchProgress.isSearching) {
-                Spacer(Modifier.height(8.dp))
-                SearchProgressPanel(searchProgress = searchProgress)
-            }
+            Spacer(Modifier.height(8.dp))
 
-            Spacer(Modifier.height(16.dp))
-
-            // Loading indicator during matching
-            if (isLoading && (searchProgress == null || !searchProgress.isSearching)) {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+            // Loading indicator during matching — show SearchProgressPanel when available
+            if (isLoading) {
+                if (searchProgress != null && searchProgress.isSearching) {
+                    SearchProgressPanel(searchProgress = searchProgress)
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            "Matching cards...",
-                            style = MaterialTheme.typography.body1,
-                            color = MaterialTheme.colors.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                        AnimatedLoadingDots()
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                "Matching cards...",
+                                style = MaterialTheme.typography.body1,
+                                color = MaterialTheme.colors.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                            AnimatedLoadingDots()
+                        }
                     }
                 }
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(8.dp))
             }
 
             // Hide table and list when loading
@@ -393,12 +373,12 @@ fun MobileResultsScreen(
                     .fillMaxWidth()
                     .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.3f)
                     .background(MaterialTheme.colors.primary.copy(alpha = 0.1f), shape = PixelShape(cornerSize = 6.dp))
-                    .padding(12.dp)
+                    .padding(8.dp)
             ) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     // Sortable Qty header
                     Row(
-                        Modifier.width(40.dp).clickable {
+                        Modifier.width(32.dp).clickable {
                             sortOption = when (sortOption) {
                                 SortOption.QTY_ASC -> SortOption.QTY_DESC
                                 SortOption.QTY_DESC -> SortOption.DEFAULT
@@ -438,7 +418,7 @@ fun MobileResultsScreen(
 
                     // Sortable Price header
                     Row(
-                        Modifier.width(60.dp).clickable {
+                        Modifier.width(52.dp).clickable {
                             sortOption = when (sortOption) {
                                 SortOption.PRICE_ASC -> SortOption.PRICE_DESC
                                 SortOption.PRICE_DESC -> SortOption.DEFAULT
@@ -457,7 +437,7 @@ fun MobileResultsScreen(
                     }
 
                     Box(
-                        Modifier.width(80.dp),
+                        Modifier.width(64.dp),
                         contentAlignment = Alignment.CenterStart
                     ) {
                         Text(
@@ -514,7 +494,7 @@ fun MobileResultsScreen(
             }
 
             // Results List with pixel card
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
             PixelCard(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 glowing = false
@@ -540,11 +520,11 @@ fun MobileResultsScreen(
 
                             Column {
                                 Row(
-                                    Modifier.fillMaxWidth().padding(12.dp),
+                                    Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     // QTY column
-                                    Text("${m.deckEntry.qty}", Modifier.width(40.dp), style = MaterialTheme.typography.body2)
+                                    Text("${m.deckEntry.qty}", Modifier.width(32.dp), style = MaterialTheme.typography.body2)
 
                                     // CARD column with status badge inline
                                     Column(Modifier.weight(1f).padding(end = 8.dp)) {
@@ -600,18 +580,18 @@ fun MobileResultsScreen(
                                     // PRICE column
                                     Text(
                                         rowTotal?.let { formatPrice(it) } ?: "-",
-                                        Modifier.width(60.dp),
+                                        Modifier.width(52.dp),
                                         style = MaterialTheme.typography.body2
                                     )
 
                                     // ACTION column
-                                    Row(Modifier.width(80.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Row(Modifier.width(64.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                         if (m.status == MatchStatus.AMBIGUOUS || m.status == MatchStatus.NOT_FOUND || m.status == MatchStatus.FUZZY_RECHECK) {
                                             PixelButton(
                                                 text = "Fix",
                                                 onClick = { onResolve(globalIndex) },
                                                 variant = PixelButtonVariant.SECONDARY,
-                                                modifier = Modifier.height(32.dp).width(75.dp)
+                                                modifier = Modifier.height(28.dp).width(60.dp)
                                             )
                                         } else if (multiMatch != null && multiMatch.alternatives.isNotEmpty()) {
                                             PixelButton(
@@ -624,14 +604,14 @@ fun MobileResultsScreen(
                                                     }
                                                 },
                                                 variant = PixelButtonVariant.SURFACE,
-                                                modifier = Modifier.height(32.dp).width(75.dp)
+                                                modifier = Modifier.height(28.dp).width(60.dp)
                                             )
                                         } else if (m.candidates.isNotEmpty()) {
                                             PixelButton(
                                                 text = "View",
                                                 onClick = { onShowAllCandidates(globalIndex) },
                                                 variant = PixelButtonVariant.SURFACE,
-                                                modifier = Modifier.height(32.dp).width(75.dp)
+                                                modifier = Modifier.height(28.dp).width(60.dp)
                                             )
                                         }
                                     }
@@ -703,7 +683,7 @@ fun MobileResultsScreen(
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(10.dp))
 
             // Footer Actions with pixel styling
             Row(
@@ -712,17 +692,17 @@ fun MobileResultsScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 PixelButton(
-                    text = "← Back to Configure",
+                    text = "← Back",
                     onClick = onClose,
                     variant = PixelButtonVariant.SURFACE,
-                    modifier = Modifier.weight(1f).height(52.dp)
+                    modifier = Modifier.weight(1f).height(48.dp)
                 )
                 if (matches.isNotEmpty()) {
                     PixelButton(
-                        text = "Continue to Export →",
+                        text = "Export →",
                         onClick = onExport,
                         variant = PixelButtonVariant.SECONDARY,
-                        modifier = Modifier.weight(1f).height(52.dp)
+                        modifier = Modifier.weight(1f).height(48.dp)
                     )
                 }
             }
