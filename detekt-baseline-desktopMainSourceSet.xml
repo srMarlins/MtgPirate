@@ -3,6 +3,7 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>CyclomaticComplexMethod:Main.kt:fun main</ID>
+    <ID>ForbiddenComment:DesktopPurchaseManager.kt:DesktopPurchaseManager$* Desktop purchase manager using RevenueCat REST API + Stripe Checkout. * TODO: Implement REST API calls after RevenueCat account setup.</ID>
     <ID>LongMethod:DesktopResolveScreen.kt:@Composable fun DesktopResolveScreen</ID>
     <ID>LongMethod:DesktopSavedImportsDialog.kt:@Composable actual fun SavedImportsDialog</ID>
     <ID>LongMethod:DesktopSavedImportsDialog.kt:@Composable fun SavedImportCard</ID>
