@@ -68,8 +68,11 @@ import ui.PixelToggle
 import ui.ScanlineEffect
 import ui.pixelBorder
 import ui.sellerColor
+import util.buildManaPoolUrl
+import util.buildTcgPlayerUrl
 import util.encodeUrlParameter
 import util.formatPrice
+import util.sellerCheckoutUrl
 
 /**
  * Mobile Import Screen - Step 1 of the wizard.
@@ -211,7 +214,11 @@ fun MobilePreferencesScreen(
     onBack: () -> Unit,
     onNext: () -> Unit,
     isDarkTheme: Boolean = false,
-    onToggleTheme: () -> Unit = {}
+    onToggleTheme: () -> Unit = {},
+    enabledSellers: List<String> = Seller.entries.map { it.name },
+    proxyFirst: Boolean = true,
+    onEnabledSellersChange: (List<String>) -> Unit = {},
+    onProxyFirstChange: (Boolean) -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
@@ -332,6 +339,84 @@ fun MobilePreferencesScreen(
 
             Spacer(Modifier.height(8.dp))
 
+            // Sellers section
+            PixelCard(
+                glowing = false,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    "SELLERS:",
+                    style = MaterialTheme.typography.body2,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colors.primary,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Seller.entries.forEach { seller ->
+                        val isEnabled = seller.name in enabledSellers
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    seller.displayName,
+                                    style = MaterialTheme.typography.body2,
+                                )
+                                PixelBadge(
+                                    text = if (seller.isProxy) "P" else "R",
+                                    color = if (seller.isProxy) PixelOrange else PixelGreen
+                                )
+                            }
+                            PixelToggle(
+                                checked = isEnabled,
+                                onCheckedChange = { checked ->
+                                    if (!checked && enabledSellers.size <= 1) return@PixelToggle
+                                    HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.LIGHT)
+                                    val updated = if (checked) {
+                                        enabledSellers + seller.name
+                                    } else {
+                                        enabledSellers - seller.name
+                                    }
+                                    onEnabledSellersChange(updated)
+                                }
+                            )
+                        }
+                    }
+
+                    PixelDivider()
+
+                    // Prefer Proxies toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "PREFER PROXIES",
+                            style = MaterialTheme.typography.body2,
+                        )
+                        PixelToggle(
+                            checked = proxyFirst,
+                            onCheckedChange = {
+                                HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.LIGHT)
+                                onProxyFirstChange(it)
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
             // Variant Priority - Scrollable with improved button states
             PixelCard(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -430,6 +515,7 @@ fun MobileResultsScreenWrapper(
     multiMatches: List<MultiMatch> = emptyList(),
     availableSellers: List<Seller> = emptyList(),
     onOverrideSeller: (Int, Seller) -> Unit = { _, _ -> },
+    searchProgress: state.SearchProgress? = null,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
@@ -458,6 +544,7 @@ fun MobileResultsScreenWrapper(
                     multiMatches = multiMatches,
                     availableSellers = availableSellers,
                     onOverrideSeller = onOverrideSeller,
+                    searchProgress = searchProgress,
                 )
             }
         }
@@ -689,8 +776,6 @@ fun MobileResolveScreen(
     }
 }
 
-private const val TCGPLAYER_MASS_ENTRY_URL = "https://www.tcgplayer.com/massentry?productline=Magic"
-private const val BOOTLEG_MAGE_DECK_IMPORT_URL = "https://bootlegmage.com/deck-import/"
 
 
 /**
@@ -1039,8 +1124,15 @@ private fun MobileSellerOrderCard(
                                 order.items,
                                 key = { it.variant.uniqueIdentifier }
                             ) { item ->
+                                val hasLink = item.variant.purchaseUri != null
                                 Row(
-                                    Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
+                                    Modifier.fillMaxWidth()
+                                        .then(
+                                            if (hasLink) Modifier.clickable {
+                                                onOpenUrl(item.variant.purchaseUri!!)
+                                            } else Modifier
+                                        )
+                                        .padding(horizontal = 8.dp, vertical = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
@@ -1048,12 +1140,22 @@ private fun MobileSellerOrderCard(
                                         Modifier.width(36.dp),
                                         style = MaterialTheme.typography.body2
                                     )
-                                    Text(
-                                        item.variant.nameOriginal,
-                                        Modifier.weight(1f),
-                                        style = MaterialTheme.typography.body2,
-                                        maxLines = 1
-                                    )
+                                    Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            item.variant.nameOriginal,
+                                            style = MaterialTheme.typography.body2,
+                                            color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface,
+                                            maxLines = 1
+                                        )
+                                        if (hasLink) {
+                                            Spacer(Modifier.width(4.dp))
+                                            Text(
+                                                "\u2197",
+                                                style = MaterialTheme.typography.caption,
+                                                color = MaterialTheme.colors.primary.copy(alpha = 0.6f)
+                                            )
+                                        }
+                                    }
                                     Text(
                                         item.variant.setCode,
                                         Modifier.width(44.dp),
@@ -1090,6 +1192,7 @@ private fun MobileSellerOrderCard(
 
 /**
  * Per-seller action buttons for checkout and export (mobile-optimized).
+ * Uses auto-fill cart URLs for TCGPlayer and ManaPool, with "Copied!" feedback.
  */
 @Composable
 private fun MobileSellerActionButtons(
@@ -1097,6 +1200,16 @@ private fun MobileSellerActionButtons(
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
 ) {
+    var copied by remember { mutableStateOf(false) }
+
+    // Auto-reset "Copied!" feedback after 2 seconds
+    LaunchedEffect(copied) {
+        if (copied) {
+            kotlinx.coroutines.delay(2000)
+            copied = false
+        }
+    }
+
     Row(
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -1104,78 +1217,90 @@ private fun MobileSellerActionButtons(
         when (order.seller) {
             Seller.USEA -> {
                 PixelButton(
-                    text = "Copy CSV",
+                    text = "Email Order",
                     onClick = {
                         HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
                         val exportText = formatForExport(Seller.USEA, order.items)
                         onCopyToClipboard(exportText)
+                        val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
+                        val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&body=${encodeUrlParameter(exportText)}"
+                        onOpenUrl(mailtoUrl)
                     },
                     variant = PixelButtonVariant.PRIMARY,
                     modifier = Modifier.weight(1f).height(40.dp)
                 )
                 PixelButton(
-                    text = "Email",
+                    text = if (copied) "Copied!" else "Copy CSV",
                     onClick = {
                         HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        val exportText = formatForExport(Seller.USEA, order.items)
-                        val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
-                        val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&body=${encodeUrlParameter(exportText)}"
-                        onOpenUrl(mailtoUrl)
+                        onCopyToClipboard(formatForExport(Seller.USEA, order.items))
+                        copied = true
                     },
-                    variant = PixelButtonVariant.SECONDARY,
+                    variant = PixelButtonVariant.SURFACE,
                     modifier = Modifier.weight(1f).height(40.dp)
                 )
             }
             Seller.BOOTLEG_MAGE -> {
                 PixelButton(
-                    text = "Open Deck Import",
+                    text = "Buy on Bootleg Mage",
                     onClick = {
                         HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        onOpenUrl(BOOTLEG_MAGE_DECK_IMPORT_URL)
+                        onCopyToClipboard(formatForExport(Seller.BOOTLEG_MAGE, order.items))
+                        sellerCheckoutUrl(Seller.BOOTLEG_MAGE, order.items)?.let { onOpenUrl(it) }
                     },
                     variant = PixelButtonVariant.PRIMARY,
+                    modifier = Modifier.weight(1f).height(40.dp)
+                )
+                PixelButton(
+                    text = if (copied) "Copied!" else "Copy List",
+                    onClick = {
+                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
+                        onCopyToClipboard(formatForExport(Seller.BOOTLEG_MAGE, order.items))
+                        copied = true
+                    },
+                    variant = PixelButtonVariant.SURFACE,
                     modifier = Modifier.weight(1f).height(40.dp)
                 )
             }
             Seller.TCGPLAYER -> {
                 PixelButton(
-                    text = "Mass Entry",
+                    text = "Buy on TCGPlayer",
                     onClick = {
                         HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        onOpenUrl(TCGPLAYER_MASS_ENTRY_URL)
+                        onOpenUrl(buildTcgPlayerUrl(order.items))
                     },
                     variant = PixelButtonVariant.PRIMARY,
                     modifier = Modifier.weight(1f).height(40.dp)
                 )
                 PixelButton(
-                    text = "Copy List",
+                    text = if (copied) "Copied!" else "Copy List",
                     onClick = {
                         HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        val exportText = formatForExport(Seller.TCGPLAYER, order.items)
-                        onCopyToClipboard(exportText)
+                        onCopyToClipboard(formatForExport(Seller.TCGPLAYER, order.items))
+                        copied = true
                     },
-                    variant = PixelButtonVariant.SECONDARY,
+                    variant = PixelButtonVariant.SURFACE,
                     modifier = Modifier.weight(1f).height(40.dp)
                 )
             }
             Seller.MANAPOOL -> {
                 PixelButton(
-                    text = "Open ManaPool",
+                    text = "Buy on ManaPool",
                     onClick = {
                         HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        onOpenUrl("https://manapool.com")
+                        onOpenUrl(buildManaPoolUrl(order.items))
                     },
                     variant = PixelButtonVariant.PRIMARY,
                     modifier = Modifier.weight(1f).height(40.dp)
                 )
                 PixelButton(
-                    text = "Copy List",
+                    text = if (copied) "Copied!" else "Copy List",
                     onClick = {
                         HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        val exportText = formatForExport(Seller.MANAPOOL, order.items)
-                        onCopyToClipboard(exportText)
+                        onCopyToClipboard(formatForExport(Seller.MANAPOOL, order.items))
+                        copied = true
                     },
-                    variant = PixelButtonVariant.SECONDARY,
+                    variant = PixelButtonVariant.SURFACE,
                     modifier = Modifier.weight(1f).height(40.dp)
                 )
             }

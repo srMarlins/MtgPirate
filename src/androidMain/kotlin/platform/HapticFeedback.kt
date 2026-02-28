@@ -31,6 +31,7 @@ actual object HapticFeedback {
     private const val AMPLITUDE_SELECTION = 40
     private const val AMPLITUDE_NOTIFY_SUCCESS = 100
     private const val AMPLITUDE_NOTIFY_WARNING = 150
+    private const val AMPLITUDE_NOTIFY_ERROR = 255
 
     private fun vibrator(): Vibrator? {
         val ctx = AndroidApp.appContext ?: return null
@@ -75,7 +76,7 @@ actual object HapticFeedback {
                 NotificationType.WARNING ->
                     VibrationEffect.createOneShot(DURATION_NOTIFY_WARNING_MS, AMPLITUDE_NOTIFY_WARNING)
                 NotificationType.ERROR ->
-                    VibrationEffect.createOneShot(DURATION_NOTIFY_ERROR_MS, VibrationEffect.MAX_AMPLITUDE)
+                    VibrationEffect.createOneShot(DURATION_NOTIFY_ERROR_MS, AMPLITUDE_NOTIFY_ERROR)
             }
             vibrator.vibrate(effect)
         } catch (_: Exception) {
