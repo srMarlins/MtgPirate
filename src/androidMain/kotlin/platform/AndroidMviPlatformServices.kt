@@ -93,13 +93,24 @@ class AndroidMviPlatformServices(
                 val foundCsv = CsvGenerator.generateFoundCardsCsv(matches)
                 val unfoundTxt = CsvGenerator.generateUnfoundCardsTxt(matches)
 
-                if (foundCsv.isNotEmpty()) {
-                    copyToClipboard(foundCsv)
+                // Combine found and unfound into a single clipboard payload
+                val clipboardContent = buildString {
+                    if (foundCsv.isNotEmpty()) {
+                        append(foundCsv)
+                    }
+                    if (unfoundTxt.isNotEmpty()) {
+                        if (isNotEmpty()) append("\n\n--- UNFOUND CARDS ---\n\n")
+                        append(unfoundTxt)
+                    }
+                }
+
+                if (clipboardContent.isNotEmpty()) {
+                    copyToClipboard(clipboardContent)
                 }
 
                 onComplete(
                     if (foundCsv.isNotEmpty()) "Found cards CSV copied to clipboard" else null,
-                    if (unfoundTxt.isNotEmpty()) "Unfound cards available" else null
+                    if (unfoundTxt.isNotEmpty()) "Unfound cards included in clipboard" else null
                 )
             } catch (e: Exception) {
                 onComplete(null, "Export failed: ${e.message}")
