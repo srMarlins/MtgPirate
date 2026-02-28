@@ -105,6 +105,7 @@ data class Preferences(
     val cacheMaxAgeHours: Int = 24,
     val enabledSellers: List<String> = Seller.entries.map { it.name },
     val proxyFirst: Boolean = true,
+    val isPro: Boolean = false,
 )
 
 @Serializable

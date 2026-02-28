@@ -22,12 +22,12 @@
     <ID>LongMethod:CatalogCsvParser.kt:CatalogCsvParser$fun parse: Catalog</ID>
     <ID>LongMethod:CatalogParser.kt:CatalogParser$fun parse: Catalog</ID>
     <ID>LongMethod:CatalogScreen.kt:@Composable fun CatalogScreen</ID>
+    <ID>LongMethod:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$override fun create: QueryResult.Value&lt;Unit&gt;</ID>
     <ID>LongMethod:DeckSearchUseCase.kt:DeckSearchUseCase$fun search: Flow&lt;SearchProgress&gt;</ID>
     <ID>LongMethod:DecklistParser.kt:DecklistParser$fun parse: List&lt;DeckEntry&gt;</ID>
     <ID>LongMethod:ExportScreen.kt:@Composable fun ExportScreen</ID>
     <ID>LongMethod:MatchesScreen.kt:@Composable fun MatchesScreen</ID>
     <ID>LongMethod:MobilePixelImageComponents.kt:@Composable fun MobilePixelImageModal</ID>
-    <ID>LongMethod:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$override fun create: QueryResult.Value&lt;Unit&gt;</ID>
     <ID>LongMethod:MviViewModel.kt:MviViewModel$fun processIntent</ID>
     <ID>LongMethod:MviViewModel.kt:MviViewModel$private suspend fun searchDeck</ID>
     <ID>LongMethod:PixelComponents.kt:@Composable fun FantasyStarIcon</ID>
@@ -80,6 +80,9 @@
     <ID>MagicNumber:CatalogScreen.kt:0.40f</ID>
     <ID>MagicNumber:CatalogUtils.kt:CatalogUtils$100.0</ID>
     <ID>MagicNumber:CsvGenerator.kt:CsvGenerator$100</ID>
+    <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$3</ID>
+    <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$4</ID>
+    <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$5</ID>
     <ID>MagicNumber:DecklistParser.kt:DecklistParser$5</ID>
     <ID>MagicNumber:ExportScreen.kt:0.07f</ID>
     <ID>MagicNumber:ExportScreen.kt:0.09f</ID>
@@ -115,8 +118,6 @@
     <ID>MagicNumber:Models.kt:VariantType.FOIL$350</ID>
     <ID>MagicNumber:Models.kt:VariantType.HOLO$300</ID>
     <ID>MagicNumber:Models.kt:VariantType.REGULAR$220</ID>
-    <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$3</ID>
-    <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$4</ID>
     <ID>MagicNumber:MviViewModel.kt:MviViewModel$3</ID>
     <ID>MagicNumber:PixelComponents.kt:0.2f</ID>
     <ID>MagicNumber:PixelComponents.kt:0.4f</ID>
@@ -154,6 +155,7 @@
     <ID>MagicNumber:PixelComponents.kt:90</ID>
     <ID>MagicNumber:PixelComponents.kt:900</ID>
     <ID>MagicNumber:PixelComponents.kt:90f</ID>
+    <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$10</ID>
     <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$3</ID>
     <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$4</ID>
     <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$5</ID>
@@ -286,6 +288,8 @@
     <ID>MaxLineLength:CatalogScreen.kt:Text("TYPE", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:CatalogScreen.kt:Text(v.variantType.displayName, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)</ID>
     <ID>MaxLineLength:CatalogUseCase.kt:CatalogUseCase$log("Loaded catalogs from ${loadedSellers.size} seller(s): ${loadedSellers.joinToString { it.displayName }}", "INFO")</ID>
+    <ID>MaxLineLength:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$driver.execute(null, "ALTER TABLE PreferencesEntity ADD COLUMN enabledSellers TEXT NOT NULL DEFAULT 'USEA,BOOTLEG_MAGE,TCGPLAYER,MANAPOOL'", 0)</ID>
+    <ID>MaxLineLength:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$driver.execute(null, "CREATE UNIQUE INDEX IF NOT EXISTS idx_variant_seller_sku ON CardVariantEntity(seller, sku)", 0)</ID>
     <ID>MaxLineLength:DecklistParser.kt:DecklistParser$// Heuristic: if we saw a blank line after sideboard marker and now a new card line, treat as commander section</ID>
     <ID>MaxLineLength:DecklistParser.kt:DecklistParser$// If remainder still contains an embedded " Set " fragment (without colon) at end due to partial copy, attempt to remove</ID>
     <ID>MaxLineLength:ExportScreen.kt:"Normal (15-40 days) — " + if (normalShippingCost == 0) "Free" else formatPrice(normalShippingCost)</ID>
@@ -334,8 +338,6 @@
     <ID>MaxLineLength:MatchesScreen.kt:color = if (rowTotal != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)</ID>
     <ID>MaxLineLength:MatchesScreen.kt:val content = unmatched.joinToString("\n") { "${it.deckEntry.qty} ${it.deckEntry.cardName}" }</ID>
     <ID>MaxLineLength:MobilePixelImageComponents.kt:var loadState by remember { mutableStateOf&lt;AsyncImagePainter.State&gt;(AsyncImagePainter.State.Empty) }</ID>
-    <ID>MaxLineLength:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$driver.execute(null, "ALTER TABLE PreferencesEntity ADD COLUMN enabledSellers TEXT NOT NULL DEFAULT 'USEA,BOOTLEG_MAGE,TCGPLAYER,MANAPOOL'", 0)</ID>
-    <ID>MaxLineLength:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$driver.execute(null, "CREATE UNIQUE INDEX IF NOT EXISTS idx_variant_seller_sku ON CardVariantEntity(seller, sku)", 0)</ID>
     <ID>MaxLineLength:MviViewModel.kt:MviViewModel$private suspend</ID>
     <ID>MaxLineLength:PreferencesQueries.kt:PreferencesQueries$)</ID>
     <ID>MaxLineLength:PreferencesWizardScreen.kt:.</ID>
