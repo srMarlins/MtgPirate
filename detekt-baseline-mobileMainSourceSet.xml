@@ -2,12 +2,10 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>CyclomaticComplexMethod:MobileResultsScreen.kt:@Composable fun MobileResultsScreen</ID>
     <ID>LongMethod:MobileApp.kt:@Composable fun MobileNavigationHost</ID>
     <ID>LongMethod:MobileReorderableList.kt:@Composable fun &lt;T&gt; MobileReorderableListWithPixelStyle</ID>
     <ID>LongMethod:MobileReorderableList.kt:@Composable fun HybridVariantPriorityItem</ID>
     <ID>LongMethod:MobileReorderableList.kt:@Composable private fun &lt;T&gt; MobileReorderableItem</ID>
-    <ID>LongMethod:MobileResultsScreen.kt:@Composable fun MobileResultsScreen</ID>
     <ID>LongMethod:MobileSavedImportsDialog.kt:@Composable actual fun SavedImportsDialog</ID>
     <ID>LongMethod:MobileSavedImportsDialog.kt:@Composable fun MobileSavedImportCard</ID>
     <ID>LongMethod:MobileScreens.kt:@Composable fun MobileImportScreen</ID>
@@ -19,19 +17,12 @@
     <ID>MagicNumber:MobileReorderableList.kt:1000</ID>
     <ID>MagicNumber:MobileReorderableList.kt:10f</ID>
     <ID>MagicNumber:MobileReorderableList.kt:3</ID>
-    <ID>MagicNumber:MobileResultsScreen.kt:3</ID>
     <ID>MagicNumber:MobileSavedImportsDialog.kt:200</ID>
     <ID>MagicNumber:MobileSavedImportsDialog.kt:3</ID>
     <ID>MagicNumber:MobileScreens.kt:100</ID>
     <ID>MagicNumber:MobileScreens.kt:2000</ID>
     <ID>MatchingDeclarationName:MobileApp.kt:MobileScreen</ID>
     <ID>MatchingDeclarationName:MobileReorderableList.kt:MobileDragState&lt;T&gt;</ID>
-    <ID>MaxLineLength:MobileResultsScreen.kt:2 -&gt; sellerFiltered.filter { it.selectedVariant == null || it.selectedVariant?.seller?.isProxy == false }</ID>
-    <ID>MaxLineLength:MobileResultsScreen.kt:Text("${m.deckEntry.qty}", Modifier.width(32.dp), style = MaterialTheme.typography.body2)</ID>
-    <ID>MaxLineLength:MobileResultsScreen.kt:color = if (ambiguous &gt; 0) PixelOrange else MaterialTheme.colors.onSurface.copy(alpha = 0.6f)</ID>
-    <ID>MaxLineLength:MobileResultsScreen.kt:if</ID>
-    <ID>MaxLineLength:MobileResultsScreen.kt:if (filterMode == 0) MaterialTheme.colors.primary.copy(alpha = 0.2f) else MaterialTheme.colors.surface</ID>
-    <ID>MaxLineLength:MobileResultsScreen.kt:proxyFiltered.filter { it.selectedVariant == null || it.selectedVariant?.variantType == variantTypeFilter }</ID>
     <ID>MaxLineLength:MobileScreens.kt:.</ID>
     <ID>MaxLineLength:MobileScreens.kt:color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface</ID>
     <ID>MaxLineLength:MobileScreens.kt:isLoading = isLoadingCatalog || isMatching || (searchProgress != null &amp;&amp; searchProgress.isSearching)</ID>
@@ -39,6 +30,5 @@
     <ID>SwallowedException:MobileSavedImportsDialog.kt:e: Exception</ID>
     <ID>TooGenericExceptionCaught:MobileSavedImportsDialog.kt:e: Exception</ID>
     <ID>UnusedParameter:MobileReorderableList.kt:totalItems: Int</ID>
-    <ID>UnusedParameter:MobileResultsScreen.kt:matchedCount: Int = 0</ID>
   </CurrentIssues>
 </SmellBaseline>
