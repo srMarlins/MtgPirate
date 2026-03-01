@@ -15,6 +15,7 @@
     <ID>LongMethod:MobileScreens.kt:@Composable fun MobileResolveScreen</ID>
     <ID>LongMethod:MobileScreens.kt:@Composable fun MobileShoppingPlanScreen</ID>
     <ID>LongMethod:MobileScreens.kt:@Composable private fun MobileSellerOrderCard</ID>
+    <ID>LongMethod:MobileScreens.kt:@Composable private fun MobileShoppingPlanSummary</ID>
     <ID>MagicNumber:MobileReorderableList.kt:1000</ID>
     <ID>MagicNumber:MobileReorderableList.kt:10f</ID>
     <ID>MagicNumber:MobileReorderableList.kt:3</ID>
@@ -26,17 +27,31 @@
     <ID>MatchingDeclarationName:MobileReorderableList.kt:MobileDragState&lt;T&gt;</ID>
     <ID>MaxLineLength:MobileResultsComponents.kt:PixelBadge(text = variant.setCode, color = MaterialTheme.colors.secondary, style = PixelBadgeStyle.MUTED)</ID>
     <ID>MaxLineLength:MobileResultsComponents.kt:PixelBadge(text = variant.variantType.displayName.uppercase(), color = PixelAccent1, style = PixelBadgeStyle.ACCENT)</ID>
-    <ID>MaxLineLength:MobileScreens.kt:"${currentOrder.seller.displayName} (${pagerState.currentPage + 1}/${shoppingPlan.orders.size})"</ID>
     <ID>MaxLineLength:MobileScreens.kt:.</ID>
     <ID>MaxLineLength:MobileScreens.kt:PixelBadge(text = currentVariant.setCode, color = MaterialTheme.colors.secondary, style = PixelBadgeStyle.MUTED)</ID>
     <ID>MaxLineLength:MobileScreens.kt:PixelBadge(text = variant.setCode, color = MaterialTheme.colors.secondary, style = PixelBadgeStyle.MUTED)</ID>
+    <ID>MaxLineLength:MobileScreens.kt:Text("- ${formatPrice(discountAmount)}", style = MaterialTheme.typography.caption, color = PixelGreen)</ID>
+    <ID>MaxLineLength:MobileScreens.kt:Text("CARD", Modifier.weight(1f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:MobileScreens.kt:Text("Discount (${order.discountPercent}%)", style = MaterialTheme.typography.caption, color = PixelGreen)</ID>
+    <ID>MaxLineLength:MobileScreens.kt:Text("PRICE", Modifier.width(52.dp), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:MobileScreens.kt:Text("QTY", Modifier.width(32.dp), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:MobileScreens.kt:Text("SET", Modifier.width(40.dp), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)</ID>
+    <ID>MaxLineLength:MobileScreens.kt:Text("Shipping", style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f))</ID>
+    <ID>MaxLineLength:MobileScreens.kt:Text("Subtotal", style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f))</ID>
+    <ID>MaxLineLength:MobileScreens.kt:Text("Total", style = MaterialTheme.typography.body2, fontWeight = FontWeight.Bold, color = MaterialTheme.colors.onSurface)</ID>
+    <ID>MaxLineLength:MobileScreens.kt:Text("↗", style = MaterialTheme.typography.caption, color = MaterialTheme.colors.primary.copy(alpha = 0.6f))</ID>
+    <ID>MaxLineLength:MobileScreens.kt:Text(formatPrice(item.variant.priceInCents), Modifier.width(52.dp), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:MobileScreens.kt:Text(formatPrice(order.subtotalCents), style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSurface)</ID>
+    <ID>MaxLineLength:MobileScreens.kt:Text(formatPrice(order.totalCents), style = MaterialTheme.typography.body2, fontWeight = FontWeight.Bold, color = color)</ID>
     <ID>MaxLineLength:MobileScreens.kt:color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface</ID>
+    <ID>MaxLineLength:MobileScreens.kt:contentPadding = if (shoppingPlan.orders.size &gt; 1) PaddingValues(end = 24.dp) else PaddingValues()</ID>
     <ID>MaxLineLength:MobileScreens.kt:isLoading = isLoadingCatalog || isMatching || (searchProgress != null &amp;&amp; searchProgress.isSearching)</ID>
     <ID>SwallowedException:MobileSavedImportsDialog.kt:e: Exception</ID>
     <ID>TooGenericExceptionCaught:MobileSavedImportsDialog.kt:e: Exception</ID>
     <ID>UnusedParameter:MobileReorderableList.kt:totalItems: Int</ID>
-    <ID>UnusedParameter:MobileResultsScreen.kt:matchedCount: Int = 0</ID>
     <ID>UnusedParameter:MobileResultsScreen.kt:onOverrideSeller: (Int, Seller) -&gt; Unit</ID>
+    <ID>UnusedParameter:MobileResultsScreen.kt:onShowUpgradePrompt: (ProFeature) -&gt; Unit = {}</ID>
+    <ID>UnusedParameter:MobileResultsScreen.kt:proStatus: ProStatus = ProStatus.Free</ID>
     <ID>UnusedParameter:MobileScreens.kt:multiMatches: List&lt;MultiMatch&gt;</ID>
     <ID>UnusedParameter:MobileScreens.kt:onOptimize: () -&gt; Unit</ID>
   </CurrentIssues>

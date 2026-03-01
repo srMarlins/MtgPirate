@@ -254,7 +254,7 @@ fun MobilePreferencesScreen(
             ) {
 
             // Compact mobile header
-            Column(modifier = Modifier.padding(bottom = 8.dp)) {
+            Column(modifier = Modifier.padding(bottom = 4.dp)) {
                 Text(
                     "▸ CONFIGURE",
                     style = MaterialTheme.typography.h5,
@@ -269,9 +269,9 @@ fun MobilePreferencesScreen(
                 )
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(6.dp))
 
-            // Card Inclusion - Compact row layout for mobile portrait
+            // Card Inclusion - Compact single-row layout
             PixelCard(
                 glowing = false,
                 modifier = Modifier.fillMaxWidth()
@@ -281,24 +281,19 @@ fun MobilePreferencesScreen(
                     style = MaterialTheme.typography.body2,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colors.primary,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
 
-                // Vertical stack with full text labels
-                Column(
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(
-                            "COMMANDER",
-                            style = MaterialTheme.typography.body2,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Text("CMD", style = MaterialTheme.typography.body2)
                         PixelToggle(
                             checked = includeCommanders,
                             onCheckedChange = {
@@ -307,17 +302,11 @@ fun MobilePreferencesScreen(
                             }
                         )
                     }
-
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(
-                            "SIDEBOARD",
-                            style = MaterialTheme.typography.body2,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Text("SB", style = MaterialTheme.typography.body2)
                         PixelToggle(
                             checked = includeSideboard,
                             onCheckedChange = {
@@ -326,17 +315,11 @@ fun MobilePreferencesScreen(
                             }
                         )
                     }
-
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(
-                            "TOKEN",
-                            style = MaterialTheme.typography.body2,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Text("TOK", style = MaterialTheme.typography.body2)
                         PixelToggle(
                             checked = includeTokens,
                             onCheckedChange = {
@@ -348,7 +331,7 @@ fun MobilePreferencesScreen(
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
 
             // Sellers section
             PixelCard(
@@ -360,12 +343,12 @@ fun MobilePreferencesScreen(
                     style = MaterialTheme.typography.body2,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colors.primary,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
 
                 Column(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Seller.entries.forEach { seller ->
                         val isEnabled = seller.name in enabledSellers
@@ -437,9 +420,9 @@ fun MobilePreferencesScreen(
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
 
-            // Variant Priority - Scrollable with improved button states
+            // Variant Priority
             PixelCard(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 glowing = false
@@ -450,47 +433,27 @@ fun MobilePreferencesScreen(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colors.primary
                 )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    "└─ Drag items or use arrows to reorder",
-                style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                )
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(4.dp))
 
-                // Modern reorderable list with haptic feedback and smooth animations
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .clip(PixelShape(cornerSize = 6.dp))
-                        .background(
-                            MaterialTheme.colors.surface.copy(alpha = 0.5f),
-                            shape = PixelShape(cornerSize = 6.dp)
-                        )
-                        .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.2f)
-                        .padding(8.dp)
-                ) {
-                    val variants = variantPriority.ifEmpty { listOf("Regular", "Foil", "Holo") }
+                val variants = variantPriority.ifEmpty { listOf("Regular", "Foil", "Holo") }
 
-                    MobileReorderableListWithPixelStyle(
-                        items = variants,
-                        onReorder = onVariantPriorityChange,
-                        usePixelStyle = true,
-                        modifier = Modifier.fillMaxSize()
-                    ) { variant, index, total, isDragging ->
-                        HybridVariantPriorityItem(
-                            variantName = variant,
-                            position = index + 1,
-                            totalItems = total,
-                            isDragging = isDragging,
-                            usePixelStyle = true
-                        )
-                    }
+                MobileReorderableListWithPixelStyle(
+                    items = variants,
+                    onReorder = onVariantPriorityChange,
+                    usePixelStyle = true,
+                    modifier = Modifier.fillMaxWidth().weight(1f)
+                ) { variant, index, total, isDragging ->
+                    HybridVariantPriorityItem(
+                        variantName = variant,
+                        position = index + 1,
+                        totalItems = total,
+                        isDragging = isDragging,
+                        usePixelStyle = true
+                    )
                 }
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
 
             // Action buttons
             Row(
@@ -500,14 +463,14 @@ fun MobilePreferencesScreen(
                 PixelButton(
                     text = "← Back",
                     onClick = onBack,
-                    modifier = Modifier.weight(1f).height(52.dp),
+                    modifier = Modifier.weight(1f).height(44.dp),
                     variant = PixelButtonVariant.SURFACE
                 )
 
                 PixelButton(
                     text = "Next →",
                     onClick = onNext,
-                    modifier = Modifier.weight(1f).height(52.dp),
+                    modifier = Modifier.weight(1f).height(44.dp),
                     variant = PixelButtonVariant.SECONDARY
                 )
             }

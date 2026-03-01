@@ -127,7 +127,7 @@ actual fun SavedImportsDialog(
                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
                     )
 
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(8.dp))
 
                     // List of saved imports
                     if (savedImports.isEmpty()) {
@@ -173,7 +173,7 @@ actual fun SavedImportsDialog(
                             Box(Modifier.fillMaxSize()) {
                                 LazyColumn(
                                     modifier = Modifier.fillMaxSize().padding(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp),
                                     state = listState
                                 ) {
                                     items(savedImports, key = { it.uniqueIdentifier }) { import ->
@@ -192,16 +192,16 @@ actual fun SavedImportsDialog(
                         }
                     }
 
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(8.dp))
 
-                    // Bottom button - full width and touch-friendly
+                    // Bottom button
                     PixelButton(
                         text = "Close",
                         onClick = onDismiss,
                         variant = PixelButtonVariant.SURFACE,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp)
+                            .height(44.dp)
                     )
                 }
             }
@@ -238,116 +238,81 @@ fun MobileSavedImportCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .padding(horizontal = 10.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left side - Info column
+            // Left side: name + metadata
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                // Deck name
                 Text(
                     import.name,
-                    style = MaterialTheme.typography.body1,
+                    style = MaterialTheme.typography.body2,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colors.primary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                // Info row - date and card count
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "📅 $formattedDate",
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                    )
-                    Text(
-                        "🃏 ${import.cardCount}",
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                    )
+                val options = buildList {
+                    add(formattedDate)
+                    add("${import.cardCount} cards")
+                    if (import.includeSideboard) add("SB")
+                    if (import.includeCommanders) add("CMD")
+                    if (import.includeTokens) add("TOK")
                 }
-
-                // Badges row if any options are enabled
-                if (import.includeSideboard || import.includeCommanders || import.includeTokens) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (import.includeSideboard) {
-                            PixelBadge(text = "SB", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
-                        }
-                        if (import.includeCommanders) {
-                            PixelBadge(text = "CMD", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
-                        }
-                        if (import.includeTokens) {
-                            PixelBadge(text = "TOK", color = MaterialTheme.colors.secondary.copy(alpha = 0.7f))
-                        }
-                    }
-                }
+                Text(
+                    options.joinToString(" · "),
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                    maxLines = 1
+                )
             }
 
-            Spacer(Modifier.width(8.dp))
+            // Right side: action buttons
+            PixelButton(
+                text = "Load",
+                onClick = onSelect,
+                variant = PixelButtonVariant.PRIMARY,
+                modifier = Modifier.width(80.dp).height(36.dp)
+            )
 
-            // Right side - Action buttons (Load and Delete)
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Load button (double width of delete button)
-                PixelButton(
-                    text = "Load",
-                    onClick = onSelect,
-                    variant = PixelButtonVariant.PRIMARY,
-                    modifier = Modifier
-                        .width(88.dp)
-                        .height(44.dp)
-                )
-
-                // Animated trash/checkmark button
-                val buttonColor by animateColorAsState(
-                    targetValue = if (showDeleteConfirm)
-                        MaterialTheme.colors.secondary.copy(alpha = 0.3f)
-                    else
-                        MaterialTheme.colors.error.copy(alpha = 0.2f),
-                    animationSpec = tween(200)
-                )
-
-                val icon by remember {
-                    derivedStateOf { if (showDeleteConfirm) "✓" else "🗑" }
-                }
-
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
-                        .background(buttonColor, shape = PixelShape(cornerSize = 4.dp))
-                        .clickable {
-                            if (showDeleteConfirm) {
-                                onDelete()
-                                showDeleteConfirm = false
-                            } else {
-                                showDeleteConfirm = true
-                            }
+            val buttonColor by animateColorAsState(
+                targetValue = if (showDeleteConfirm)
+                    MaterialTheme.colors.secondary.copy(alpha = 0.3f)
+                else
+                    MaterialTheme.colors.error.copy(alpha = 0.2f),
+                animationSpec = tween(200)
+            )
+            val icon by remember {
+                derivedStateOf { if (showDeleteConfirm) "✓" else "🗑" }
+            }
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
+                    .background(buttonColor, shape = PixelShape(cornerSize = 4.dp))
+                    .clickable {
+                        if (showDeleteConfirm) {
+                            onDelete()
+                            showDeleteConfirm = false
+                        } else {
+                            showDeleteConfirm = true
                         }
-                        .padding(8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = icon,
-                        style = MaterialTheme.typography.body2,
-                        color = if (showDeleteConfirm)
-                            MaterialTheme.colors.secondary
-                        else
-                            MaterialTheme.colors.error
-                    )
-                }
+                    }
+                    .padding(4.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = icon,
+                    style = MaterialTheme.typography.caption,
+                    color = if (showDeleteConfirm)
+                        MaterialTheme.colors.secondary
+                    else
+                        MaterialTheme.colors.error
+                )
             }
         }
     }
