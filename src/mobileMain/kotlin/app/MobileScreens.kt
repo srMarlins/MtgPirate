@@ -1,27 +1,26 @@
 package app
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -29,13 +28,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import model.MultiMatch
 import state.SearchProgress
 import model.OrderItem
@@ -53,7 +55,9 @@ import ui.LazyListScrollIndicators
 import ui.MobilePixelImageModal
 import ui.MobileResultsScreen
 import ui.MobileReorderableListWithPixelStyle
+import ui.PixelAccent1
 import ui.PixelBadge
+import ui.PixelBadgeStyle
 import ui.PixelButton
 import ui.PixelButtonVariant
 import ui.PixelCard
@@ -515,6 +519,7 @@ fun MobileResultsScreenWrapper(
     multiMatches: List<MultiMatch> = emptyList(),
     availableSellers: List<Seller> = emptyList(),
     onOverrideSeller: (Int, Seller) -> Unit = { _, _ -> },
+    onShowAltDetail: (Int) -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
@@ -544,6 +549,7 @@ fun MobileResultsScreenWrapper(
                     multiMatches = multiMatches,
                     availableSellers = availableSellers,
                     onOverrideSeller = onOverrideSeller,
+                    onShowAltDetail = onShowAltDetail,
                 )
             }
         }
@@ -701,11 +707,13 @@ fun MobileResolveScreen(
                                                 ) {
                                                     PixelBadge(
                                                         text = variant.setCode,
-                                                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                                                        color = MaterialTheme.colors.secondary,
+                                                        style = PixelBadgeStyle.MUTED
                                                     )
                                                     PixelBadge(
                                                         text = variant.variantType.displayName,
-                                                        color = MaterialTheme.colors.primary
+                                                        color = PixelAccent1,
+                                                        style = PixelBadgeStyle.ACCENT
                                                     )
                                                 }
                                                 Text(
@@ -778,6 +786,252 @@ fun MobileResolveScreen(
 
 
 /**
+ * Mobile Alt Detail Screen - shows current card and all alternative sellers.
+ * Navigated to from the "Alt ▸" button on a result card row.
+ */
+@Composable
+fun MobileAltDetailScreen(
+    match: model.DeckEntryMatch,
+    multiMatch: MultiMatch,
+    onUseSeller: (Seller) -> Unit,
+    onBack: () -> Unit,
+    onEnrichVariant: ((model.CardVariant) -> Unit)? = null,
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        ScanlineEffect(alpha = 0.03f)
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "\u25B8 ALTERNATIVES",
+                        style = MaterialTheme.typography.h5,
+                        color = MaterialTheme.colors.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "\u2514\u2500 ${match.deckEntry.cardName}",
+                        style = MaterialTheme.typography.body2,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                        maxLines = 1
+                    )
+                }
+                PixelBadge(
+                    text = "${multiMatch.alternatives.size + 1}",
+                    color = MaterialTheme.colors.secondary
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Current card (glowing card)
+            val currentVariant = match.selectedVariant
+            if (currentVariant != null) {
+                LaunchedEffect(currentVariant.sku) {
+                    if (currentVariant.imageUrl == null) onEnrichVariant?.invoke(currentVariant)
+                }
+                PixelCard(glowing = true) {
+                    Column(Modifier.fillMaxWidth().padding(12.dp)) {
+                        Text(
+                            "CURRENT",
+                            style = MaterialTheme.typography.overline,
+                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            var showModal by remember { mutableStateOf(false) }
+                            CompactPixelImagePreview(
+                                imageUrl = currentVariant.imageUrl,
+                                cardName = match.deckEntry.cardName,
+                                onClick = { showModal = true }
+                            )
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    match.deckEntry.cardName,
+                                    style = MaterialTheme.typography.body1,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 2
+                                )
+                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    PixelBadge(text = currentVariant.setCode, color = MaterialTheme.colors.secondary, style = PixelBadgeStyle.MUTED)
+                                    if (currentVariant.variantType != model.VariantType.REGULAR) {
+                                        PixelBadge(
+                                            text = currentVariant.variantType.displayName.uppercase(),
+                                            color = PixelAccent1,
+                                            style = PixelBadgeStyle.ACCENT
+                                        )
+                                    }
+                                    val bestSeller = multiMatch.bestOption?.seller
+                                    if (bestSeller != null) {
+                                        PixelBadge(
+                                            text = bestSeller.displayName,
+                                            color = sellerColor(bestSeller),
+                                            style = PixelBadgeStyle.FILLED
+                                        )
+                                    }
+                                }
+                            }
+                            Text(
+                                formatPrice(currentVariant.priceInCents),
+                                style = MaterialTheme.typography.h6,
+                                color = MaterialTheme.colors.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (showModal) {
+                                MobilePixelImageModal(
+                                    imageUrl = currentVariant.imageUrl,
+                                    cardName = match.deckEntry.cardName,
+                                    setCode = currentVariant.setCode,
+                                    variantType = currentVariant.variantType.displayName,
+                                    onDismiss = { showModal = false }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Alternatives list — single container with divider-separated rows
+            PixelCard(modifier = Modifier.weight(1f).fillMaxWidth(), glowing = false) {
+                val listState = rememberLazyListState()
+                Box(Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        state = listState,
+                    ) {
+                        items(
+                            multiMatch.alternatives,
+                            key = { "${it.seller.name}-${it.variant.sku}" }
+                        ) { alt ->
+                            val variant = alt.variant
+                            LaunchedEffect(variant.sku) {
+                                if (variant.imageUrl == null) onEnrichVariant?.invoke(variant)
+                            }
+                            var showModal by remember { mutableStateOf(false) }
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CompactPixelImagePreview(
+                                    imageUrl = variant.imageUrl,
+                                    cardName = variant.nameOriginal,
+                                    onClick = { showModal = true }
+                                )
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    // Name + price row
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            variant.nameOriginal,
+                                            modifier = Modifier.weight(1f, fill = false),
+                                            style = MaterialTheme.typography.body2,
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            formatPrice(alt.priceCents),
+                                            style = MaterialTheme.typography.body2,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colors.secondary
+                                        )
+                                    }
+                                    // Badges + action row
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.weight(1f, fill = false),
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            PixelBadge(text = variant.setCode, color = MaterialTheme.colors.secondary, style = PixelBadgeStyle.MUTED)
+                                            if (variant.variantType != model.VariantType.REGULAR) {
+                                                PixelBadge(
+                                                    text = variant.variantType.displayName.uppercase(),
+                                                    color = PixelAccent1,
+                                                    style = PixelBadgeStyle.ACCENT
+                                                )
+                                            }
+                                            PixelBadge(
+                                                text = alt.seller.displayName,
+                                                color = sellerColor(alt.seller),
+                                                style = PixelBadgeStyle.FILLED
+                                            )
+                                        }
+                                        PixelButton(
+                                            text = "Use",
+                                            onClick = {
+                                                HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
+                                                onUseSeller(alt.seller)
+                                            },
+                                            variant = PixelButtonVariant.SECONDARY,
+                                            modifier = Modifier.height(32.dp)
+                                        )
+                                    }
+                                }
+                            }
+                            if (showModal) {
+                                MobilePixelImageModal(
+                                    imageUrl = variant.imageUrl,
+                                    cardName = variant.nameOriginal,
+                                    setCode = variant.setCode,
+                                    variantType = variant.variantType.displayName,
+                                    onDismiss = { showModal = false }
+                                )
+                            }
+                            // Divider between items (not after the last one)
+                            if (alt != multiMatch.alternatives.last()) {
+                                PixelDivider()
+                            }
+                        }
+                    }
+                    LazyListScrollIndicators(state = listState, modifier = Modifier.matchParentSize())
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Back button
+            PixelButton(
+                text = "\u2190 Back",
+                onClick = onBack,
+                variant = PixelButtonVariant.SURFACE,
+                modifier = Modifier.fillMaxWidth().height(52.dp)
+            )
+        }
+    }
+}
+
+/**
  * Mobile Shopping Plan Screen - Step 4 of the wizard.
  * Mobile-optimized multi-seller shopping plan with per-seller order cards,
  * expandable item lists, and checkout action buttons.
@@ -838,41 +1092,90 @@ fun MobileShoppingPlanScreen(
                 Spacer(Modifier.height(12.dp))
 
                 if (isLoading || shoppingPlan == null) {
-                    // Loading state
-                    Box(
-                        modifier = Modifier.fillMaxWidth().weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // Loading state — glowing card with animated content
+                    PixelCard(glowing = true, modifier = Modifier.fillMaxWidth().weight(1f)) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Text(
-                                "Optimizing shopping plan",
-                                style = MaterialTheme.typography.h6,
-                                color = MaterialTheme.colors.primary
+                                "⚡ OPTIMIZING",
+                                style = MaterialTheme.typography.h5,
+                                color = MaterialTheme.colors.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "Finding the best prices across sellers",
+                                style = MaterialTheme.typography.body2,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
                             )
                             Spacer(Modifier.height(16.dp))
                             AnimatedLoadingDots()
                         }
                     }
                 } else {
+                    val coroutineScope = rememberCoroutineScope()
+                    val pagerState = rememberPagerState { shoppingPlan.orders.size }
+
                     // Grand total summary card
                     MobileShoppingPlanSummary(shoppingPlan)
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(8.dp))
 
-                    // Per-seller order cards (scrollable)
-                    LazyColumn(
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(
-                            shoppingPlan.orders,
-                            key = { it.seller.name }
-                        ) { order ->
-                            MobileSellerOrderCard(
-                                order = order,
-                                onCopyToClipboard = onCopyToClipboard,
-                                onOpenUrl = onOpenUrl,
+                    // Page indicator dots with swipe hint
+                    if (shoppingPlan.orders.size > 1) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                shoppingPlan.orders.forEachIndexed { index, order ->
+                                    val dotColor = if (index == pagerState.currentPage) {
+                                        sellerColor(order.seller)
+                                    } else {
+                                        MaterialTheme.colors.onSurface.copy(alpha = 0.3f)
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .size(if (index == pagerState.currentPage) 10.dp else 8.dp)
+                                            .clip(PixelShape(cornerSize = 4.dp))
+                                            .background(dotColor, shape = PixelShape(cornerSize = 4.dp))
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "${pagerState.currentPage + 1}/${shoppingPlan.orders.size}",
+                                style = MaterialTheme.typography.caption,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
                             )
                         }
+                        Spacer(Modifier.height(4.dp))
+                    }
+
+                    // Horizontal pager of seller order cards
+                    // End padding lets the next card peek in as a visual swipe affordance
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        pageSpacing = 12.dp,
+                        contentPadding = if (shoppingPlan.orders.size > 1) PaddingValues(end = 24.dp) else PaddingValues(),
+                    ) { page ->
+                        MobileSellerOrderCard(
+                            order = shoppingPlan.orders[page],
+                            onCopyToClipboard = onCopyToClipboard,
+                            onOpenUrl = onOpenUrl,
+                            onCheckoutComplete = {
+                                if (pagerState.currentPage < shoppingPlan.orders.size - 1) {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                    }
+                                }
+                            },
+                        )
                     }
                 }
 
@@ -891,15 +1194,23 @@ fun MobileShoppingPlanScreen(
 }
 
 /**
- * Summary card showing total price and savings across all sellers.
+ * Summary card showing seller count and grand total price.
  */
 @Composable
 private fun MobileShoppingPlanSummary(plan: ShoppingPlan) {
+    val totalCards = plan.orders.sumOf { order -> order.items.sumOf { it.qty } }
+
     PixelCard(glowing = true) {
         Column(
             Modifier.fillMaxWidth().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            Text(
+                "${plan.orders.size} SELLERS",
+                style = MaterialTheme.typography.overline,
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+            )
+
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -913,41 +1224,43 @@ private fun MobileShoppingPlanSummary(plan: ShoppingPlan) {
                 )
                 Text(
                     formatPrice(plan.totalPriceCents),
-                    style = MaterialTheme.typography.h6,
+                    style = MaterialTheme.typography.h5,
                     color = MaterialTheme.colors.primary,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            if (plan.savingsVsSingleSeller > 0) {
+            PixelDivider()
+
+            // Per-seller breakdown
+            plan.orders.forEach { order ->
+                val orderCards = order.items.sumOf { it.qty }
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Box(Modifier.width(3.dp).height(12.dp).background(sellerColor(order.seller)))
+                        Text(
+                            order.seller.displayName,
+                            style = MaterialTheme.typography.caption,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colors.onSurface
+                        )
+                        Text(
+                            "($orderCards)",
+                            style = MaterialTheme.typography.caption,
+                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                        )
+                    }
                     Text(
-                        "Savings vs. single seller",
-                        style = MaterialTheme.typography.body2,
-                        color = PixelGreen
-                    )
-                    Text(
-                        "- ${formatPrice(plan.savingsVsSingleSeller)}",
-                        style = MaterialTheme.typography.body2,
-                        color = PixelGreen,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            PixelDivider()
-
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                plan.orders.forEach { order ->
-                    PixelBadge(
-                        text = "${order.seller.displayName}: ${formatPrice(order.totalCents)}",
+                        formatPrice(order.totalCents),
+                        style = MaterialTheme.typography.caption,
+                        fontWeight = FontWeight.Bold,
                         color = sellerColor(order.seller)
                     )
                 }
@@ -957,353 +1270,216 @@ private fun MobileShoppingPlanSummary(plan: ShoppingPlan) {
 }
 
 /**
- * Expandable card for a single seller's order (mobile-optimized).
+ * Full-page seller order card for the horizontal pager.
+ * Shows seller name prominently, order details, always-visible card list, and checkout button.
  */
 @Composable
 private fun MobileSellerOrderCard(
     order: SellerOrder,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
+    onCheckoutComplete: () -> Unit = {},
 ) {
-    var expanded by remember { mutableStateOf(false) }
     val color = sellerColor(order.seller)
     val totalItems = order.items.sumOf { it.qty }
 
-    PixelCard(glowing = false) {
+    PixelCard(glowing = false, modifier = Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxWidth().padding(12.dp)) {
-            // Seller header row
+            // Seller name header — prominent at top
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    PixelBadge(text = order.seller.displayName, color = color)
+                    // Colored stripe accent
+                    Box(Modifier.width(4.dp).height(24.dp).background(color))
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "$totalItems cards",
-                        style = MaterialTheme.typography.body2,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                        order.seller.displayName.uppercase(),
+                        style = MaterialTheme.typography.h6,
+                        color = color,
+                        fontWeight = FontWeight.Bold
                     )
                 }
-                Text(
-                    formatPrice(order.totalCents),
-                    style = MaterialTheme.typography.h6,
+                PixelBadge(
+                    text = "$totalItems cards",
                     color = color,
-                    fontWeight = FontWeight.Bold
+                    style = PixelBadgeStyle.MUTED
                 )
             }
 
             Spacer(Modifier.height(8.dp))
 
-            // Order details: subtotal, discount, shipping
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            // Order summary row: subtotal, discount, shipping, total
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        "Subtotal",
-                        style = MaterialTheme.typography.body2,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                    )
-                    Text(
-                        formatPrice(order.subtotalCents),
-                        style = MaterialTheme.typography.body2,
-                        color = MaterialTheme.colors.onSurface
-                    )
+                    Text("Subtotal", style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f))
+                    Text(formatPrice(order.subtotalCents), style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSurface)
                 }
-
                 if (order.discountPercent > 0) {
                     Row(
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            "Discount (${order.discountPercent}%)",
-                            style = MaterialTheme.typography.body2,
-                            color = PixelGreen
-                        )
+                        Text("Discount (${order.discountPercent}%)", style = MaterialTheme.typography.caption, color = PixelGreen)
                         val discountAmount = order.subtotalCents * order.discountPercent / 100
-                        Text(
-                            "- ${formatPrice(discountAmount)}",
-                            style = MaterialTheme.typography.body2,
-                            color = PixelGreen
-                        )
+                        Text("- ${formatPrice(discountAmount)}", style = MaterialTheme.typography.caption, color = PixelGreen)
                     }
                 }
-
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        "Shipping",
-                        style = MaterialTheme.typography.body2,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                    )
+                    Text("Shipping", style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f))
                     Text(
                         if (order.shippingCents == 0) "Free" else formatPrice(order.shippingCents),
-                        style = MaterialTheme.typography.body2,
-                        color = if (order.shippingCents == 0) PixelGreen
-                        else MaterialTheme.colors.onSurface
+                        style = MaterialTheme.typography.caption,
+                        color = if (order.shippingCents == 0) PixelGreen else MaterialTheme.colors.onSurface
                     )
+                }
+                PixelDivider(modifier = Modifier.padding(vertical = 2.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Total", style = MaterialTheme.typography.body2, fontWeight = FontWeight.Bold, color = MaterialTheme.colors.onSurface)
+                    Text(formatPrice(order.totalCents), style = MaterialTheme.typography.body2, fontWeight = FontWeight.Bold, color = color)
                 }
             }
 
             Spacer(Modifier.height(8.dp))
-            PixelDivider()
-            Spacer(Modifier.height(8.dp))
 
-            // Expand/collapse toggle for card list
+            // Always-visible scrollable card list
             Row(
-                Modifier.fillMaxWidth().clickable {
-                    HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.LIGHT)
-                    expanded = !expanded
-                },
+                Modifier.fillMaxWidth()
+                    .background(MaterialTheme.colors.surface.copy(alpha = 0.6f))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    if (expanded) "Hide cards" else "Show cards ($totalItems)",
-                    style = MaterialTheme.typography.subtitle2,
-                    color = MaterialTheme.colors.primary,
-                    fontWeight = FontWeight.Bold
+                Text("QTY", Modifier.width(32.dp), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)
+                Text("CARD", Modifier.weight(1f), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)
+                Text("SET", Modifier.width(40.dp), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)
+                Text("PRICE", Modifier.width(52.dp), style = MaterialTheme.typography.overline, color = MaterialTheme.colors.primary)
+            }
+            PixelDivider()
+
+            val itemListState = rememberLazyListState()
+            Box(Modifier.fillMaxWidth().weight(1f)) {
+                LazyColumn(
+                    Modifier.fillMaxSize(),
+                    state = itemListState
+                ) {
+                    items(
+                        order.items,
+                        key = { it.variant.uniqueIdentifier }
+                    ) { item ->
+                        val hasLink = item.variant.purchaseUri != null
+                        Row(
+                            Modifier.fillMaxWidth()
+                                .then(
+                                    if (hasLink) Modifier.clickable {
+                                        onOpenUrl(item.variant.purchaseUri!!)
+                                    } else Modifier
+                                )
+                                .padding(horizontal = 8.dp, vertical = 5.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("${item.qty}", Modifier.width(32.dp), style = MaterialTheme.typography.body2)
+                            Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    item.variant.nameOriginal,
+                                    style = MaterialTheme.typography.body2,
+                                    color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface,
+                                    maxLines = 1
+                                )
+                                if (hasLink) {
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("↗", style = MaterialTheme.typography.caption, color = MaterialTheme.colors.primary.copy(alpha = 0.6f))
+                                }
+                            }
+                            Text(item.variant.setCode, Modifier.width(40.dp), style = MaterialTheme.typography.body2)
+                            Text(formatPrice(item.variant.priceInCents), Modifier.width(52.dp), style = MaterialTheme.typography.body2)
+                        }
+                        PixelDivider()
+                    }
+                }
+                LazyListScrollIndicators(
+                    state = itemListState,
+                    modifier = Modifier.matchParentSize()
                 )
             }
 
-            // Expandable card list
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandVertically(),
-                exit = shrinkVertically()
-            ) {
-                Column(Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                    // Item list header
-                    Row(
-                        Modifier.fillMaxWidth()
-                            .background(MaterialTheme.colors.surface.copy(alpha = 0.6f))
-                            .padding(horizontal = 8.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "QTY",
-                            Modifier.width(36.dp),
-                            style = MaterialTheme.typography.overline,
-                            color = MaterialTheme.colors.primary
-                        )
-                        Text(
-                            "CARD",
-                            Modifier.weight(1f),
-                            style = MaterialTheme.typography.overline,
-                            color = MaterialTheme.colors.primary
-                        )
-                        Text(
-                            "SET",
-                            Modifier.width(44.dp),
-                            style = MaterialTheme.typography.overline,
-                            color = MaterialTheme.colors.primary
-                        )
-                        Text(
-                            "PRICE",
-                            Modifier.width(56.dp),
-                            style = MaterialTheme.typography.overline,
-                            color = MaterialTheme.colors.primary
-                        )
-                    }
-                    PixelDivider()
-
-                    // Constrain item list height
-                    val itemListState = rememberLazyListState()
-                    Box(Modifier.fillMaxWidth().heightIn(max = 250.dp)) {
-                        LazyColumn(
-                            Modifier.fillMaxWidth(),
-                            state = itemListState
-                        ) {
-                            items(
-                                order.items,
-                                key = { it.variant.uniqueIdentifier }
-                            ) { item ->
-                                val hasLink = item.variant.purchaseUri != null
-                                Row(
-                                    Modifier.fillMaxWidth()
-                                        .then(
-                                            if (hasLink) Modifier.clickable {
-                                                onOpenUrl(item.variant.purchaseUri!!)
-                                            } else Modifier
-                                        )
-                                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        "${item.qty}",
-                                        Modifier.width(36.dp),
-                                        style = MaterialTheme.typography.body2
-                                    )
-                                    Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            item.variant.nameOriginal,
-                                            style = MaterialTheme.typography.body2,
-                                            color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface,
-                                            maxLines = 1
-                                        )
-                                        if (hasLink) {
-                                            Spacer(Modifier.width(4.dp))
-                                            Text(
-                                                "\u2197",
-                                                style = MaterialTheme.typography.caption,
-                                                color = MaterialTheme.colors.primary.copy(alpha = 0.6f)
-                                            )
-                                        }
-                                    }
-                                    Text(
-                                        item.variant.setCode,
-                                        Modifier.width(44.dp),
-                                        style = MaterialTheme.typography.body2
-                                    )
-                                    Text(
-                                        formatPrice(item.variant.priceInCents),
-                                        Modifier.width(56.dp),
-                                        style = MaterialTheme.typography.body2
-                                    )
-                                }
-                                PixelDivider()
-                            }
-                        }
-                        LazyListScrollIndicators(
-                            state = itemListState,
-                            modifier = Modifier.matchParentSize()
-                        )
-                    }
-                }
-            }
-
             Spacer(Modifier.height(8.dp))
 
-            // Per-seller action buttons
-            MobileSellerActionButtons(
-                order = order,
-                onCopyToClipboard = onCopyToClipboard,
-                onOpenUrl = onOpenUrl,
+            // PRIMARY BUY BUTTON
+            PixelButton(
+                text = sellerCheckoutLabel(order.seller),
+                onClick = {
+                    HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
+                    performSellerCheckout(order.seller, order, onCopyToClipboard, onOpenUrl)
+                    onCheckoutComplete()
+                },
+                variant = PixelButtonVariant.SECONDARY,
+                modifier = Modifier.fillMaxWidth().height(48.dp)
+            )
+
+            Spacer(Modifier.height(6.dp))
+
+            // Copy list button
+            var copied by remember { mutableStateOf(false) }
+            LaunchedEffect(copied) {
+                if (copied) {
+                    kotlinx.coroutines.delay(2000)
+                    copied = false
+                }
+            }
+            PixelButton(
+                text = if (copied) "Copied!" else "Copy Card List",
+                onClick = {
+                    HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
+                    onCopyToClipboard(formatForExport(order.seller, order.items))
+                    copied = true
+                },
+                variant = PixelButtonVariant.SURFACE,
+                modifier = Modifier.fillMaxWidth().height(36.dp)
             )
         }
     }
 }
 
-/**
- * Per-seller action buttons for checkout and export (mobile-optimized).
- * Uses auto-fill cart URLs for TCGPlayer and ManaPool, with "Copied!" feedback.
- */
-@Composable
-private fun MobileSellerActionButtons(
+/** Seller-specific checkout button label. */
+private fun sellerCheckoutLabel(seller: Seller): String = when (seller) {
+    Seller.USEA -> "Email Order"
+    Seller.BOOTLEG_MAGE -> "Buy on Bootleg Mage"
+    Seller.TCGPLAYER -> "Buy on TCGPlayer"
+    Seller.MANAPOOL -> "Buy on ManaPool"
+}
+
+/** Perform seller-specific checkout action. */
+private fun performSellerCheckout(
+    seller: Seller,
     order: SellerOrder,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
 ) {
-    var copied by remember { mutableStateOf(false) }
-
-    // Auto-reset "Copied!" feedback after 2 seconds
-    LaunchedEffect(copied) {
-        if (copied) {
-            kotlinx.coroutines.delay(2000)
-            copied = false
+    when (seller) {
+        Seller.USEA -> {
+            val exportText = formatForExport(Seller.USEA, order.items)
+            onCopyToClipboard(exportText)
+            val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
+            val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&body=${encodeUrlParameter(exportText)}"
+            onOpenUrl(mailtoUrl)
         }
-    }
-
-    Row(
-        Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        when (order.seller) {
-            Seller.USEA -> {
-                PixelButton(
-                    text = "Email Order",
-                    onClick = {
-                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        val exportText = formatForExport(Seller.USEA, order.items)
-                        onCopyToClipboard(exportText)
-                        val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
-                        val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&body=${encodeUrlParameter(exportText)}"
-                        onOpenUrl(mailtoUrl)
-                    },
-                    variant = PixelButtonVariant.PRIMARY,
-                    modifier = Modifier.weight(1f).height(40.dp)
-                )
-                PixelButton(
-                    text = if (copied) "Copied!" else "Copy CSV",
-                    onClick = {
-                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        onCopyToClipboard(formatForExport(Seller.USEA, order.items))
-                        copied = true
-                    },
-                    variant = PixelButtonVariant.SURFACE,
-                    modifier = Modifier.weight(1f).height(40.dp)
-                )
-            }
-            Seller.BOOTLEG_MAGE -> {
-                PixelButton(
-                    text = "Buy on Bootleg Mage",
-                    onClick = {
-                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        onCopyToClipboard(formatForExport(Seller.BOOTLEG_MAGE, order.items))
-                        sellerCheckoutUrl(Seller.BOOTLEG_MAGE, order.items)?.let { onOpenUrl(it) }
-                    },
-                    variant = PixelButtonVariant.PRIMARY,
-                    modifier = Modifier.weight(1f).height(40.dp)
-                )
-                PixelButton(
-                    text = if (copied) "Copied!" else "Copy List",
-                    onClick = {
-                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        onCopyToClipboard(formatForExport(Seller.BOOTLEG_MAGE, order.items))
-                        copied = true
-                    },
-                    variant = PixelButtonVariant.SURFACE,
-                    modifier = Modifier.weight(1f).height(40.dp)
-                )
-            }
-            Seller.TCGPLAYER -> {
-                PixelButton(
-                    text = "Buy on TCGPlayer",
-                    onClick = {
-                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        onOpenUrl(buildTcgPlayerUrl(order.items))
-                    },
-                    variant = PixelButtonVariant.PRIMARY,
-                    modifier = Modifier.weight(1f).height(40.dp)
-                )
-                PixelButton(
-                    text = if (copied) "Copied!" else "Copy List",
-                    onClick = {
-                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        onCopyToClipboard(formatForExport(Seller.TCGPLAYER, order.items))
-                        copied = true
-                    },
-                    variant = PixelButtonVariant.SURFACE,
-                    modifier = Modifier.weight(1f).height(40.dp)
-                )
-            }
-            Seller.MANAPOOL -> {
-                PixelButton(
-                    text = "Buy on ManaPool",
-                    onClick = {
-                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        onOpenUrl(buildManaPoolUrl(order.items))
-                    },
-                    variant = PixelButtonVariant.PRIMARY,
-                    modifier = Modifier.weight(1f).height(40.dp)
-                )
-                PixelButton(
-                    text = if (copied) "Copied!" else "Copy List",
-                    onClick = {
-                        HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                        onCopyToClipboard(formatForExport(Seller.MANAPOOL, order.items))
-                        copied = true
-                    },
-                    variant = PixelButtonVariant.SURFACE,
-                    modifier = Modifier.weight(1f).height(40.dp)
-                )
-            }
+        Seller.BOOTLEG_MAGE -> {
+            onCopyToClipboard(formatForExport(Seller.BOOTLEG_MAGE, order.items))
+            sellerCheckoutUrl(Seller.BOOTLEG_MAGE, order.items)?.let { onOpenUrl(it) }
         }
+        Seller.TCGPLAYER -> onOpenUrl(buildTcgPlayerUrl(order.items))
+        Seller.MANAPOOL -> onOpenUrl(buildManaPoolUrl(order.items))
     }
 }
 
