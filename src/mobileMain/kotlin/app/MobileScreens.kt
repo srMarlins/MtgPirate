@@ -819,13 +819,6 @@ fun MobileShoppingPlanScreen(
     onToggleTheme: () -> Unit = {},
     proStatus: ProStatus = ProStatus.Free,
 ) {
-    // Auto-trigger optimization if plan is null but multiMatches exist
-    LaunchedEffect(shoppingPlan, multiMatches) {
-        if (shoppingPlan == null && multiMatches.isNotEmpty()) {
-            onOptimize()
-        }
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
 

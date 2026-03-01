@@ -590,7 +590,11 @@ class MviViewModel(
 
     private suspend fun searchDeck() {
         val preferences = _viewState.value.preferences
-        val enabledSellerNames = preferences.enabledSellers.toSet()
+        val enabledSellerNames = if (_localState.value.proStatus.isPro) {
+            preferences.enabledSellers.toSet()
+        } else {
+            setOf(Seller.USEA.name)
+        }
         val filteredSources = catalogUseCase.sourceRegistry.allSources
             .filter { it.seller.name in enabledSellerNames }
 
@@ -783,7 +787,9 @@ class MviViewModel(
 
     /** Step 1 → 2: Save import, parse deck, mark step complete */
     private suspend fun wizardImportToPreferences() {
-        saveCurrentImport()
+        if (_localState.value.proStatus.isPro) {
+            saveCurrentImport()
+        }
         parseDeck()
         completeWizardStep(1)
     }
@@ -804,7 +810,9 @@ class MviViewModel(
     /** Step 3 → 4: Mark step complete, optimize shopping plan */
     private suspend fun wizardResultsToExport() {
         completeWizardStep(3)
-        optimizeShoppingPlan()
+        if (_localState.value.proStatus.isPro) {
+            optimizeShoppingPlan()
+        }
     }
 
     // -----------------------------------------------------------------------

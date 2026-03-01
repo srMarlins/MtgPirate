@@ -40,5 +40,7 @@
     <ID>TooGenericExceptionCaught:MobileSavedImportsDialog.kt:e: Exception</ID>
     <ID>UnusedParameter:MobileReorderableList.kt:totalItems: Int</ID>
     <ID>UnusedParameter:MobileResultsScreen.kt:matchedCount: Int = 0</ID>
+    <ID>UnusedParameter:MobileScreens.kt:multiMatches: List&lt;MultiMatch&gt;</ID>
+    <ID>UnusedParameter:MobileScreens.kt:onOptimize: () -&gt; Unit</ID>
   </CurrentIssues>
 </SmellBaseline>
