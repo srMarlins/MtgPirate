@@ -207,8 +207,8 @@ fun MobileNavigationHost(
                     viewModel.processIntent(ViewIntent.WizardResultsToExport)
                     navigateTo(MobileScreen.EXPORT)
                 },
-                onEnrichVariant = { variant ->
-                    viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                onPrefetchImages = { variants ->
+                    viewModel.processIntent(ViewIntent.PrefetchImages(variants))
                 },
                 isLoadingCatalog = state.loadingCatalog,
                 isMatching = state.isMatching,
@@ -248,8 +248,8 @@ fun MobileNavigationHost(
                                 viewModel.processIntent(ViewIntent.CloseResolve)
                                 navigateTo(MobileScreen.RESULTS)
                             },
-                            onEnrichVariant = { variant ->
-                                viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                            onPrefetchImages = { variants ->
+                                viewModel.processIntent(ViewIntent.PrefetchImages(variants))
                             }
                         )
                     } else {

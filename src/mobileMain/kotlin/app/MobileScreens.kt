@@ -489,7 +489,7 @@ fun MobileResultsScreenWrapper(
     onResolve: (Int) -> Unit,
     onBack: () -> Unit,
     onNext: () -> Unit,
-    onEnrichVariant: ((model.CardVariant) -> Unit)? = null,
+    onPrefetchImages: ((List<model.CardVariant>) -> Unit)? = null,
     isLoadingCatalog: Boolean = false,
     isMatching: Boolean = false,
     searchProgress: SearchProgress? = null,
@@ -525,7 +525,7 @@ fun MobileResultsScreenWrapper(
                     onShowAllCandidates = onResolve,
                     onClose = onBack,
                     onExport = onNext,
-                    onEnrichVariant = onEnrichVariant,
+                    onPrefetchImages = onPrefetchImages,
                     isLoading = isLoadingCatalog || isMatching || (searchProgress != null && searchProgress.isSearching),
                     searchProgress = searchProgress,
                     matchedCount = matchedCount,
@@ -552,8 +552,18 @@ fun MobileResolveScreen(
     match: model.DeckEntryMatch,
     onSelect: (model.CardVariant) -> Unit,
     onBack: () -> Unit,
-    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
+    onPrefetchImages: ((List<model.CardVariant>) -> Unit)? = null
 ) {
+    // Batch prefetch images for all candidate variants
+    val variantsNeedingImages = remember(match.candidates) {
+        match.candidates.map { it.variant }.filter { it.smallImageUrl == null }
+    }
+    LaunchedEffect(variantsNeedingImages) {
+        if (variantsNeedingImages.isNotEmpty()) {
+            onPrefetchImages?.invoke(variantsNeedingImages)
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
 
@@ -637,13 +647,6 @@ fun MobileResolveScreen(
                             items(sorted, key = { it.uniqueIdentifier }) { cand: model.MatchCandidate ->
                                 val variant = cand.variant
 
-                                // Trigger image enrichment
-                                LaunchedEffect(variant.sku) {
-                                    if (variant.imageUrl == null) {
-                                        onEnrichVariant?.invoke(variant)
-                                    }
-                                }
-
                                 // Candidate card
                                 Box(
                                     modifier = Modifier
@@ -672,7 +675,7 @@ fun MobileResolveScreen(
                                         ) {
                                             // Compact inline image preview
                                             CompactPixelImagePreview(
-                                                imageUrl = variant.imageUrl,
+                                                smallImageUrl = variant.smallImageUrl,
                                                 cardName = variant.nameOriginal,
                                                 onClick = { showImageModal = true }
                                             )

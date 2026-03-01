@@ -22,7 +22,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,16 +72,8 @@ fun ResultCardItem(
     onResolve: (Int) -> Unit,
     onShowAllCandidates: (Int) -> Unit,
     onShowAltDetail: () -> Unit,
-    onEnrichVariant: ((CardVariant) -> Unit)?,
 ) {
     val variant = match.selectedVariant
-
-    // Trigger image enrichment when variant comes into view
-    variant?.let { v ->
-        LaunchedEffect(v.sku) {
-            if (v.imageUrl == null) onEnrichVariant?.invoke(v)
-        }
-    }
 
     Column {
         Row(
@@ -110,7 +101,7 @@ fun ResultCardItem(
 private fun CardImageWithModal(variant: CardVariant?, cardName: String) {
     var showModal by remember { mutableStateOf(false) }
     CompactPixelImagePreview(
-        imageUrl = variant?.imageUrl,
+        smallImageUrl = variant?.smallImageUrl,
         cardName = cardName,
         modifier = Modifier.padding(start = 8.dp, end = 4.dp),
         onClick = { showModal = true }
