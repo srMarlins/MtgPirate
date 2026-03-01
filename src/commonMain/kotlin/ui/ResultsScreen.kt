@@ -37,6 +37,8 @@ import model.CardVariant
 import model.DeckEntryMatch
 import model.MatchStatus
 import model.MultiMatch
+import model.ProFeature
+import model.ProStatus
 import model.Seller
 import model.VariantType
 import state.SearchProgress
@@ -71,6 +73,8 @@ fun ResultsScreen(
     unmatchedCount: Int = 0,
     ambiguousCount: Int = 0,
     totalPriceCents: Int = 0,
+    proStatus: ProStatus = ProStatus.Free,
+    onShowUpgradePrompt: (ProFeature) -> Unit = {},
 ) {
     val totalMatched = matches.filter { it.selectedVariant != null }
     val totalCents = totalPriceCents
@@ -667,7 +671,11 @@ fun ResultsScreen(
                                                         .then(
                                                             if (!isCurrent && multiMatchIndex >= 0) {
                                                                 Modifier.clickable {
-                                                                    onOverrideSeller(multiMatchIndex, option.seller)
+                                                                    if (proStatus.isPro) {
+                                                                        onOverrideSeller(multiMatchIndex, option.seller)
+                                                                    } else {
+                                                                        onShowUpgradePrompt(ProFeature.SELLER_OVERRIDE)
+                                                                    }
                                                                 }
                                                             } else {
                                                                 Modifier
@@ -697,6 +705,9 @@ fun ResultsScreen(
                                                             text = "CURRENT",
                                                             color = PixelGreen
                                                         )
+                                                    }
+                                                    if (!isCurrent && !proStatus.isPro) {
+                                                        ProBadge()
                                                     }
                                                 }
                                             }

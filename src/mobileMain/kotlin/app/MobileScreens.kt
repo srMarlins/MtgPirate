@@ -41,6 +41,8 @@ import kotlinx.coroutines.launch
 import model.MultiMatch
 import state.SearchProgress
 import model.OrderItem
+import model.ProFeature
+import model.ProStatus
 import model.Seller
 import model.SellerOrder
 import model.ShoppingPlan
@@ -56,6 +58,7 @@ import ui.MobilePixelImageModal
 import ui.MobileResultsScreen
 import ui.MobileReorderableListWithPixelStyle
 import ui.PixelAccent1
+import ui.ProBadge
 import ui.PixelBadge
 import ui.PixelBadgeStyle
 import ui.PixelButton
@@ -90,7 +93,8 @@ fun MobileImportScreen(
     onShowSavedImports: () -> Unit,
     isLoadingCatalog: Boolean = false,
     isDarkTheme: Boolean = false,
-    onToggleTheme: () -> Unit = {}
+    onToggleTheme: () -> Unit = {},
+    proStatus: ProStatus = ProStatus.Free,
 ) {
     // Dismiss keyboard when tapping outside the text field
     val focusManager = LocalFocusManager.current
@@ -115,7 +119,8 @@ fun MobileImportScreen(
             MobileInlineHeader(
                 currentStep = 1,
                 isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme
+                onToggleTheme = onToggleTheme,
+                proStatus = proStatus,
             )
 
             Spacer(Modifier.height(8.dp))
@@ -222,6 +227,8 @@ fun MobilePreferencesScreen(
     proxyFirst: Boolean = true,
     onEnabledSellersChange: (List<String>) -> Unit = {},
     onProxyFirstChange: (Boolean) -> Unit = {},
+    proStatus: ProStatus = ProStatus.Free,
+    onShowUpgradePrompt: (ProFeature) -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
@@ -234,7 +241,8 @@ fun MobilePreferencesScreen(
             MobileInlineHeader(
                 currentStep = 2,
                 isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme
+                onToggleTheme = onToggleTheme,
+                proStatus = proStatus,
             )
 
             Spacer(Modifier.height(8.dp))
@@ -361,6 +369,7 @@ fun MobilePreferencesScreen(
                 ) {
                     Seller.entries.forEach { seller ->
                         val isEnabled = seller.name in enabledSellers
+                        val isLocked = seller != Seller.USEA && !proStatus.isPro
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -373,15 +382,25 @@ fun MobilePreferencesScreen(
                                 Text(
                                     seller.displayName,
                                     style = MaterialTheme.typography.body2,
+                                    color = if (isLocked) MaterialTheme.colors.onSurface.copy(alpha = 0.4f)
+                                            else MaterialTheme.colors.onSurface,
                                 )
                                 PixelBadge(
                                     text = if (seller.isProxy) "P" else "R",
                                     color = if (seller.isProxy) PixelOrange else PixelGreen
                                 )
+                                if (isLocked) {
+                                    ProBadge(onClick = { onShowUpgradePrompt(ProFeature.MULTI_SELLER) })
+                                }
                             }
                             PixelToggle(
                                 checked = isEnabled,
+                                enabled = !isLocked,
                                 onCheckedChange = { checked ->
+                                    if (isLocked) {
+                                        onShowUpgradePrompt(ProFeature.MULTI_SELLER)
+                                        return@PixelToggle
+                                    }
                                     if (!checked && enabledSellers.size <= 1) return@PixelToggle
                                     HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.LIGHT)
                                     val updated = if (checked) {
@@ -519,6 +538,8 @@ fun MobileResultsScreenWrapper(
     multiMatches: List<MultiMatch> = emptyList(),
     availableSellers: List<Seller> = emptyList(),
     onOverrideSeller: (Int, Seller) -> Unit = { _, _ -> },
+    proStatus: ProStatus = ProStatus.Free,
+    onShowUpgradePrompt: (ProFeature) -> Unit = {},
     onShowAltDetail: (Int) -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -529,7 +550,8 @@ fun MobileResultsScreenWrapper(
             MobileInlineHeader(
                 currentStep = 3,
                 isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme
+                onToggleTheme = onToggleTheme,
+                proStatus = proStatus,
             )
 
             // Results screen content - will handle its own padding and loading display
@@ -549,6 +571,8 @@ fun MobileResultsScreenWrapper(
                     multiMatches = multiMatches,
                     availableSellers = availableSellers,
                     onOverrideSeller = onOverrideSeller,
+                    proStatus = proStatus,
+                    onShowUpgradePrompt = onShowUpgradePrompt,
                     onShowAltDetail = onShowAltDetail,
                 )
             }
@@ -1047,14 +1071,8 @@ fun MobileShoppingPlanScreen(
     isLoading: Boolean = false,
     isDarkTheme: Boolean = false,
     onToggleTheme: () -> Unit = {},
+    proStatus: ProStatus = ProStatus.Free,
 ) {
-    // Auto-trigger optimization if plan is null but multiMatches exist
-    LaunchedEffect(shoppingPlan, multiMatches) {
-        if (shoppingPlan == null && multiMatches.isNotEmpty()) {
-            onOptimize()
-        }
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
 
@@ -1063,7 +1081,8 @@ fun MobileShoppingPlanScreen(
             MobileInlineHeader(
                 currentStep = 4,
                 isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme
+                onToggleTheme = onToggleTheme,
+                proStatus = proStatus,
             )
 
             Spacer(Modifier.height(8.dp))

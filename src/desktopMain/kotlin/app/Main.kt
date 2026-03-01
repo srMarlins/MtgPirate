@@ -39,6 +39,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import platform.DesktopMviPlatformServices
+import purchase.DesktopPurchaseManager
+import model.ProFeature
+import model.ProStatus
 import state.MviViewModel
 import state.ViewIntent
 import state.ViewState
@@ -61,7 +64,8 @@ fun FrameWindowScope.CustomTitleBar(
     onCatalogClick: () -> Unit,
     onExportClick: () -> Unit,
     onMatchesClick: () -> Unit,
-    onResultsClick: () -> Unit
+    onResultsClick: () -> Unit,
+    proStatus: ProStatus = ProStatus.Free,
 ) {
     WindowDraggableArea {
         Box(
@@ -148,6 +152,11 @@ fun FrameWindowScope.CustomTitleBar(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Pro badge next to theme toggle (when not Pro)
+                    if (!proStatus.isPro) {
+                        ProBadge()
+                    }
+
                     // Theme toggle
                     Box(
                         modifier = Modifier
@@ -279,7 +288,8 @@ fun main() = application {
     val catalogStore = remember { CatalogStore(database) }
     val importsStore = remember { ImportsStore(database) }
     val platformServices = remember { DesktopMviPlatformServices(database) }
-    
+    val purchaseManager = remember { DesktopPurchaseManager() }
+
     // Create MVI ViewModel
     val viewModel = remember {
         MviViewModel(
@@ -287,7 +297,8 @@ fun main() = application {
             database = database,
             catalogStore = catalogStore,
             importsStore = importsStore,
-            platformServices = platformServices
+            platformServices = platformServices,
+            purchaseManager = purchaseManager,
         )
     }
     
@@ -402,7 +413,8 @@ fun main() = application {
                                 }
                             }
                         }
-                    }
+                    },
+                    proStatus = state.proStatus,
                 )
 
                 // Main content
@@ -555,9 +567,15 @@ fun main() = application {
                                                 PixelButton(
                                                     text = "📚 View Saved Imports",
                                                     onClick = {
-                                                        viewModel.processIntent(
-                                                            ViewIntent.SetShowSavedImportsWindow(true)
-                                                        )
+                                                        if (state.proStatus.isPro) {
+                                                            viewModel.processIntent(
+                                                                ViewIntent.SetShowSavedImportsWindow(true)
+                                                            )
+                                                        } else {
+                                                            viewModel.processIntent(
+                                                                ViewIntent.ShowUpgradePrompt(ProFeature.IMPORT_HISTORY)
+                                                            )
+                                                        }
                                                     },
                                                     modifier = Modifier.weight(1f),
                                                     variant = PixelButtonVariant.SURFACE
@@ -620,6 +638,8 @@ fun main() = application {
                                         variantPriority = state.preferences.variantPriority,
                                         enabledSellers = state.preferences.enabledSellers,
                                         proxyFirst = state.preferences.proxyFirst,
+                                        proStatus = state.proStatus,
+                                        onShowUpgradePrompt = { feature -> viewModel.processIntent(ViewIntent.ShowUpgradePrompt(feature)) },
                                         onIncludeSideboardChange = {
                                             viewModel.processIntent(ViewIntent.ToggleIncludeSideboard(it))
                                         },
@@ -724,7 +744,11 @@ fun main() = application {
                                         matchedCount = state.matchedCount,
                                         unmatchedCount = state.unmatchedCount,
                                         ambiguousCount = state.ambiguousCount,
-                                        totalPriceCents = state.totalPriceCents
+                                        totalPriceCents = state.totalPriceCents,
+                                        proStatus = state.proStatus,
+                                        onShowUpgradePrompt = { feature ->
+                                            viewModel.processIntent(ViewIntent.ShowUpgradePrompt(feature))
+                                        },
                                     )
                                 }
                                 composable(
@@ -857,6 +881,23 @@ fun main() = application {
                                         viewModel.processIntent(ViewIntent.DeleteSavedImport(importId))
                                     }
                                 )
+                            }
+
+                            // Upgrade prompt dialog
+                            state.showUpgradePrompt?.let { feature ->
+                                Box(
+                                    modifier = Modifier.fillMaxSize()
+                                        .background(Color.Black.copy(alpha = 0.5f))
+                                        .clickable { viewModel.processIntent(ViewIntent.DismissUpgradePrompt) },
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    UpgradeDialog(
+                                        feature = feature,
+                                        onPurchase = { viewModel.processIntent(ViewIntent.PurchasePro) },
+                                        onRestore = { viewModel.processIntent(ViewIntent.RestorePurchases) },
+                                        onDismiss = { viewModel.processIntent(ViewIntent.DismissUpgradePrompt) },
+                                    )
+                                }
                             }
                         } // Close Box
                     } // Close Column

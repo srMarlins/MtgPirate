@@ -50,6 +50,7 @@ fun PreferencesEntity.toDomain(): model.Preferences {
         cacheMaxAgeHours = this.cacheMaxAgeHours.toInt(),
         enabledSellers = this.enabledSellers.split(",").map { it.trim() }.filter { it.isNotEmpty() },
         proxyFirst = this.proxyFirst != 0L,
+        isPro = this.isPro != 0L,
     )
 }
 

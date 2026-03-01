@@ -28,6 +28,8 @@ import model.CardVariant
 import model.DeckEntryMatch
 import model.MatchStatus
 import model.MultiMatch
+import model.ProFeature
+import model.ProStatus
 import model.Seller
 import model.VariantType
 import state.SearchProgress
@@ -57,6 +59,8 @@ fun MobileResultsScreen(
     multiMatches: List<MultiMatch> = emptyList(),
     availableSellers: List<Seller> = emptyList(),
     onOverrideSeller: (Int, Seller) -> Unit = { _, _ -> },
+    proStatus: ProStatus = ProStatus.Free,
+    onShowUpgradePrompt: (ProFeature) -> Unit = {},
     onShowAltDetail: (Int) -> Unit = {},
 ) {
     val state = rememberResultsState(multiMatches)

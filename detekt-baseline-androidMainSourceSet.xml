@@ -2,6 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>ForbiddenComment:AndroidPurchaseManager.kt:AndroidPurchaseManager$* Android purchase manager wrapping RevenueCat Kotlin SDK. * TODO: Implement after adding RevenueCat Android SDK dependency.</ID>
     <ID>TooGenericExceptionCaught:AndroidMviPlatformServices.kt:AndroidMviPlatformServices$e: Exception</ID>
   </CurrentIssues>
 </SmellBaseline>

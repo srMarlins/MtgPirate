@@ -36,6 +36,7 @@
     <ID>LongMethod:PixelComponents.kt:@Composable private fun SellerStatusRow</ID>
     <ID>LongMethod:PreferencesWizardScreen.kt:@Composable fun DraggableVariantItem</ID>
     <ID>LongMethod:PreferencesWizardScreen.kt:@Composable fun PreferencesWizardScreen</ID>
+    <ID>LongMethod:ProComponents.kt:@Composable fun UpgradeDialog</ID>
     <ID>LongMethod:ResolveScreen.kt:@Composable fun ResolveScreen</ID>
     <ID>LongMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable fun ShoppingPlanScreen</ID>
@@ -82,6 +83,7 @@
     <ID>MagicNumber:CsvGenerator.kt:CsvGenerator$100</ID>
     <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$3</ID>
     <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$4</ID>
+    <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$5</ID>
     <ID>MagicNumber:DecklistParser.kt:DecklistParser$5</ID>
     <ID>MagicNumber:ExportScreen.kt:0.07f</ID>
     <ID>MagicNumber:ExportScreen.kt:0.09f</ID>
@@ -155,6 +157,7 @@
     <ID>MagicNumber:PixelComponents.kt:90</ID>
     <ID>MagicNumber:PixelComponents.kt:900</ID>
     <ID>MagicNumber:PixelComponents.kt:90f</ID>
+    <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$10</ID>
     <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$3</ID>
     <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$4</ID>
     <ID>MagicNumber:PreferencesQueries.kt:PreferencesQueries$5</ID>

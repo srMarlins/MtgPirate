@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import database.CatalogStore
@@ -35,10 +36,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import model.ProFeature
+import model.ProStatus
+import purchase.PurchaseManager
 import state.MviPlatformServices
 import state.MviViewModel
 import state.ViewIntent
 import ui.AppTheme
+import ui.ProBadge
+import ui.UpgradeDialog
 import ui.PixelShape
 import ui.SavedImportsDialog
 import ui.ScanlineEffect
@@ -62,7 +68,11 @@ enum class MobileScreen {
  * to ensure a single shared database instance.
  */
 @Composable
-fun MobileApp(database: Database, platformServices: MviPlatformServices) {
+fun MobileApp(
+    database: Database,
+    platformServices: MviPlatformServices,
+    purchaseManager: PurchaseManager? = null,
+) {
     // Create app-level coroutine scope
     val scope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
 
@@ -77,7 +87,8 @@ fun MobileApp(database: Database, platformServices: MviPlatformServices) {
             database = database,
             catalogStore = catalogStore,
             importsStore = importsStore,
-            platformServices = platformServices
+            platformServices = platformServices,
+            purchaseManager = purchaseManager,
         )
     }
 
@@ -149,11 +160,16 @@ fun MobileNavigationHost(
                     navigateTo(MobileScreen.PREFERENCES)
                 },
                 onShowSavedImports = {
-                    viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(true))
+                    if (state.proStatus.isPro) {
+                        viewModel.processIntent(ViewIntent.SetShowSavedImportsWindow(true))
+                    } else {
+                        viewModel.processIntent(ViewIntent.ShowUpgradePrompt(ProFeature.IMPORT_HISTORY))
+                    }
                 },
                 isLoadingCatalog = state.loadingCatalog,
                 isDarkTheme = state.isDarkTheme,
-                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) }
+                onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
+                proStatus = state.proStatus,
             )
 
             MobileScreen.PREFERENCES -> MobilePreferencesScreen(
@@ -169,6 +185,8 @@ fun MobileNavigationHost(
                 proxyFirst = state.preferences.proxyFirst,
                 onEnabledSellersChange = { viewModel.processIntent(ViewIntent.UpdateEnabledSellers(it)) },
                 onProxyFirstChange = { viewModel.processIntent(ViewIntent.UpdateProxyFirst(it)) },
+                proStatus = state.proStatus,
+                onShowUpgradePrompt = { feature -> viewModel.processIntent(ViewIntent.ShowUpgradePrompt(feature)) },
                 onBack = { navigateTo(MobileScreen.IMPORT) },
                 onNext = {
                     viewModel.processIntent(ViewIntent.WizardPreferencesToResults)
@@ -204,6 +222,10 @@ fun MobileNavigationHost(
                 availableSellers = state.availableSellers,
                 onOverrideSeller = { matchIndex, seller ->
                     viewModel.processIntent(ViewIntent.OverrideCardSeller(matchIndex, seller))
+                },
+                proStatus = state.proStatus,
+                onShowUpgradePrompt = { feature ->
+                    viewModel.processIntent(ViewIntent.ShowUpgradePrompt(feature))
                 },
                 onShowAltDetail = { idx ->
                     viewModel.processIntent(ViewIntent.OpenAltDetail(idx))
@@ -280,6 +302,7 @@ fun MobileNavigationHost(
                     isLoading = state.isMatching,
                     isDarkTheme = state.isDarkTheme,
                     onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
+                    proStatus = state.proStatus,
                 )
             }
         }
@@ -300,6 +323,23 @@ fun MobileNavigationHost(
                 }
             )
         }
+
+        // Upgrade prompt dialog
+        state.showUpgradePrompt?.let { feature ->
+            Box(
+                modifier = Modifier.fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable { viewModel.processIntent(ViewIntent.DismissUpgradePrompt) },
+                contentAlignment = Alignment.Center,
+            ) {
+                UpgradeDialog(
+                    feature = feature,
+                    onPurchase = { viewModel.processIntent(ViewIntent.PurchasePro) },
+                    onRestore = { viewModel.processIntent(ViewIntent.RestorePurchases) },
+                    onDismiss = { viewModel.processIntent(ViewIntent.DismissUpgradePrompt) },
+                )
+            }
+        }
     }
 }
 
@@ -313,6 +353,7 @@ fun MobileInlineHeader(
     totalSteps: Int = 4,
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
+    proStatus: ProStatus = ProStatus.Free,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -339,24 +380,32 @@ fun MobileInlineHeader(
             modifier = Modifier.weight(1f)
         )
 
-        // Smaller inline theme toggle on the right
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
-                .background(MaterialTheme.colors.primary, shape = PixelShape(cornerSize = 6.dp))
-                .clickable(
-                    indication = null,
-                    interactionSource = remember { MutableInteractionSource() },
-                    onClick = onToggleTheme
-                ),
-            contentAlignment = Alignment.Center
+        // Smaller inline theme toggle on the right with Pro badge
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)
         ) {
-            Text(
-                text = if (isDarkTheme) "☀" else "☾",
-                fontSize = 16.sp,
-                color = MaterialTheme.colors.onPrimary
-            )
+            if (!proStatus.isPro) {
+                ProBadge()
+            }
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .pixelBorder(borderWidth = 2.dp, enabled = true, glowAlpha = 0.4f)
+                    .background(MaterialTheme.colors.primary, shape = PixelShape(cornerSize = 6.dp))
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = onToggleTheme
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (isDarkTheme) "☀" else "☾",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colors.onPrimary
+                )
+            }
         }
     }
 }

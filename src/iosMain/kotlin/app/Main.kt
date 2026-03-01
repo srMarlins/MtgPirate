@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import database.Database
 import database.DatabaseDriverFactory
 import platform.IosMviPlatformServices
+import purchase.IosPurchaseManager
 
 /**
  * Entry point for iOS app to create the main UIViewController.
@@ -13,6 +14,7 @@ import platform.IosMviPlatformServices
 fun MainViewController() = androidx.compose.ui.window.ComposeUIViewController {
     val database = remember { Database(DatabaseDriverFactory()) }
     val platformServices = remember { IosMviPlatformServices(database) }
+    val purchaseManager = remember { IosPurchaseManager() }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -20,5 +22,5 @@ fun MainViewController() = androidx.compose.ui.window.ComposeUIViewController {
         }
     }
 
-    MobileApp(database, platformServices)
+    MobileApp(database, platformServices, purchaseManager)
 }
