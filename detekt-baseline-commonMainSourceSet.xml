@@ -47,6 +47,7 @@
     <ID>LoopWithTooManyJumpStatements:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$for</ID>
     <ID>LoopWithTooManyJumpStatements:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$while</ID>
     <ID>LoopWithTooManyJumpStatements:DecklistParser.kt:DecklistParser$for</ID>
+    <ID>LoopWithTooManyJumpStatements:ImagePrefetchService.kt:ImagePrefetchService.Companion$for</ID>
     <ID>LoopWithTooManyJumpStatements:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$while</ID>
     <ID>LoopWithTooManyJumpStatements:MultiCatalogMatcher.kt:MultiCatalogMatcher$for</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$100</ID>
@@ -390,6 +391,7 @@
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogSourceRegistry$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:DeckSearchUseCase.kt:DeckSearchUseCase$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ImagePrefetchService.kt:ImagePrefetchService$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ImportExportUseCase.kt:ImportExportUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:MviViewModel.kt:MviViewModel$e: Exception</ID>
