@@ -3,12 +3,14 @@ package state
 import catalog.BootlegMageCatalogSource
 import catalog.CatalogDataSource
 import catalog.CatalogSource
+import catalog.ImagePrefetchService
 import catalog.ManaPoolCatalogSource
 import catalog.ScryfallApi
 import catalog.ScryfallImageEnricher
 import catalog.ScryfallPricingSource
 import catalog.UseaCatalogSource
 import database.CatalogStore
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.async
@@ -255,6 +257,29 @@ class CatalogUseCase(
             log("Failed to enrich variant ${variant.nameOriginal}: ${e.message}", "DEBUG")
             variant
         }
+    }
+
+    private var _activePrefetchService: ImagePrefetchService? = null
+
+    /**
+     * Start the batch image prefetch pipeline.
+     * Should be called once when the ViewModel scope is available.
+     */
+    fun startImagePrefetch(scope: CoroutineScope, log: (String, String) -> Unit) {
+        val service = ImagePrefetchService(
+            catalogStore = catalogStore,
+            log = log,
+        )
+        service.start(scope)
+        _activePrefetchService = service
+    }
+
+    /**
+     * Request batch image prefetch for a list of variants.
+     * Variants that already have images are automatically skipped by the service.
+     */
+    suspend fun prefetchImages(variants: List<CardVariant>) {
+        _activePrefetchService?.requestPrefetch(variants)
     }
 
     /**
