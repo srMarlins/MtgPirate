@@ -112,6 +112,11 @@ object ScryfallApi {
         val lang: String? = "en"
     )
 
+    data class ImageUrlPair(
+        val small: String?,
+        val normal: String?
+    )
+
     /**
      * Fetch card by set code and collector number.
      * Returns the image URL (normal size by default) or null if not found.
@@ -254,6 +259,27 @@ object ScryfallApi {
         }
 
         return null
+    }
+
+    /**
+     * Extract both small and normal image URLs from a Scryfall card.
+     * Handles both single-faced and double-faced cards.
+     *
+     * @param card The Scryfall card data
+     * @return An ImageUrlPair containing both small and normal URLs
+     */
+    fun extractImageUrlPair(card: ScryfallCard): ImageUrlPair {
+        // Try direct image_uris first (for single-faced cards)
+        card.imageUris?.let { uris ->
+            return ImageUrlPair(small = uris.small, normal = uris.normal)
+        }
+
+        // For double-faced/split cards, use the first face
+        card.cardFaces?.firstOrNull()?.imageUris?.let { uris ->
+            return ImageUrlPair(small = uris.small, normal = uris.normal)
+        }
+
+        return ImageUrlPair(small = null, normal = null)
     }
 
     /**
