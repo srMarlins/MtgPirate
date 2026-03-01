@@ -58,17 +58,19 @@
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$5</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$60_000</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$10</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$11</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$117_945_870</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$184_426_222</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_386_511_848</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_434_682_742</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_541_692_383</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$3</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$358_293_042</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$4</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$5</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$578_940_584</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$6</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$7</ID>
-    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$704_294_497</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$8</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$9</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries.GetByNameQuery$495_182_740</ID>
@@ -289,7 +291,9 @@
     <ID>MaxLineLength:CatalogScreen.kt:Text("SKU", modifier = Modifier.weight(0.18f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:CatalogScreen.kt:Text("TYPE", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:CatalogScreen.kt:Text(v.variantType.displayName, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)</ID>
+    <ID>MaxLineLength:CatalogUseCase.kt:CatalogUseCase$catalogStore.updateVariantImageUrls(variant.sku, enrichedVariant.imageUrl, enrichedVariant.smallImageUrl, variant.seller.name)</ID>
     <ID>MaxLineLength:CatalogUseCase.kt:CatalogUseCase$log("Loaded catalogs from ${loadedSellers.size} seller(s): ${loadedSellers.joinToString { it.displayName }}", "INFO")</ID>
+    <ID>MaxLineLength:Database.kt:Database$db.cardVariantQueries.updateImageUrls(imageUrl = imageUrl, smallImageUrl = smallImageUrl, seller = seller, sku = sku)</ID>
     <ID>MaxLineLength:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$driver.execute(null, "ALTER TABLE PreferencesEntity ADD COLUMN enabledSellers TEXT NOT NULL DEFAULT 'USEA,BOOTLEG_MAGE,TCGPLAYER,MANAPOOL'", 0)</ID>
     <ID>MaxLineLength:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$driver.execute(null, "CREATE UNIQUE INDEX IF NOT EXISTS idx_variant_seller_sku ON CardVariantEntity(seller, sku)", 0)</ID>
     <ID>MaxLineLength:DecklistParser.kt:DecklistParser$// Heuristic: if we saw a blank line after sideboard marker and now a new card line, treat as commander section</ID>

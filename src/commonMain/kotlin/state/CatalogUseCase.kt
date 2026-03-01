@@ -247,7 +247,7 @@ class CatalogUseCase(
                 log = { msg -> log(msg, "DEBUG") }
             )
             if (enrichedVariant.imageUrl != null) {
-                catalogStore.updateVariantImageUrl(variant.sku, enrichedVariant.imageUrl, variant.seller.name)
+                catalogStore.updateVariantImageUrls(variant.sku, enrichedVariant.imageUrl, enrichedVariant.smallImageUrl, variant.seller.name)
                 log("Updated image URL for ${variant.nameOriginal}", "DEBUG")
             }
             enrichedVariant

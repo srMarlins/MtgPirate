@@ -8,6 +8,7 @@ CREATE TABLE CardVariantEntity (
     priceInCents INTEGER NOT NULL,
     collectorNumber TEXT,
     imageUrl TEXT,
+    smallImageUrl TEXT,
     seller TEXT NOT NULL DEFAULT 'USEA',
     purchaseUri TEXT
 );
@@ -23,8 +24,8 @@ SELECT * FROM CardVariantEntity;
 
 insertVariant:
 INSERT OR REPLACE INTO CardVariantEntity (
-    nameOriginal, nameNormalized, setCode, sku, variantType, priceInCents, collectorNumber, imageUrl, seller, purchaseUri
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    nameOriginal, nameNormalized, setCode, sku, variantType, priceInCents, collectorNumber, imageUrl, smallImageUrl, seller, purchaseUri
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 getByName:
 SELECT * FROM CardVariantEntity WHERE nameNormalized = ?;
@@ -35,8 +36,11 @@ DELETE FROM CardVariantEntity;
 countAll:
 SELECT COUNT(*) FROM CardVariantEntity;
 
-updateImageUrl:
-UPDATE CardVariantEntity SET imageUrl = ? WHERE seller = ? AND sku = ?;
+updateImageUrls:
+UPDATE CardVariantEntity SET imageUrl = ?, smallImageUrl = ? WHERE seller = ? AND sku = ?;
+
+selectVariantsWithoutImages:
+SELECT * FROM CardVariantEntity WHERE smallImageUrl IS NULL OR imageUrl IS NULL;
 
 selectBySeller:
 SELECT * FROM CardVariantEntity WHERE seller = ?;
