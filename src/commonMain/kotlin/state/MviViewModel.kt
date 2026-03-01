@@ -194,7 +194,6 @@ class MviViewModel(
                 is ViewIntent.SaveCurrentImport -> saveCurrentImport()
                 is ViewIntent.LoadSavedImport -> loadSavedImport(intent.importId)
                 is ViewIntent.DeleteSavedImport -> deleteSavedImport(intent.importId)
-                is ViewIntent.EnrichVariantWithImage -> enrichVariantWithImage(intent.variant)
                 is ViewIntent.PrefetchImages -> prefetchImages(intent.variants)
                 is ViewIntent.UpdateEnabledSellers -> updateEnabledSellers(intent.sellers)
                 is ViewIntent.UpdateProxyFirst -> updateProxyFirst(intent.value)
@@ -562,11 +561,6 @@ class MviViewModel(
                 log("Failed to delete import: ${it.message}", "ERROR")
                 _viewEffects.emit(ViewEffect.ShowError("Failed to delete import"))
             }
-    }
-
-    private suspend fun enrichVariantWithImage(variant: CardVariant) {
-        if (variant.imageUrl != null) return
-        catalogUseCase.enrichVariantWithImage(variant) { msg, level -> log(msg, level) }
     }
 
     private suspend fun prefetchImages(variants: List<CardVariant>) {
@@ -1038,7 +1032,6 @@ sealed class ViewIntent {
     data object SaveCurrentImport : ViewIntent()
     data class LoadSavedImport(val importId: String) : ViewIntent()
     data class DeleteSavedImport(val importId: String) : ViewIntent()
-    data class EnrichVariantWithImage(val variant: CardVariant) : ViewIntent()
     data class PrefetchImages(val variants: List<CardVariant>) : ViewIntent()
     data class UpdateEnabledSellers(val sellers: List<String>) : ViewIntent()
     data class UpdateProxyFirst(val value: Boolean) : ViewIntent()

@@ -6,7 +6,6 @@ import catalog.CatalogSource
 import catalog.ImagePrefetchService
 import catalog.ManaPoolCatalogSource
 import catalog.ScryfallApi
-import catalog.ScryfallImageEnricher
 import catalog.ScryfallPricingSource
 import catalog.UseaCatalogSource
 import database.CatalogStore
@@ -229,35 +228,6 @@ class CatalogUseCase(
             log("Loaded catalogs from ${loadedSellers.size} seller(s): ${loadedSellers.joinToString { it.displayName }}", "INFO")
             loadedSellers
         }
-
-    /**
-     * Fetch an image URL from Scryfall for the given variant and persist it.
-     *
-     * @return the enriched [CardVariant], or the original if enrichment failed
-     */
-    suspend fun enrichVariantWithImage(
-        variant: CardVariant,
-        log: (String, String) -> Unit
-    ): CardVariant {
-        if (variant.imageUrl != null) return variant
-
-        return try {
-            log("Fetching image for ${variant.nameOriginal} (${variant.setCode})...", "DEBUG")
-            val enrichedVariant = ScryfallImageEnricher.enrichVariant(
-                variant = variant,
-                imageSize = "normal",
-                log = { msg -> log(msg, "DEBUG") }
-            )
-            if (enrichedVariant.imageUrl != null) {
-                catalogStore.updateVariantImageUrls(variant.sku, enrichedVariant.imageUrl, enrichedVariant.smallImageUrl, variant.seller.name)
-                log("Updated image URL for ${variant.nameOriginal}", "DEBUG")
-            }
-            enrichedVariant
-        } catch (e: Exception) {
-            log("Failed to enrich variant ${variant.nameOriginal}: ${e.message}", "DEBUG")
-            variant
-        }
-    }
 
     private var _activePrefetchService: ImagePrefetchService? = null
 

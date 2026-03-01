@@ -207,7 +207,6 @@
     <ID>MagicNumber:ScryfallApi.kt:ScryfallApi$15_000</ID>
     <ID>MagicNumber:ScryfallApi.kt:ScryfallApi$60_000</ID>
     <ID>MagicNumber:ScryfallApi.kt:ScryfallApi$75</ID>
-    <ID>MagicNumber:ScryfallImageEnricher.kt:ScryfallImageEnricher$10</ID>
     <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$1_517_078_527</ID>
     <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$1_842_316_798</ID>
     <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$2_054_145_787</ID>
@@ -292,7 +291,6 @@
     <ID>MaxLineLength:CatalogScreen.kt:Text("SKU", modifier = Modifier.weight(0.18f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:CatalogScreen.kt:Text("TYPE", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:CatalogScreen.kt:Text(v.variantType.displayName, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)</ID>
-    <ID>MaxLineLength:CatalogUseCase.kt:CatalogUseCase$catalogStore.updateVariantImageUrls(variant.sku, enrichedVariant.imageUrl, enrichedVariant.smallImageUrl, variant.seller.name)</ID>
     <ID>MaxLineLength:CatalogUseCase.kt:CatalogUseCase$log("Loaded catalogs from ${loadedSellers.size} seller(s): ${loadedSellers.joinToString { it.displayName }}", "INFO")</ID>
     <ID>MaxLineLength:Database.kt:Database$db.cardVariantQueries.updateImageUrls(imageUrl = imageUrl, smallImageUrl = smallImageUrl, seller = seller, sku = sku)</ID>
     <ID>MaxLineLength:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$driver.execute(null, "ALTER TABLE PreferencesEntity ADD COLUMN enabledSellers TEXT NOT NULL DEFAULT 'USEA,BOOTLEG_MAGE,TCGPLAYER,MANAPOOL'", 0)</ID>
