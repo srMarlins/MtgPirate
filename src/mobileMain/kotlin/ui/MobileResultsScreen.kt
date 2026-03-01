@@ -19,8 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +57,7 @@ fun MobileResultsScreen(
     multiMatches: List<MultiMatch> = emptyList(),
     availableSellers: List<Seller> = emptyList(),
     onOverrideSeller: (Int, Seller) -> Unit = { _, _ -> },
+    onShowAltDetail: (Int) -> Unit = {},
 ) {
     val state = rememberResultsState(multiMatches)
     val sorted = rememberSortedResults(matches, state)
@@ -71,6 +70,7 @@ fun MobileResultsScreen(
                 ResultsContent(
                     sorted, matches, multiMatches, state, onResolve,
                     onShowAllCandidates, onOverrideSeller, onEnrichVariant,
+                    onShowAltDetail,
                     Modifier.fillMaxWidth().weight(1f),
                 )
                 Spacer(Modifier.height(10.dp))
@@ -87,7 +87,6 @@ internal class ResultsState(
     sellerFilter: Seller?,
     proxyFilter: Int,
     variantTypeFilter: VariantType?,
-    expandedRows: Set<String>,
     filtersExpanded: Boolean,
     multiMatchByEntryId: Map<String, MultiMatch>,
 ) {
@@ -96,7 +95,6 @@ internal class ResultsState(
     var sellerFilter by mutableStateOf(sellerFilter)
     var proxyFilter by mutableStateOf(proxyFilter)
     var variantTypeFilter by mutableStateOf(variantTypeFilter)
-    var expandedRows by mutableStateOf(expandedRows)
     var filtersExpanded by mutableStateOf(filtersExpanded)
     var multiMatchByEntryId by mutableStateOf(multiMatchByEntryId)
 }
@@ -105,7 +103,7 @@ internal class ResultsState(
 private fun rememberResultsState(multiMatches: List<MultiMatch>): ResultsState {
     val lookup = remember(multiMatches) { multiMatches.associateBy { it.deckEntry.id } }
     val state = remember {
-        ResultsState(FILTER_ALL, SortOption.DEFAULT, null, PROXY_ALL, null, emptySet(), false, lookup)
+        ResultsState(FILTER_ALL, SortOption.DEFAULT, null, PROXY_ALL, null, false, lookup)
     }
     state.multiMatchByEntryId = lookup
     return state
@@ -160,6 +158,7 @@ private fun ColumnScope.ResultsContent(
     onShowAllCandidates: (Int) -> Unit,
     onOverrideSeller: (Int, Seller) -> Unit,
     onEnrichVariant: ((CardVariant) -> Unit)?,
+    onShowAltDetail: (Int) -> Unit,
     modifier: Modifier,
 ) {
     PixelCard(modifier = modifier, glowing = false) {
@@ -169,19 +168,12 @@ private fun ColumnScope.ResultsContent(
                 itemsIndexed(sorted, key = { _, m -> m.uniqueIdentifier }) { _, m ->
                     val globalIndex = matches.indexOf(m)
                     val multiMatch = state.multiMatchByEntryId[m.deckEntry.id]
-                    val isExpanded = state.expandedRows.contains(m.deckEntry.id)
                     ResultCardItem(
                         match = m, multiMatch = multiMatch, globalIndex = globalIndex,
-                        isExpanded = isExpanded,
-                        onToggleExpand = {
-                            state.expandedRows = if (isExpanded) state.expandedRows - m.deckEntry.id
-                            else state.expandedRows + m.deckEntry.id
-                        },
                         onResolve = onResolve, onShowAllCandidates = onShowAllCandidates,
-                        onOverrideSeller = { mm, seller ->
-                            val idx = multiMatches.indexOfFirst { it.deckEntry.id == mm.deckEntry.id }
-                            if (idx >= 0) onOverrideSeller(idx, seller)
-                            state.expandedRows = state.expandedRows - m.deckEntry.id
+                        onShowAltDetail = {
+                            val idx = multiMatches.indexOfFirst { it.deckEntry.id == m.deckEntry.id }
+                            if (idx >= 0) onShowAltDetail(idx)
                         },
                         onEnrichVariant = onEnrichVariant,
                     )

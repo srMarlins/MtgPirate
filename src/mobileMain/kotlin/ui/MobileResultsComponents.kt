@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import model.CardVariant
 import model.DeckEntryMatch
@@ -69,11 +70,9 @@ fun ResultCardItem(
     match: DeckEntryMatch,
     multiMatch: MultiMatch?,
     globalIndex: Int,
-    isExpanded: Boolean,
-    onToggleExpand: () -> Unit,
     onResolve: (Int) -> Unit,
     onShowAllCandidates: (Int) -> Unit,
-    onOverrideSeller: (MultiMatch, Seller) -> Unit,
+    onShowAltDetail: () -> Unit,
     onEnrichVariant: ((CardVariant) -> Unit)?,
 ) {
     val variant = match.selectedVariant
@@ -87,7 +86,7 @@ fun ResultCardItem(
 
     Column {
         Row(
-            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(vertical = 4.dp),
+            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             ResultCardStatusStripe(match.status)
@@ -97,23 +96,13 @@ fun ResultCardItem(
                 variant = variant,
                 multiMatch = multiMatch,
                 globalIndex = globalIndex,
-                isExpanded = isExpanded,
-                onToggleExpand = onToggleExpand,
                 onResolve = onResolve,
                 onShowAllCandidates = onShowAllCandidates,
+                onShowAltDetail = onShowAltDetail,
             )
         }
 
-        if (multiMatch != null && multiMatch.alternatives.isNotEmpty()) {
-            AltSellersPanel(
-                visible = isExpanded,
-                alternatives = multiMatch.alternatives,
-                onUseSeller = { seller -> onOverrideSeller(multiMatch, seller) },
-                onCollapse = onToggleExpand,
-            )
-        }
-
-        PixelDivider()
+        PixelDivider(modifier = Modifier.padding(horizontal = 8.dp))
     }
 }
 
@@ -123,7 +112,7 @@ private fun CardImageWithModal(variant: CardVariant?, cardName: String) {
     CompactPixelImagePreview(
         imageUrl = variant?.imageUrl,
         cardName = cardName,
-        modifier = Modifier.padding(start = 6.dp),
+        modifier = Modifier.padding(start = 8.dp, end = 4.dp),
         onClick = { showModal = true }
     )
     if (showModal && variant != null) {
@@ -143,31 +132,22 @@ private fun RowScope.CardInfoColumn(
     variant: CardVariant?,
     multiMatch: MultiMatch?,
     globalIndex: Int,
-    isExpanded: Boolean,
-    onToggleExpand: () -> Unit,
     onResolve: (Int) -> Unit,
     onShowAllCandidates: (Int) -> Unit,
+    onShowAltDetail: () -> Unit,
 ) {
     val unitPrice = variant?.priceInCents?.let { formatPrice(it) }
     Column(
-        modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+        modifier = Modifier.weight(1f).padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         CardNamePriceRow(cardName = match.deckEntry.cardName, unitPrice = unitPrice)
         CardBadgeActionRow(
             match = match, variant = variant, multiMatch = multiMatch, globalIndex = globalIndex,
-            isExpanded = isExpanded, onToggleExpand = onToggleExpand,
+            seller = multiMatch?.bestOption?.seller,
             onResolve = onResolve, onShowAllCandidates = onShowAllCandidates,
+            onShowAltDetail = onShowAltDetail,
         )
-        val bestSeller = multiMatch?.bestOption?.seller
-        if (bestSeller != null) {
-            Text(
-                bestSeller.displayName,
-                style = MaterialTheme.typography.caption,
-                fontWeight = FontWeight.Bold,
-                color = if (bestSeller.isProxy) PixelOrange else sellerColor(bestSeller)
-            )
-        }
     }
 }
 
@@ -183,12 +163,14 @@ private fun CardNamePriceRow(cardName: String, unitPrice: String?) {
             modifier = Modifier.weight(1f, fill = false),
             style = MaterialTheme.typography.body2,
             fontWeight = FontWeight.Bold,
-            maxLines = 1
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         if (unitPrice != null) {
+            Spacer(Modifier.width(8.dp))
             Text(
                 unitPrice, style = MaterialTheme.typography.body2,
-                fontWeight = FontWeight.Bold, color = MaterialTheme.colors.primary
+                fontWeight = FontWeight.Bold, color = MaterialTheme.colors.secondary
             )
         }
     }
@@ -200,22 +182,31 @@ private fun CardBadgeActionRow(
     variant: CardVariant?,
     multiMatch: MultiMatch?,
     globalIndex: Int,
-    isExpanded: Boolean,
-    onToggleExpand: () -> Unit,
+    seller: Seller?,
     onResolve: (Int) -> Unit,
     onShowAllCandidates: (Int) -> Unit,
+    onShowAltDetail: () -> Unit,
 ) {
     Row(
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(
+            modifier = Modifier.weight(1f, fill = false),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
             if (variant != null) {
-                PixelBadge(text = variant.setCode, color = MaterialTheme.colors.secondary)
+                PixelBadge(text = variant.setCode, color = MaterialTheme.colors.secondary, style = PixelBadgeStyle.MUTED)
                 if (variant.variantType != VariantType.REGULAR) {
-                    PixelBadge(text = variant.variantType.displayName.uppercase(), color = MaterialTheme.colors.primary)
+                    PixelBadge(text = variant.variantType.displayName.uppercase(), color = PixelAccent1, style = PixelBadgeStyle.ACCENT)
                 }
+            }
+            if (seller != null) {
+                PixelBadge(
+                    text = seller.displayName,
+                    color = if (seller.isProxy) PixelOrange else sellerColor(seller)
+                )
             }
             if (match.deckEntry.qty > 1) {
                 Text(
@@ -226,8 +217,8 @@ private fun CardBadgeActionRow(
         }
         ResultCardAction(
             match = match, multiMatch = multiMatch, globalIndex = globalIndex,
-            isExpanded = isExpanded, onToggleExpand = onToggleExpand,
             onResolve = onResolve, onShowAllCandidates = onShowAllCandidates,
+            onShowAltDetail = onShowAltDetail,
         )
     }
 }
@@ -238,10 +229,9 @@ private fun ResultCardAction(
     match: DeckEntryMatch,
     multiMatch: MultiMatch?,
     globalIndex: Int,
-    isExpanded: Boolean,
-    onToggleExpand: () -> Unit,
     onResolve: (Int) -> Unit,
     onShowAllCandidates: (Int) -> Unit,
+    onShowAltDetail: () -> Unit,
 ) {
     val needsFix = match.status == MatchStatus.AMBIGUOUS ||
         match.status == MatchStatus.NOT_FOUND ||
@@ -250,15 +240,15 @@ private fun ResultCardAction(
     when {
         needsFix -> PixelButton(
             text = "Fix \u25B8", onClick = { onResolve(globalIndex) },
-            variant = PixelButtonVariant.SECONDARY, modifier = Modifier.height(28.dp)
+            variant = PixelButtonVariant.SECONDARY, modifier = Modifier.height(32.dp)
         )
         multiMatch != null && multiMatch.alternatives.isNotEmpty() -> PixelButton(
-            text = if (isExpanded) "Hide" else "Alt", onClick = onToggleExpand,
-            variant = PixelButtonVariant.SURFACE, modifier = Modifier.height(28.dp)
+            text = "Alt \u25B8", onClick = onShowAltDetail,
+            variant = PixelButtonVariant.SURFACE, modifier = Modifier.height(32.dp)
         )
         match.candidates.isNotEmpty() -> PixelButton(
             text = "View", onClick = { onShowAllCandidates(globalIndex) },
-            variant = PixelButtonVariant.SURFACE, modifier = Modifier.height(28.dp)
+            variant = PixelButtonVariant.SURFACE, modifier = Modifier.height(32.dp)
         )
     }
 }
