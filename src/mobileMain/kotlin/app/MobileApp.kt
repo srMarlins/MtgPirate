@@ -58,6 +58,7 @@ enum class MobileScreen {
     PREFERENCES,
     RESULTS,
     RESOLVE,
+    ALT_DETAIL,
     EXPORT,
 }
 
@@ -226,6 +227,10 @@ fun MobileNavigationHost(
                 onShowUpgradePrompt = { feature ->
                     viewModel.processIntent(ViewIntent.ShowUpgradePrompt(feature))
                 },
+                onShowAltDetail = { idx ->
+                    viewModel.processIntent(ViewIntent.OpenAltDetail(idx))
+                    navigateTo(MobileScreen.ALT_DETAIL)
+                },
             )
 
                 MobileScreen.RESOLVE -> {
@@ -249,6 +254,34 @@ fun MobileNavigationHost(
                         )
                     } else {
                         // If data is missing, show empty box to prevent flash
+                        Box(modifier = Modifier.fillMaxSize())
+                    }
+                }
+
+                MobileScreen.ALT_DETAIL -> {
+                    val altIdx = state.showAltDetailFor
+                    val multiMatch = altIdx?.let { state.multiMatches.getOrNull(it) }
+                    val deckMatch = multiMatch?.let { mm ->
+                        state.matches.firstOrNull { it.deckEntry.id == mm.deckEntry.id }
+                    }
+                    if (altIdx != null && multiMatch != null && deckMatch != null) {
+                        MobileAltDetailScreen(
+                            match = deckMatch,
+                            multiMatch = multiMatch,
+                            onUseSeller = { seller ->
+                                viewModel.processIntent(ViewIntent.OverrideCardSeller(altIdx, seller))
+                                viewModel.processIntent(ViewIntent.CloseAltDetail)
+                                navigateTo(MobileScreen.RESULTS)
+                            },
+                            onBack = {
+                                viewModel.processIntent(ViewIntent.CloseAltDetail)
+                                navigateTo(MobileScreen.RESULTS)
+                            },
+                            onEnrichVariant = { variant ->
+                                viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                            }
+                        )
+                    } else {
                         Box(modifier = Modifier.fillMaxSize())
                     }
                 }

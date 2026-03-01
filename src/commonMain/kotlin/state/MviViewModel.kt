@@ -117,6 +117,7 @@ class MviViewModel(
                 loadingCatalog = localState.loadingCatalog,
                 catalogError = localState.catalogError,
                 showCandidatesFor = localState.showCandidatesFor,
+                showAltDetailFor = localState.showAltDetailFor,
                 showPreferences = localState.showPreferences,
                 showCatalogWindow = localState.showCatalogWindow,
                 showMatchesWindow = localState.showMatchesWindow,
@@ -155,6 +156,8 @@ class MviViewModel(
             is ViewIntent.UpdateDeckText -> { updateDeckText(intent.text); return }
             is ViewIntent.OpenResolve -> { openResolve(intent.index); return }
             is ViewIntent.CloseResolve -> { closeResolve(); return }
+            is ViewIntent.OpenAltDetail -> { openAltDetail(intent.multiMatchIndex); return }
+            is ViewIntent.CloseAltDetail -> { closeAltDetail(); return }
             is ViewIntent.SetShowPreferences -> { setShowPreferences(intent.show); return }
             is ViewIntent.SetShowCatalogWindow -> { setShowCatalogWindow(intent.show); return }
             is ViewIntent.SetShowMatchesWindow -> { setShowMatchesWindow(intent.show); return }
@@ -208,6 +211,8 @@ class MviViewModel(
                 is ViewIntent.UpdateDeckText,
                 is ViewIntent.OpenResolve,
                 is ViewIntent.CloseResolve,
+                is ViewIntent.OpenAltDetail,
+                is ViewIntent.CloseAltDetail,
                 is ViewIntent.SetShowPreferences,
                 is ViewIntent.SetShowCatalogWindow,
                 is ViewIntent.SetShowMatchesWindow,
@@ -376,6 +381,14 @@ class MviViewModel(
 
     private fun closeResolve() {
         _localState.update { it.copy(showCandidatesFor = null) }
+    }
+
+    private fun openAltDetail(multiMatchIndex: Int) {
+        _localState.update { it.copy(showAltDetailFor = multiMatchIndex) }
+    }
+
+    private fun closeAltDetail() {
+        _localState.update { it.copy(showAltDetailFor = null) }
     }
 
     private suspend fun resolveCandidate(index: Int, variant: CardVariant) {
@@ -924,6 +937,7 @@ data class ViewState(
     val loadingCatalog: Boolean = false,
     val catalogError: String? = null,
     val showCandidatesFor: Int? = null,
+    val showAltDetailFor: Int? = null,
     val showPreferences: Boolean = false,
     val showCatalogWindow: Boolean = false,
     val showMatchesWindow: Boolean = false,
@@ -957,6 +971,7 @@ private data class LocalUiState(
     val loadingCatalog: Boolean = false,
     val catalogError: String? = null,
     val showCandidatesFor: Int? = null,
+    val showAltDetailFor: Int? = null,
     val showPreferences: Boolean = false,
     val showCatalogWindow: Boolean = false,
     val showMatchesWindow: Boolean = false,
@@ -992,6 +1007,8 @@ sealed class ViewIntent {
     data object ParseAndMatch : ViewIntent()
     data class OpenResolve(val index: Int) : ViewIntent()
     data object CloseResolve : ViewIntent()
+    data class OpenAltDetail(val multiMatchIndex: Int) : ViewIntent()
+    data object CloseAltDetail : ViewIntent()
     data class ResolveCandidate(val index: Int, val variant: CardVariant) : ViewIntent()
     data object ExportCsv : ViewIntent()
     data object ExportWizardResults : ViewIntent()
