@@ -34,6 +34,7 @@ object ShoppingOptimizer {
         // and recompute bestOption within that subset.
         // When sellers is null (optimize all), preserve the original bestOption
         // to respect user overrides from the UI.
+        var droppedCount = 0
         val effectiveMatches = matches.mapNotNull { mm ->
             if (sellers == null) {
                 // No filtering — keep original bestOption (may be a user override)
@@ -41,14 +42,22 @@ object ShoppingOptimizer {
                 mm
             } else {
                 val filteredAlts = mm.alternatives.filter { it.seller in sellers }
-                if (filteredAlts.isEmpty()) return@mapNotNull null
+                if (filteredAlts.isEmpty()) {
+                    droppedCount += mm.deckEntry.qty
+                    return@mapNotNull null
+                }
                 val best = filteredAlts.minByOrNull { it.priceCents } ?: return@mapNotNull null
                 mm.copy(bestOption = best, alternatives = filteredAlts)
             }
         }
 
         if (effectiveMatches.isEmpty()) {
-            return ShoppingPlan(orders = emptyList(), totalPriceCents = 0, savingsVsSingleSeller = 0)
+            return ShoppingPlan(
+                orders = emptyList(),
+                totalPriceCents = 0,
+                savingsVsSingleSeller = 0,
+                droppedCardCount = droppedCount,
+            )
         }
 
         // Index: for each match, which sellers offer it and at what price
@@ -148,6 +157,7 @@ object ShoppingOptimizer {
             orders = orders.sortedByDescending { it.subtotalCents },
             totalPriceCents = totalCents,
             savingsVsSingleSeller = (naiveTotal - totalCents).coerceAtLeast(0),
+            droppedCardCount = droppedCount,
         )
     }
 
