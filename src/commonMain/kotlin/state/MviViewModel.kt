@@ -631,7 +631,7 @@ class MviViewModel(
         val enabledSellerNames = if (_localState.value.proStatus.isPro) {
             preferences.enabledSellers.toSet()
         } else {
-            setOf(Seller.USEA.name)
+            setOf(Seller.BOOTLEG_MAGE.name)
         }
         val filteredSources = catalogUseCase.sourceRegistry.allSources
             .filter { it.seller.name in enabledSellerNames }
@@ -793,7 +793,7 @@ class MviViewModel(
                 val activePlan = if (isPro) {
                     proPlan
                 } else {
-                    ShoppingOptimizer.optimizeForSellers(multiMatches, setOf(Seller.USEA))
+                    ShoppingOptimizer.optimizeForSellers(multiMatches, setOf(Seller.BOOTLEG_MAGE))
                 }
 
                 val comparison = ShoppingPlanComparison(

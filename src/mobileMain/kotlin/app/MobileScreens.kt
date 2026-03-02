@@ -353,7 +353,7 @@ fun MobilePreferencesScreen(
                 ) {
                     Seller.entries.forEach { seller ->
                         val isEnabled = seller.name in enabledSellers
-                        val isLocked = seller != Seller.USEA && !proStatus.isPro
+                        val isLocked = seller != Seller.BOOTLEG_MAGE && !proStatus.isPro
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
