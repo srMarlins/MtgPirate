@@ -331,7 +331,7 @@ class CatalogUseCase(
             variantsBySku: Map<String, model.CardVariant>,
         ): model.MatchOption {
             val refreshed = variantsBySku[option.variant.sku] ?: option.variant
-            return option.copy(variant = refreshed)
+            return option.copy(variant = refreshed, priceCents = refreshed.priceInCents)
         }
     }
 }
