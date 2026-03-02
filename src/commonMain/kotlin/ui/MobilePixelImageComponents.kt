@@ -27,7 +27,7 @@ import coil3.compose.AsyncImagePainter
  */
 @Composable
 fun CompactPixelImagePreview(
-    imageUrl: String?, cardName: String, modifier: Modifier = Modifier, onClick: () -> Unit
+    smallImageUrl: String?, cardName: String, modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     val colors = MaterialTheme.colors
 
@@ -42,11 +42,11 @@ fun CompactPixelImagePreview(
         backgroundColor = colors.surface.copy(alpha = 0.5f)
     ) {
         when {
-            imageUrl != null -> {
+            smallImageUrl != null -> {
                 var loadState by remember { mutableStateOf<AsyncImagePainter.State>(AsyncImagePainter.State.Empty) }
 
                 AsyncImage(
-                    model = imageUrl,
+                    model = smallImageUrl,
                     contentDescription = cardName,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),

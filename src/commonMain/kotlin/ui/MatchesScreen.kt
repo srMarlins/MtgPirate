@@ -24,7 +24,7 @@ import util.formatPrice
 fun MatchesScreen(
     matches: List<DeckEntryMatch>,
     onClose: () -> Unit,
-    onEnrichVariant: ((CardVariant) -> Unit)? = null
+    onPrefetchImages: ((List<CardVariant>) -> Unit)? = null
 ) {
     var query by remember { mutableStateOf("") }
     var statusFilter by remember { mutableStateOf("Matched") }
@@ -46,6 +46,16 @@ fun MatchesScreen(
         val q = query.trim()
         val queryOkay = q.isBlank() || name.contains(q, true) || set.contains(q, true) || sku.contains(q, true)
         statusOkay && queryOkay
+    }
+
+    // Batch prefetch images for all variants
+    val variantsNeedingImages = remember(matches) {
+        matches.mapNotNull { it.selectedVariant }.filter { it.smallImageUrl == null }
+    }
+    LaunchedEffect(variantsNeedingImages) {
+        if (variantsNeedingImages.isNotEmpty()) {
+            onPrefetchImages?.invoke(variantsNeedingImages)
+        }
     }
 
     val totalCents = filtered.filter { it.selectedVariant != null }
@@ -138,15 +148,6 @@ fun MatchesScreen(
                             val v = m.selectedVariant
                             val price = v?.priceInCents
                             val rowTotal = price?.let { it * m.deckEntry.qty }
-                            
-                            // Trigger image enrichment when variant comes into view
-                            v?.let { variant ->
-                                androidx.compose.runtime.LaunchedEffect(variant.sku) {
-                                    if (variant.imageUrl == null) {
-                                        onEnrichVariant?.invoke(variant)
-                                    }
-                                }
-                            }
                             
                             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
                                 Text("${m.deckEntry.qty}", modifier = Modifier.width(40.dp), style = MaterialTheme.typography.body2)

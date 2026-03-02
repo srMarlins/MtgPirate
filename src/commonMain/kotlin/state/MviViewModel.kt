@@ -77,6 +77,9 @@ class MviViewModel(
     private val _localState = MutableStateFlow(LocalUiState())
 
     init {
+        // Start the batch image prefetch pipeline
+        catalogUseCase.startImagePrefetch(scope) { msg, level -> log(msg, level) }
+
         // Subscribe to database flows and combine into ViewState
         // No outer scope.launch needed — launchIn(scope) handles collection
         val refreshedMatchesFlow = combine(
@@ -191,7 +194,7 @@ class MviViewModel(
                 is ViewIntent.SaveCurrentImport -> saveCurrentImport()
                 is ViewIntent.LoadSavedImport -> loadSavedImport(intent.importId)
                 is ViewIntent.DeleteSavedImport -> deleteSavedImport(intent.importId)
-                is ViewIntent.EnrichVariantWithImage -> enrichVariantWithImage(intent.variant)
+                is ViewIntent.PrefetchImages -> prefetchImages(intent.variants)
                 is ViewIntent.UpdateEnabledSellers -> updateEnabledSellers(intent.sellers)
                 is ViewIntent.UpdateProxyFirst -> updateProxyFirst(intent.value)
                 ViewIntent.LoadAllCatalogs -> loadAllCatalogs()
@@ -560,9 +563,8 @@ class MviViewModel(
             }
     }
 
-    private suspend fun enrichVariantWithImage(variant: CardVariant) {
-        if (variant.imageUrl != null) return
-        catalogUseCase.enrichVariantWithImage(variant) { msg, level -> log(msg, level) }
+    private suspend fun prefetchImages(variants: List<CardVariant>) {
+        catalogUseCase.prefetchImages(variants)
     }
 
     // -----------------------------------------------------------------------
@@ -1030,7 +1032,7 @@ sealed class ViewIntent {
     data object SaveCurrentImport : ViewIntent()
     data class LoadSavedImport(val importId: String) : ViewIntent()
     data class DeleteSavedImport(val importId: String) : ViewIntent()
-    data class EnrichVariantWithImage(val variant: CardVariant) : ViewIntent()
+    data class PrefetchImages(val variants: List<CardVariant>) : ViewIntent()
     data class UpdateEnabledSellers(val sellers: List<String>) : ViewIntent()
     data class UpdateProxyFirst(val value: Boolean) : ViewIntent()
 

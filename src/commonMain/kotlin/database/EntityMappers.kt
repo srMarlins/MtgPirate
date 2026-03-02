@@ -33,6 +33,7 @@ fun CardVariantEntity.toDomain(): model.CardVariant {
         priceInCents = this.priceInCents.toInt(),
         collectorNumber = this.collectorNumber,
         imageUrl = this.imageUrl,
+        smallImageUrl = this.smallImageUrl,
         seller = Seller.valueOf(this.seller),
         purchaseUri = this.purchaseUri,
     )

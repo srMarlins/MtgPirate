@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,8 +24,18 @@ fun ResolveScreen(
     match: DeckEntryMatch,
     onSelect: (CardVariant) -> Unit,
     onBack: () -> Unit,
-    onEnrichVariant: ((CardVariant) -> Unit)? = null,
+    onPrefetchImages: ((List<CardVariant>) -> Unit)? = null,
 ) {
+    // Batch prefetch images for all candidate variants
+    val variantsNeedingImages = remember(match.candidates) {
+        match.candidates.map { it.variant }.filter { it.smallImageUrl == null }
+    }
+    LaunchedEffect(variantsNeedingImages) {
+        if (variantsNeedingImages.isNotEmpty()) {
+            onPrefetchImages?.invoke(variantsNeedingImages)
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         // Scanline effect
         ScanlineEffect(alpha = 0.03f)
@@ -125,13 +136,6 @@ fun ResolveScreen(
                         LazyColumn(Modifier.fillMaxSize(), state = listState) {
                             items(sorted, key = { it.uniqueIdentifier }) { cand: MatchCandidate ->
                                 val variant = cand.variant
-                                
-                                // Trigger image enrichment when variant comes into view
-                                androidx.compose.runtime.LaunchedEffect(variant.sku) {
-                                    if (variant.imageUrl == null) {
-                                        onEnrichVariant?.invoke(variant)
-                                    }
-                                }
                                 
                                 Row(
                                     Modifier.fillMaxWidth().padding(vertical = 8.dp),

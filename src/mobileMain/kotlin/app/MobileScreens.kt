@@ -489,7 +489,7 @@ fun MobileResultsScreenWrapper(
     onResolve: (Int) -> Unit,
     onBack: () -> Unit,
     onNext: () -> Unit,
-    onEnrichVariant: ((model.CardVariant) -> Unit)? = null,
+    onPrefetchImages: ((List<model.CardVariant>) -> Unit)? = null,
     isLoadingCatalog: Boolean = false,
     isMatching: Boolean = false,
     searchProgress: SearchProgress? = null,
@@ -525,7 +525,7 @@ fun MobileResultsScreenWrapper(
                     onShowAllCandidates = onResolve,
                     onClose = onBack,
                     onExport = onNext,
-                    onEnrichVariant = onEnrichVariant,
+                    onPrefetchImages = onPrefetchImages,
                     isLoading = isLoadingCatalog || isMatching || (searchProgress != null && searchProgress.isSearching),
                     searchProgress = searchProgress,
                     matchedCount = matchedCount,
@@ -552,8 +552,18 @@ fun MobileResolveScreen(
     match: model.DeckEntryMatch,
     onSelect: (model.CardVariant) -> Unit,
     onBack: () -> Unit,
-    onEnrichVariant: ((model.CardVariant) -> Unit)? = null
+    onPrefetchImages: ((List<model.CardVariant>) -> Unit)? = null
 ) {
+    // Batch prefetch images for all candidate variants
+    val variantsNeedingImages = remember(match.candidates) {
+        match.candidates.map { it.variant }.filter { it.smallImageUrl == null }
+    }
+    LaunchedEffect(variantsNeedingImages) {
+        if (variantsNeedingImages.isNotEmpty()) {
+            onPrefetchImages?.invoke(variantsNeedingImages)
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
 
@@ -637,13 +647,6 @@ fun MobileResolveScreen(
                             items(sorted, key = { it.uniqueIdentifier }) { cand: model.MatchCandidate ->
                                 val variant = cand.variant
 
-                                // Trigger image enrichment
-                                LaunchedEffect(variant.sku) {
-                                    if (variant.imageUrl == null) {
-                                        onEnrichVariant?.invoke(variant)
-                                    }
-                                }
-
                                 // Candidate card
                                 Box(
                                     modifier = Modifier
@@ -672,7 +675,7 @@ fun MobileResolveScreen(
                                         ) {
                                             // Compact inline image preview
                                             CompactPixelImagePreview(
-                                                imageUrl = variant.imageUrl,
+                                                smallImageUrl = variant.smallImageUrl,
                                                 cardName = variant.nameOriginal,
                                                 onClick = { showImageModal = true }
                                             )
@@ -782,8 +785,21 @@ fun MobileAltDetailScreen(
     multiMatch: MultiMatch,
     onUseSeller: (Seller) -> Unit,
     onBack: () -> Unit,
-    onEnrichVariant: ((model.CardVariant) -> Unit)? = null,
+    onPrefetchImages: ((List<model.CardVariant>) -> Unit)? = null,
 ) {
+    // Batch prefetch images for all variants in this screen
+    val variantsNeedingImages = remember(match.candidates, multiMatch.alternatives) {
+        val all = match.candidates.map { it.variant } +
+            multiMatch.alternatives.map { it.variant } +
+            listOfNotNull(match.selectedVariant)
+        all.filter { it.smallImageUrl == null }
+    }
+    LaunchedEffect(variantsNeedingImages) {
+        if (variantsNeedingImages.isNotEmpty()) {
+            onPrefetchImages?.invoke(variantsNeedingImages)
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
 
@@ -824,9 +840,6 @@ fun MobileAltDetailScreen(
             // Current card (glowing card)
             val currentVariant = match.selectedVariant
             if (currentVariant != null) {
-                LaunchedEffect(currentVariant.sku) {
-                    if (currentVariant.imageUrl == null) onEnrichVariant?.invoke(currentVariant)
-                }
                 PixelCard(glowing = true) {
                     Column(Modifier.fillMaxWidth().padding(12.dp)) {
                         Text(
@@ -842,7 +855,7 @@ fun MobileAltDetailScreen(
                         ) {
                             var showModal by remember { mutableStateOf(false) }
                             CompactPixelImagePreview(
-                                imageUrl = currentVariant.imageUrl,
+                                smallImageUrl = currentVariant.smallImageUrl,
                                 cardName = match.deckEntry.cardName,
                                 onClick = { showModal = true }
                             )
@@ -910,9 +923,6 @@ fun MobileAltDetailScreen(
                             key = { "${it.seller.name}-${it.variant.sku}" }
                         ) { alt ->
                             val variant = alt.variant
-                            LaunchedEffect(variant.sku) {
-                                if (variant.imageUrl == null) onEnrichVariant?.invoke(variant)
-                            }
                             var showModal by remember { mutableStateOf(false) }
                             Row(
                                 modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
@@ -920,7 +930,7 @@ fun MobileAltDetailScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CompactPixelImagePreview(
-                                    imageUrl = variant.imageUrl,
+                                    smallImageUrl = variant.smallImageUrl,
                                     cardName = variant.nameOriginal,
                                     onClick = { showModal = true }
                                 )

@@ -25,8 +25,18 @@ fun DesktopResolveScreen(
     match: DeckEntryMatch,
     onSelect: (CardVariant) -> Unit,
     onBack: () -> Unit,
-    onEnrichVariant: ((CardVariant) -> Unit)? = null,
+    onPrefetchImages: ((List<CardVariant>) -> Unit)? = null,
 ) {
+    // Batch prefetch images for all candidate variants
+    val variantsNeedingImages = remember(match.candidates) {
+        match.candidates.map { it.variant }.filter { it.smallImageUrl == null }
+    }
+    LaunchedEffect(variantsNeedingImages) {
+        if (variantsNeedingImages.isNotEmpty()) {
+            onPrefetchImages?.invoke(variantsNeedingImages)
+        }
+    }
+
     var selectedImageUrl by remember { mutableStateOf<String?>(null) }
     var selectedCardName by remember { mutableStateOf("") }
     var selectedSetCode by remember { mutableStateOf("") }
@@ -134,20 +144,13 @@ fun DesktopResolveScreen(
                             items(sorted, key = { it.uniqueIdentifier }) { cand: MatchCandidate ->
                                 val variant = cand.variant
                                 
-                                // Trigger image enrichment when variant comes into view
-                                LaunchedEffect(variant.sku) {
-                                    if (variant.imageUrl == null) {
-                                        onEnrichVariant?.invoke(variant)
-                                    }
-                                }
-                                
                                 Row(
                                     Modifier.fillMaxWidth().padding(vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     // Image Preview
                                     PixelImagePreview(
-                                        imageUrl = variant.imageUrl,
+                                        smallImageUrl = variant.smallImageUrl,
                                         cardName = variant.nameOriginal,
                                         modifier = Modifier.width(70.dp),
                                         onClick = {

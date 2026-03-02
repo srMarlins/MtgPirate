@@ -36,6 +36,7 @@ data class CardVariant(
     val priceInCents: Int,
     val collectorNumber: String? = null,
     val imageUrl: String? = null,
+    val smallImageUrl: String? = null,
     val seller: Seller = Seller.USEA,
     val purchaseUri: String? = null,
 ) {

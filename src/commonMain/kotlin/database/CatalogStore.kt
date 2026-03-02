@@ -63,11 +63,18 @@ class CatalogStore(private val database: Database) {
     }
     
     /**
-     * Update the image URL for a specific card variant by SKU.
+     * Update the image URLs for a specific card variant by SKU.
      * This is used to lazily enrich variants with Scryfall image URLs.
      */
-    suspend fun updateVariantImageUrl(sku: String, imageUrl: String, seller: String) {
-        database.updateVariantImageUrl(sku, imageUrl, seller)
+    suspend fun updateVariantImageUrls(sku: String, imageUrl: String, smallImageUrl: String?, seller: String) {
+        database.updateVariantImageUrls(sku, imageUrl, smallImageUrl, seller)
+    }
+
+    /**
+     * Get all card variants that are missing image URLs (either smallImageUrl or imageUrl is null).
+     */
+    fun getVariantsWithoutImages(): List<CardVariant> {
+        return database.getVariantsWithoutImages()
     }
 
     /**
