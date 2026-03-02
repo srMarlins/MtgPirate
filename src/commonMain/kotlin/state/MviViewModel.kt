@@ -27,6 +27,7 @@ import model.PurchaseResult
 import model.SavedImport
 import model.Seller
 import model.ShoppingPlan
+import model.ShoppingPlanComparison
 import optimizer.ShoppingOptimizer
 import purchase.PurchaseManager
 import kotlin.time.Clock
@@ -145,7 +146,7 @@ class MviViewModel(
                 ambiguousCount = counts.ambiguous,
                 totalPriceCents = counts.totalPrice,
                 multiMatches = refreshedMultiMatches,
-                shoppingPlan = localState.shoppingPlan,
+                shoppingPlanComparison = localState.shoppingPlanComparison,
                 availableSellers = localState.availableSellers,
                 loadingMultiCatalogs = localState.searchProgress?.isSearching ?: localState.loadingMultiCatalogs,
                 searchProgress = localState.searchProgress,
@@ -766,7 +767,6 @@ class MviViewModel(
     private suspend fun optimizeShoppingPlan(
         multiMatches: List<MultiMatch> = _localState.value.multiMatches
     ) {
-        if (!requirePro(ProFeature.SHOPPING_OPTIMIZER)) return
         withContext(Dispatchers.IO) {
             if (multiMatches.isEmpty()) {
                 log("No multi-matches available for optimization", "WARNING")
@@ -774,11 +774,28 @@ class MviViewModel(
             }
 
             try {
-                val plan = ShoppingOptimizer.optimize(multiMatches)
-                _localState.update { it.copy(shoppingPlan = plan) }
+                val proPlan = ShoppingOptimizer.optimize(multiMatches)
+                val isPro = _localState.value.proStatus.isPro
+
+                val activePlan = if (isPro) {
+                    proPlan
+                } else {
+                    ShoppingOptimizer.optimizeForSellers(multiMatches, setOf(Seller.USEA))
+                }
+
+                val comparison = ShoppingPlanComparison(
+                    activePlan = activePlan,
+                    proPlan = proPlan,
+                    savingsDeltaCents = (activePlan.totalPriceCents - proPlan.totalPriceCents)
+                        .coerceAtLeast(0),
+                )
+
+                _localState.update { it.copy(shoppingPlanComparison = comparison) }
                 log(
-                    "Shopping plan optimized: ${plan.orders.size} seller(s), " +
-                        "total ${plan.totalPriceCents} cents, savings ${plan.savingsVsSingleSeller} cents",
+                    "Shopping plan optimized: active=${activePlan.orders.size} seller(s) " +
+                        "total ${activePlan.totalPriceCents}c, " +
+                        "pro=${proPlan.orders.size} seller(s) total ${proPlan.totalPriceCents}c, " +
+                        "savings delta ${comparison.savingsDeltaCents}c",
                     "INFO"
                 )
             } catch (e: Exception) {
@@ -834,9 +851,7 @@ class MviViewModel(
     /** Step 3 → 4: Mark step complete, optimize shopping plan */
     private suspend fun wizardResultsToExport() {
         completeWizardStep(3)
-        if (_localState.value.proStatus.isPro) {
-            optimizeShoppingPlan()
-        }
+        optimizeShoppingPlan()
     }
 
     // -----------------------------------------------------------------------
@@ -964,7 +979,7 @@ data class ViewState(
     val totalPriceCents: Int = 0,
     // Multi-catalog matching and shopping optimization
     val multiMatches: List<MultiMatch> = emptyList(),
-    val shoppingPlan: ShoppingPlan? = null,
+    val shoppingPlanComparison: ShoppingPlanComparison? = null,
     val availableSellers: List<Seller> = emptyList(),
     val loadingMultiCatalogs: Boolean = false,
     val searchProgress: SearchProgress? = null,
@@ -994,7 +1009,7 @@ private data class LocalUiState(
     // Match counts are derived reactively in init via matchCountsFlow
     // Multi-catalog matching and shopping optimization
     val multiMatches: List<MultiMatch> = emptyList(),
-    val shoppingPlan: ShoppingPlan? = null,
+    val shoppingPlanComparison: ShoppingPlanComparison? = null,
     val availableSellers: List<Seller> = emptyList(),
     val loadingMultiCatalogs: Boolean = false,
     val catalogsLoadedThisSession: Boolean = false,
