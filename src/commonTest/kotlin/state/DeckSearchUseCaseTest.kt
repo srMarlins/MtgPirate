@@ -6,7 +6,6 @@ import kotlinx.coroutines.test.runTest
 import match.MultiCatalogMatcher
 import match.NameNormalizer
 import model.CardVariant
-import model.Catalog
 import model.DeckEntry
 import model.OrderItem
 import model.Section
@@ -68,11 +67,9 @@ class DeckSearchUseCaseTest {
     private fun createUseCase(
         sources: List<CatalogSource>,
         storedVariants: MutableList<CardVariant> = mutableListOf(),
-        freshSellers: Set<Seller> = emptySet(),
     ): DeckSearchUseCase {
         return DeckSearchUseCase(
             sources = sources,
-            isSellerCacheFresh = { seller -> seller in freshSellers },
             replaceCatalogForSeller = { seller, variants ->
                 storedVariants.removeAll { it.seller == seller }
                 storedVariants.addAll(variants)
@@ -176,36 +173,6 @@ class DeckSearchUseCaseTest {
         val single = emissions.first()
         assertTrue(single.isComplete)
         assertEquals(0, single.totalCards)
-    }
-
-    @Test
-    fun freshCacheSkipsFetch() = runTest {
-        var fetchCalled = false
-        val source = object : CatalogSource {
-            override val seller = Seller.USEA
-            override suspend fun fetchCatalog(log: (String) -> Unit): List<CardVariant> {
-                fetchCalled = true
-                return listOf(testVariant("Lightning Bolt", Seller.USEA))
-            }
-            override suspend fun search(cardName: String): List<CardVariant> = emptyList()
-            override fun checkoutUrl(items: List<OrderItem>): String? = null
-            override fun formatForExport(items: List<OrderItem>): String = ""
-        }
-
-        val entries = listOf(testEntry("Lightning Bolt"))
-        // Pre-populate stored variants and mark USEA fresh
-        val stored = mutableListOf(testVariant("Lightning Bolt", Seller.USEA))
-        val useCase = createUseCase(
-            sources = listOf(source),
-            storedVariants = stored,
-            freshSellers = setOf(Seller.USEA),
-        )
-        val config = MultiCatalogMatcher.Config()
-
-        val emissions = useCase.search(entries, config).toList()
-
-        assertTrue(emissions.last().isComplete)
-        assertEquals(false, fetchCalled, "fetchCatalog should NOT be called when cache is fresh")
     }
 
     @Test
