@@ -801,8 +801,9 @@ class MviViewModel(
                 val comparison = ShoppingPlanComparison(
                     activePlan = activePlan,
                     proPlan = proPlan,
-                    savingsDeltaCents = (activePlan.totalPriceCents - proPlan.totalPriceCents)
-                        .coerceAtLeast(0),
+                    // Negative delta means Pro covers more cards (costs more but includes dropped cards).
+                    // Keep the raw delta so the UI can decide how to present it.
+                    savingsDeltaCents = activePlan.totalPriceCents - proPlan.totalPriceCents,
                 )
 
                 _localState.update { it.copy(shoppingPlanComparison = comparison) }

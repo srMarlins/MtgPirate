@@ -191,7 +191,7 @@ fun ShoppingPlanScreen(
                 )
 
                 // Missing card warning for free users
-                if (activePlan.droppedCardCount > 0) {
+                if (activePlan.droppedCardCount > 0 && !isPro) {
                     Spacer(Modifier.height(8.dp))
                     PixelCard {
                         Row(
@@ -200,19 +200,24 @@ fun ShoppingPlanScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Text("\u26A0", fontSize = 18.sp)
-                            Column {
+                            Column(Modifier.weight(1f)) {
                                 Text(
-                                    "${activePlan.droppedCardCount} card(s) not available at your seller",
+                                    "${activePlan.droppedCardCount} card(s) not available",
                                     style = MaterialTheme.typography.body2,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colors.error,
                                 )
                                 Text(
-                                    "Upgrade to Pro for multi-seller support",
+                                    "Pro unlocks all sellers",
                                     style = MaterialTheme.typography.caption,
                                     color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
                                 )
                             }
+                            PixelButton(
+                                text = "Upgrade",
+                                onClick = onUpgrade,
+                                variant = PixelButtonVariant.PRIMARY,
+                            )
                         }
                     }
                 }
@@ -287,11 +292,12 @@ private fun ShoppingPlanSummary(
                 )
             }
 
-            // Pro price upsell — inline comparison
-            if (proPlan != null && savingsDeltaCents > 0) {
+            // Pro price upsell — always show for free users
+            if (proPlan != null) {
+                val accentColor = if (savingsDeltaCents > 0) PixelGreen else MaterialTheme.colors.primary
                 Row(
                     Modifier.fillMaxWidth()
-                        .background(PixelGreen.copy(alpha = 0.1f), shape = PixelShape(cornerSize = 6.dp))
+                        .background(accentColor.copy(alpha = 0.1f), shape = PixelShape(cornerSize = 6.dp))
                         .clickable { onUpgrade() }
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -305,7 +311,7 @@ private fun ShoppingPlanSummary(
                         Text(
                             "With Pro",
                             style = MaterialTheme.typography.body2,
-                            color = PixelGreen,
+                            color = accentColor,
                             fontWeight = FontWeight.Bold,
                         )
                     }
@@ -316,14 +322,22 @@ private fun ShoppingPlanSummary(
                         Text(
                             formatPrice(proPlan.totalPriceCents),
                             style = MaterialTheme.typography.h6,
-                            color = PixelGreen,
+                            color = accentColor,
                             fontWeight = FontWeight.Bold,
                         )
-                        Text(
-                            "Save ${formatPrice(savingsDeltaCents)}",
-                            style = MaterialTheme.typography.caption,
-                            color = PixelGreen.copy(alpha = 0.8f),
-                        )
+                        if (savingsDeltaCents > 0) {
+                            Text(
+                                "Save ${formatPrice(savingsDeltaCents)}",
+                                style = MaterialTheme.typography.caption,
+                                color = PixelGreen.copy(alpha = 0.8f),
+                            )
+                        } else if (plan.droppedCardCount > 0) {
+                            Text(
+                                "All cards included",
+                                style = MaterialTheme.typography.caption,
+                                color = accentColor.copy(alpha = 0.8f),
+                            )
+                        }
                     }
                 }
             }
