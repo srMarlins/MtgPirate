@@ -29,7 +29,9 @@ import model.ProFeature
 import model.ProStatus
 import model.PurchaseResult
 import model.SavedImport
+import model.OrderItem
 import model.Seller
+import model.SellerOrder
 import model.ShoppingPlan
 import model.ShoppingPlanComparison
 import optimizer.ShoppingOptimizer
@@ -231,6 +233,8 @@ class MviViewModel(
                 ViewIntent.PurchasePro -> purchasePro()
                 ViewIntent.RestorePurchases -> restorePurchases()
                 ViewIntent.CheckProStatus -> checkProStatus()
+                // USEA checkout
+                is ViewIntent.CheckoutUsea -> checkoutUsea(intent.order)
                 // Sync intents already handled above — exhaustive match requires listing them
                 is ViewIntent.UpdateDeckText,
                 is ViewIntent.OpenResolve,
@@ -927,6 +931,30 @@ class MviViewModel(
         database.updateIsPro(status.isPro)
     }
 
+    private suspend fun checkoutUsea(order: SellerOrder) {
+        withContext(Dispatchers.IO) {
+            val mapped = order.items.filter { it.variant.wcProductId != null }
+            val unmapped = order.items.filter { it.variant.wcProductId == null }
+
+            if (mapped.isEmpty()) {
+                _viewEffects.emit(ViewEffect.ShowError("No products could be matched on the store. Use 'Copy for Sheet' instead."))
+                return@withContext
+            }
+
+            val itemsJson = mapped.joinToString(",", "[", "]") { item ->
+                """{"id":${item.variant.wcProductId},"qty":${item.qty}}"""
+            }
+
+            val couponCode = ui.useaCouponCode(order.subtotalCents) ?: ""
+
+            _viewEffects.emit(ViewEffect.OpenUseaCheckout(
+                itemsJson = itemsJson,
+                couponCode = couponCode,
+                unmatchedItems = unmapped,
+            ))
+        }
+    }
+
     // -----------------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------------
@@ -1087,6 +1115,9 @@ sealed class ViewIntent {
     data object CheckProStatus : ViewIntent()
     data class ShowUpgradePrompt(val feature: ProFeature) : ViewIntent()
     data object DismissUpgradePrompt : ViewIntent()
+
+    // USEA checkout
+    data class CheckoutUsea(val order: SellerOrder) : ViewIntent()
 }
 
 /**
@@ -1095,6 +1126,11 @@ sealed class ViewIntent {
 sealed class ViewEffect {
     data class ShowMessage(val message: String) : ViewEffect()
     data class ShowError(val message: String) : ViewEffect()
+    data class OpenUseaCheckout(
+        val itemsJson: String,
+        val couponCode: String,
+        val unmatchedItems: List<OrderItem>,
+    ) : ViewEffect()
 }
 
 /**

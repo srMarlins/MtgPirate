@@ -72,6 +72,7 @@ fun MobileApp(
     database: Database,
     platformServices: MviPlatformServices,
     purchaseManager: PurchaseManager? = null,
+    onOpenUseaCheckout: (itemsJson: String, couponCode: String) -> Unit = { _, _ -> },
 ) {
     // Create app-level coroutine scope
     val scope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
@@ -105,6 +106,25 @@ fun MobileApp(
     // Initialize on first launch
     LaunchedEffect(Unit) {
         viewModel.processIntent(ViewIntent.Init)
+    }
+
+    // Collect view effects for USEA checkout
+    LaunchedEffect(Unit) {
+        viewModel.viewEffects.collect { effect ->
+            when (effect) {
+                is state.ViewEffect.OpenUseaCheckout -> {
+                    if (effect.unmatchedItems.isNotEmpty()) {
+                        scope.launch {
+                            platformServices.copyToClipboard(
+                                ui.formatForGoogleSheet(effect.unmatchedItems)
+                            )
+                        }
+                    }
+                    onOpenUseaCheckout(effect.itemsJson, effect.couponCode)
+                }
+                else -> {} // Other effects handled elsewhere
+            }
+        }
     }
 
     // Apply pixel theme
@@ -298,6 +318,9 @@ fun MobileNavigationHost(
                     },
                     onOpenUrl = { url ->
                         scope.launch { platformServices.openUrl(url) }
+                    },
+                    onCheckoutUsea = { order ->
+                        viewModel.processIntent(ViewIntent.CheckoutUsea(order))
                     },
                     onBack = { navigateTo(MobileScreen.RESULTS) },
                     onUpgrade = { viewModel.processIntent(ViewIntent.PurchasePro) },

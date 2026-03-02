@@ -1042,6 +1042,7 @@ fun MobileShoppingPlanScreen(
     onOptimize: () -> Unit,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
+    onCheckoutUsea: (SellerOrder) -> Unit = {},
     onBack: () -> Unit,
     onUpgrade: () -> Unit,
     isLoading: Boolean = false,
@@ -1173,6 +1174,7 @@ fun MobileShoppingPlanScreen(
                             order = activePlan.orders[page],
                             onCopyToClipboard = onCopyToClipboard,
                             onOpenUrl = onOpenUrl,
+                            onCheckoutUsea = onCheckoutUsea,
                             onCheckoutComplete = {
                                 if (pagerState.currentPage < activePlan.orders.size - 1) {
                                     coroutineScope.launch {
@@ -1414,6 +1416,7 @@ private fun MobileSellerOrderCard(
     order: SellerOrder,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
+    onCheckoutUsea: (SellerOrder) -> Unit = {},
     onCheckoutComplete: () -> Unit = {},
 ) {
     val color = sellerColor(order.seller)
@@ -1556,7 +1559,7 @@ private fun MobileSellerOrderCard(
                 text = sellerCheckoutLabel(order.seller),
                 onClick = {
                     HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                    performSellerCheckout(order.seller, order, onCopyToClipboard, onOpenUrl)
+                    performSellerCheckout(order.seller, order, onCopyToClipboard, onOpenUrl, onCheckoutUsea)
                     onCheckoutComplete()
                 },
                 variant = PixelButtonVariant.SECONDARY,
@@ -1589,7 +1592,7 @@ private fun MobileSellerOrderCard(
 
 /** Seller-specific checkout button label. */
 private fun sellerCheckoutLabel(seller: Seller): String = when (seller) {
-    Seller.USEA -> "Email Order"
+    Seller.USEA -> "Checkout on USEA"
     Seller.BOOTLEG_MAGE -> "Buy on Bootleg Mage"
     Seller.TCGPLAYER -> "Buy on TCGPlayer"
     Seller.MANAPOOL -> "Buy on ManaPool"
@@ -1601,15 +1604,10 @@ private fun performSellerCheckout(
     order: SellerOrder,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
+    onCheckoutUsea: (SellerOrder) -> Unit = {},
 ) {
     when (seller) {
-        Seller.USEA -> {
-            val exportText = formatForExport(Seller.USEA, order.items)
-            onCopyToClipboard(exportText)
-            val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
-            val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&body=${encodeUrlParameter(exportText)}"
-            onOpenUrl(mailtoUrl)
-        }
+        Seller.USEA -> onCheckoutUsea(order)
         Seller.BOOTLEG_MAGE -> {
             onCopyToClipboard(formatForExport(Seller.BOOTLEG_MAGE, order.items))
             sellerCheckoutUrl(Seller.BOOTLEG_MAGE, order.items)?.let { onOpenUrl(it) }

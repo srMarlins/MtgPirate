@@ -85,6 +85,21 @@ internal fun formatForExport(seller: Seller, items: List<OrderItem>): String = w
 }
 
 /**
+ * Select the best USEA coupon code for the given subtotal (in cents).
+ * Returns null if no coupon threshold is met.
+ */
+internal fun useaCouponCode(subtotalCents: Int): String? = when {
+    subtotalCents > 1000_00 -> "c56for1000"
+    subtotalCents > 400_00 -> "c50for400"
+    subtotalCents > 300_00 -> "c35for300"
+    subtotalCents > 200_00 -> "c30for200"
+    subtotalCents > 160_00 -> "c25for160"
+    subtotalCents > 100_00 -> "c15for100"
+    subtotalCents > 60_00 -> "c5for60"
+    else -> null
+}
+
+/**
  * Format order items as tab-separated values matching the USEA Google Sheet Cart tab columns.
  * Columns: Card Name (with set), Set, SKU, Card Type (with dash prefix), Qty, Base Price
  */
@@ -110,6 +125,7 @@ fun ShoppingPlanScreen(
     onOptimize: () -> Unit,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
+    onCheckoutUsea: (SellerOrder) -> Unit = {},
     onBack: () -> Unit,
     onUpgrade: () -> Unit,
     isLoading: Boolean = false,
@@ -179,6 +195,7 @@ fun ShoppingPlanScreen(
                             order = order,
                             onCopyToClipboard = onCopyToClipboard,
                             onOpenUrl = onOpenUrl,
+                            onCheckoutUsea = onCheckoutUsea,
                         )
                     }
 
@@ -409,6 +426,7 @@ private fun SellerOrderCard(
     order: SellerOrder,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
+    onCheckoutUsea: (SellerOrder) -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(false) }
     val color = sellerColor(order.seller)
@@ -636,6 +654,7 @@ private fun SellerOrderCard(
                 order = order,
                 onCopyToClipboard = onCopyToClipboard,
                 onOpenUrl = onOpenUrl,
+                onCheckoutUsea = onCheckoutUsea,
             )
         }
     }
@@ -650,6 +669,7 @@ private fun SellerActionButtons(
     order: SellerOrder,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
+    onCheckoutUsea: (SellerOrder) -> Unit = {},
 ) {
     var copied by remember { mutableStateOf(false) }
 
@@ -667,14 +687,12 @@ private fun SellerActionButtons(
     ) {
         when (order.seller) {
             Seller.USEA -> {
+                // Desktop: clipboard + Google Sheet fallback
                 PixelButton(
-                    text = "Email Order",
+                    text = "Copy for Sheet",
                     onClick = {
-                        val exportText = formatForExport(Seller.USEA, order.items)
-                        onCopyToClipboard(exportText)
-                        val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
-                        val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&body=${encodeUrlParameter(exportText)}"
-                        onOpenUrl(mailtoUrl)
+                        onCopyToClipboard(formatForGoogleSheet(order.items))
+                        copied = true
                     },
                     variant = PixelButtonVariant.PRIMARY,
                     modifier = Modifier.weight(1f)

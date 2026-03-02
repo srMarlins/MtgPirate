@@ -22,5 +22,14 @@ fun MainViewController() = androidx.compose.ui.window.ComposeUIViewController {
         }
     }
 
-    MobileApp(database, platformServices, purchaseManager)
+    MobileApp(
+        database = database,
+        platformServices = platformServices,
+        purchaseManager = purchaseManager,
+        onOpenUseaCheckout = { itemsJson, couponCode ->
+            // iOS WebView checkout will be presented via UIKit from Swift side
+            // For now, the UseaWebViewCheckoutController is available for Swift integration
+            // TODO: Wire iOS WebView presentation from Swift host
+        },
+    )
 }
