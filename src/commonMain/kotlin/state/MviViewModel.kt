@@ -628,10 +628,12 @@ class MviViewModel(
 
     private suspend fun searchDeck() {
         val preferences = _viewState.value.preferences
+        // Always search all sellers so the Pro plan comparison has full data.
+        // The active plan restricts to the free-tier seller in the optimizer.
         val enabledSellerNames = if (_localState.value.proStatus.isPro) {
             preferences.enabledSellers.toSet()
         } else {
-            setOf(Seller.BOOTLEG_MAGE.name)
+            Seller.entries.map { it.name }.toSet()
         }
         val filteredSources = catalogUseCase.sourceRegistry.allSources
             .filter { it.seller.name in enabledSellerNames }
