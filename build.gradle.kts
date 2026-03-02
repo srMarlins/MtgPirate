@@ -199,6 +199,10 @@ android {
 compose.desktop {
     application {
         mainClass = "app.MainKt"
+
+        val debugPro = project.findProperty("debugPro")?.toString()?.toBoolean() ?: false
+        jvmArgs("-DdebugPro=$debugPro")
+
         nativeDistributions {
             targetFormats(
                 TargetFormat.Dmg,

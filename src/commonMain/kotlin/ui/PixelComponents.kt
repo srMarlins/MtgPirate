@@ -585,24 +585,42 @@ fun PixelBorderContainer(
 // ========================================
 // PIXEL BADGE
 // ========================================
+enum class PixelBadgeStyle { FILLED, MUTED, ACCENT }
+
 @Composable
 fun PixelBadge(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colors.primary
+    color: Color = MaterialTheme.colors.primary,
+    style: PixelBadgeStyle = PixelBadgeStyle.FILLED
 ) {
     val colors = MaterialTheme.colors
+    val backgroundColor = when (style) {
+        PixelBadgeStyle.FILLED -> color
+        PixelBadgeStyle.MUTED -> color.copy(alpha = 0.15f)
+        PixelBadgeStyle.ACCENT -> PixelAccent1
+    }
+    val textColor = when (style) {
+        PixelBadgeStyle.FILLED -> colors.onPrimary
+        PixelBadgeStyle.MUTED -> color
+        PixelBadgeStyle.ACCENT -> colors.onPrimary
+    }
+    val glowAlpha = when (style) {
+        PixelBadgeStyle.FILLED -> 0.4f
+        PixelBadgeStyle.MUTED -> 0.15f
+        PixelBadgeStyle.ACCENT -> 0.4f
+    }
     Box(
         modifier = modifier
             .clip(PixelShape(cornerSize = 6.dp))
-            .background(color, shape = PixelShape(cornerSize = 6.dp))
-            .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = 0.4f)
+            .background(backgroundColor, shape = PixelShape(cornerSize = 6.dp))
+            .pixelBorder(borderWidth = 2.dp, cornerSize = 6.dp, enabled = true, glowAlpha = glowAlpha)
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(
             text = text.uppercase(),
             style = MaterialTheme.typography.caption,
-            color = colors.onPrimary,
+            color = textColor,
             fontWeight = FontWeight.Bold
         )
     }

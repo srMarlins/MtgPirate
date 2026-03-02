@@ -2,12 +2,12 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>ForbiddenComment:IosPurchaseManager.kt:IosPurchaseManager$* iOS purchase manager wrapping RevenueCat Swift SDK via Kotlin/Native interop. * TODO: Implement after adding RevenueCat iOS SDK dependency.</ID>
     <ID>FunctionNaming:Main.kt:fun MainViewController</ID>
     <ID>MagicNumber:PlatformUtils.kt:1000</ID>
     <ID>SwallowedException:IosHapticFeedback.kt:IosHapticFeedback$e: Exception</ID>
     <ID>SwallowedException:IosMviPlatformServices.kt:IosMviPlatformServices$e: Exception</ID>
     <ID>TooGenericExceptionCaught:IosHapticFeedback.kt:IosHapticFeedback$e: Exception</ID>
     <ID>TooGenericExceptionCaught:IosMviPlatformServices.kt:IosMviPlatformServices$e: Exception</ID>
-
   </CurrentIssues>
 </SmellBaseline>

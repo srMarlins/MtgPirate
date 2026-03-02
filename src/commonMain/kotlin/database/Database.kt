@@ -96,7 +96,26 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
             cacheMaxAgeHours = preferences.cacheMaxAgeHours.toLong(),
             enabledSellers = preferences.enabledSellers.joinToString(","),
             proxyFirst = if (preferences.proxyFirst) 1L else 0L,
+            isPro = if (preferences.isPro) 1L else 0L,
         )
+    }
+
+    suspend fun updateIsPro(isPro: Boolean) {
+        val current = db.preferencesQueries.selectAll().executeAsOneOrNull()
+        if (current != null) {
+            db.preferencesQueries.insertPreferences(
+                includeSideboard = current.includeSideboard,
+                includeCommanders = current.includeCommanders,
+                includeTokens = current.includeTokens,
+                variantPriority = current.variantPriority,
+                setPriority = current.setPriority,
+                fuzzyEnabled = current.fuzzyEnabled,
+                cacheMaxAgeHours = current.cacheMaxAgeHours,
+                enabledSellers = current.enabledSellers,
+                proxyFirst = current.proxyFirst,
+                isPro = if (isPro) 1L else 0L,
+            )
+        }
     }
 
     suspend fun insertLog(log: LogEntry) {

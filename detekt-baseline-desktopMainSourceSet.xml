@@ -3,6 +3,7 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>CyclomaticComplexMethod:Main.kt:fun main</ID>
+    <ID>ForbiddenComment:DesktopPurchaseManager.kt:DesktopPurchaseManager$* Desktop purchase manager using RevenueCat REST API + Stripe Checkout. * TODO: Implement REST API calls after RevenueCat account setup. * * Supports a debug override: launch with `./gradlew run -PdebugPro=true` * to unlock Pro features without a real purchase flow.</ID>
     <ID>LongMethod:DesktopResolveScreen.kt:@Composable fun DesktopResolveScreen</ID>
     <ID>LongMethod:DesktopSavedImportsDialog.kt:@Composable actual fun SavedImportsDialog</ID>
     <ID>LongMethod:DesktopSavedImportsDialog.kt:@Composable fun SavedImportCard</ID>
@@ -26,6 +27,7 @@
     <ID>MaxLineLength:DesktopResolveScreen.kt:Text("VARIANT", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:Main.kt:// Coming from results -&gt; resolve: slide up from bottom and fade in (vertical twin of stepper)</ID>
     <ID>MaxLineLength:Main.kt:// Going back to results: slide down to bottom and fade out (vertical twin of stepper)</ID>
+    <ID>MaxLineLength:Main.kt:onShowUpgradePrompt = { feature -&gt; viewModel.processIntent(ViewIntent.ShowUpgradePrompt(feature)) }</ID>
     <ID>MaxLineLength:Main.kt:val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry)</ID>
     <ID>MaxLineLength:PixelImageComponents.kt:var loadState by remember { mutableStateOf&lt;AsyncImagePainter.State&gt;(AsyncImagePainter.State.Empty) }</ID>
     <ID>SwallowedException:DesktopMviPlatformServices.kt:DesktopMviPlatformServices$e: Exception</ID>
