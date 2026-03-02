@@ -161,3 +161,9 @@ data class ShoppingPlan(
     val totalPriceCents: Int,
     val savingsVsSingleSeller: Int,
 )
+
+data class ShoppingPlanComparison(
+    val activePlan: ShoppingPlan,
+    val proPlan: ShoppingPlan,
+    val savingsDeltaCents: Int,
+)
