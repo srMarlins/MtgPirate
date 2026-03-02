@@ -63,10 +63,13 @@
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$10</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$11</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$117_945_870</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$12</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$184_426_222</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_373_656_350</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_386_511_848</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_434_682_742</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_541_692_383</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_920_040_559</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$3</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$358_293_042</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$4</ID>
@@ -90,6 +93,7 @@
     <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$4</ID>
     <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$5</ID>
     <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$6</ID>
+    <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$7</ID>
     <ID>MagicNumber:DecklistParser.kt:DecklistParser$5</ID>
     <ID>MagicNumber:ExportScreen.kt:0.07f</ID>
     <ID>MagicNumber:ExportScreen.kt:0.09f</ID>
@@ -281,6 +285,7 @@
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$)</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public fun getByName: Query&lt;CardVariantEntity&gt;</ID>
+    <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public fun selectUseaVariantsWithoutWcProductId: Query&lt;CardVariantEntity&gt;</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$val</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries.GetByNameQuery$override</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries.SelectBySellerQuery$override</ID>

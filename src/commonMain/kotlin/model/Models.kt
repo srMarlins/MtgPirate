@@ -39,6 +39,7 @@ data class CardVariant(
     val smallImageUrl: String? = null,
     val seller: Seller = Seller.USEA,
     val purchaseUri: String? = null,
+    val wcProductId: Int? = null,
 ) {
     val uniqueIdentifier: String get() = sku
 }

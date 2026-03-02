@@ -116,4 +116,19 @@ class CatalogStore(private val database: Database) {
     fun markSellerFetched(seller: Seller) {
         database.upsertSellerCache(seller.name, currentTimeMillis())
     }
+
+    /**
+     * Update the WooCommerce product ID for a specific card variant by seller and SKU.
+     * Used during catalog refresh to map USEA variants to agamecardshop.com product IDs.
+     */
+    fun updateWcProductId(wcProductId: Int, seller: String, sku: String) {
+        database.updateWcProductId(wcProductId, seller, sku)
+    }
+
+    /**
+     * Get all USEA card variants that have not yet been mapped to a WooCommerce product ID.
+     */
+    fun getUseaVariantsWithoutWcProductId(): List<CardVariant> {
+        return database.getUseaVariantsWithoutWcProductId()
+    }
 }

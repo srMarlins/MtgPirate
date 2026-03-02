@@ -10,7 +10,8 @@ CREATE TABLE CardVariantEntity (
     imageUrl TEXT,
     smallImageUrl TEXT,
     seller TEXT NOT NULL DEFAULT 'USEA',
-    purchaseUri TEXT
+    purchaseUri TEXT,
+    wcProductId TEXT
 );
 
 CREATE INDEX idx_nameNormalized ON CardVariantEntity(nameNormalized);
@@ -24,8 +25,8 @@ SELECT * FROM CardVariantEntity;
 
 insertVariant:
 INSERT OR REPLACE INTO CardVariantEntity (
-    nameOriginal, nameNormalized, setCode, sku, variantType, priceInCents, collectorNumber, imageUrl, smallImageUrl, seller, purchaseUri
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    nameOriginal, nameNormalized, setCode, sku, variantType, priceInCents, collectorNumber, imageUrl, smallImageUrl, seller, purchaseUri, wcProductId
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 getByName:
 SELECT * FROM CardVariantEntity WHERE nameNormalized = ?;
@@ -47,3 +48,9 @@ SELECT * FROM CardVariantEntity WHERE seller = ?;
 
 deleteAllBySeller:
 DELETE FROM CardVariantEntity WHERE seller = ?;
+
+updateWcProductId:
+UPDATE CardVariantEntity SET wcProductId = ? WHERE seller = ? AND sku = ?;
+
+selectUseaVariantsWithoutWcProductId:
+SELECT * FROM CardVariantEntity WHERE seller = 'USEA' AND wcProductId IS NULL;
