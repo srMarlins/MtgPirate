@@ -972,7 +972,8 @@ class MviViewModel(
                 val itemsJson = mapped.joinToString(",", "[", "]") { item ->
                     """{"id":${item.variant.wcProductId},"qty":${item.qty}}"""
                 }
-                val couponCode = ui.useaCouponCode(order.subtotalCents) ?: ""
+                val mappedSubtotal = mapped.sumOf { it.variant.priceInCents * it.qty }
+                val couponCode = ui.useaCouponCode(mappedSubtotal) ?: ""
 
                 _viewEffects.emit(ViewEffect.UseaCheckoutDone)
                 _viewEffects.emit(ViewEffect.OpenUseaCheckout(
