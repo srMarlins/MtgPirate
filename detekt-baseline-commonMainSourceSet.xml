@@ -41,6 +41,7 @@
     <ID>LongMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
     <ID>LongMethod:ShoppingOptimizer.kt:ShoppingOptimizer$fun optimizeForSellers: ShoppingPlan</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable fun ShoppingPlanScreen</ID>
+    <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun ProComparisonCard</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerActionButtons</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerOrderCard</ID>
     <ID>LongMethod:StepperComponent.kt:@Composable fun PixelStepNode</ID>
@@ -233,7 +234,14 @@
     <ID>MagicNumber:SellerDiscountConfig.kt:60_00</ID>
     <ID>MagicNumber:ShoppingOptimizer.kt:ShoppingOptimizer$100</ID>
     <ID>MagicNumber:ShoppingPlanScreen.kt:100</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:1000_00</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:100_00</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:160_00</ID>
     <ID>MagicNumber:ShoppingPlanScreen.kt:2000</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:200_00</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:300_00</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:400_00</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:60_00</ID>
     <ID>MagicNumber:StepperComponent.kt:1200</ID>
     <ID>MagicNumber:StepperComponent.kt:12f</ID>
     <ID>MagicNumber:StepperComponent.kt:4f</ID>
@@ -351,6 +359,7 @@
     <ID>MaxLineLength:MatchesScreen.kt:color = if (rowTotal != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)</ID>
     <ID>MaxLineLength:MatchesScreen.kt:val content = unmatched.joinToString("\n") { "${it.deckEntry.qty} ${it.deckEntry.cardName}" }</ID>
     <ID>MaxLineLength:MobilePixelImageComponents.kt:var loadState by remember { mutableStateOf&lt;AsyncImagePainter.State&gt;(AsyncImagePainter.State.Empty) }</ID>
+    <ID>MaxLineLength:MviViewModel.kt:MviViewModel$_viewEffects.emit(ViewEffect.ShowError("No products could be matched on the store. Use 'Copy for Sheet' instead."))</ID>
     <ID>MaxLineLength:MviViewModel.kt:MviViewModel$private suspend</ID>
     <ID>MaxLineLength:PreferencesQueries.kt:PreferencesQueries$)</ID>
     <ID>MaxLineLength:PreferencesWizardScreen.kt:.</ID>
@@ -384,7 +393,6 @@
     <ID>MaxLineLength:SellerCacheQueries.kt:SellerCacheQueries$val</ID>
     <ID>MaxLineLength:SellerCacheQueries.kt:SellerCacheQueries.GetCacheQuery$override</ID>
     <ID>MaxLineLength:ShoppingPlanScreen.kt:color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface</ID>
-    <ID>MaxLineLength:ShoppingPlanScreen.kt:val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&amp;body=${encodeUrlParameter(exportText)}"</ID>
     <ID>NestedBlockDepth:ManaPoolApi.kt:ManaPoolApi$internal suspend fun parseDataArray</ID>
     <ID>NestedBlockDepth:ShoppingOptimizer.kt:ShoppingOptimizer$fun optimizeForSellers: ShoppingPlan</ID>
     <ID>PackageNaming:DeckLootDatabaseImpl.kt:package com.deckloot.db.DeckLoot</ID>
@@ -394,6 +402,7 @@
     <ID>ReturnCount:Matcher.kt:Matcher$private fun matchEntry: DeckEntryMatch</ID>
     <ID>ReturnCount:MviViewModel.kt:MviViewModel$fun processIntent</ID>
     <ID>SwallowedException:ScryfallApi.kt:ScryfallApi$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:AgamecardshopProductMapper.kt:AgamecardshopProductMapper$e: Exception</ID>
     <ID>TooGenericExceptionCaught:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogSourceRegistry$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogUseCase$e: Exception</ID>
@@ -414,6 +423,7 @@
     <ID>TooManyFunctions:PixelComponents.kt:ui.PixelComponents.kt</ID>
     <ID>UnusedParameter:PixelComponents.kt:index: Int</ID>
     <ID>UnusedParameter:ResultsScreen.kt:matchedCount: Int = 0</ID>
+    <ID>UnusedParameter:ShoppingPlanScreen.kt:onCheckoutUsea: (SellerOrder) -&gt; Unit = {}</ID>
     <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.material.*</ID>
     <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.runtime.*</ID>
