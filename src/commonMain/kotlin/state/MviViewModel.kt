@@ -798,12 +798,25 @@ class MviViewModel(
                     ShoppingOptimizer.optimizeForSellers(multiMatches, setOf(Seller.BOOTLEG_MAGE))
                 }
 
+                // Apples-to-apples comparison: what would the SAME cards
+                // that BM covers cost with Pro (across all sellers)?
+                // This makes the savings clearly positive and meaningful.
+                val savingsDelta = if (!isPro && activePlan.droppedCardCount > 0) {
+                    val bmCardMatches = multiMatches.filter { mm ->
+                        mm.alternatives.any { it.seller == Seller.BOOTLEG_MAGE }
+                    }
+                    val proSameCards = ShoppingOptimizer.optimize(bmCardMatches)
+                    (activePlan.totalPriceCents - proSameCards.totalPriceCents)
+                        .coerceAtLeast(0)
+                } else {
+                    (activePlan.totalPriceCents - proPlan.totalPriceCents)
+                        .coerceAtLeast(0)
+                }
+
                 val comparison = ShoppingPlanComparison(
                     activePlan = activePlan,
                     proPlan = proPlan,
-                    // Negative delta means Pro covers more cards (costs more but includes dropped cards).
-                    // Keep the raw delta so the UI can decide how to present it.
-                    savingsDeltaCents = activePlan.totalPriceCents - proPlan.totalPriceCents,
+                    savingsDeltaCents = savingsDelta,
                 )
 
                 _localState.update { it.copy(shoppingPlanComparison = comparison) }

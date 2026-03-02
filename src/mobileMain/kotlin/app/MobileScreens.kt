@@ -1136,33 +1136,37 @@ fun MobileShoppingPlanScreen(
                         onUpgrade = onUpgrade,
                     )
 
-                    // Missing card warning with CTA
+                    // Missing card warning + Pro upsell for free users
                     if (activePlan.droppedCardCount > 0 && !isPro) {
                         Spacer(Modifier.height(6.dp))
                         PixelCard {
-                            Row(
+                            Column(
                                 Modifier.fillMaxWidth().padding(10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp),
                             ) {
-                                Text("\u26A0", fontSize = 16.sp)
-                                Column(Modifier.weight(1f)) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                ) {
+                                    Text("\u26A0", fontSize = 16.sp)
                                     Text(
-                                        "${activePlan.droppedCardCount} card(s) not available",
+                                        "${activePlan.droppedCardCount} card(s) not available from Bootleg Mage",
                                         style = MaterialTheme.typography.caption,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colors.error,
                                     )
-                                    Text(
-                                        "Pro unlocks all sellers",
-                                        style = MaterialTheme.typography.overline,
-                                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
-                                    )
                                 }
+                                Text(
+                                    "Upgrade to Pro to shop across TCGPlayer, ManaPool, and USEA — " +
+                                        "get all your cards at the best prices.",
+                                    style = MaterialTheme.typography.overline,
+                                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                                )
                                 PixelButton(
-                                    text = "Upgrade",
+                                    text = "Unlock All Sellers",
                                     onClick = onUpgrade,
                                     variant = PixelButtonVariant.PRIMARY,
+                                    modifier = Modifier.fillMaxWidth(),
                                 )
                             }
                         }
@@ -1282,12 +1286,11 @@ private fun MobileShoppingPlanSummary(
                 )
             }
 
-            // Pro price upsell — always show for free users
-            if (proPlan != null) {
-                val accentColor = if (savingsDeltaCents > 0) PixelGreen else MaterialTheme.colors.primary
+            // Pro price upsell — shows savings on matched cards
+            if (proPlan != null && savingsDeltaCents > 0) {
                 Row(
                     Modifier.fillMaxWidth()
-                        .background(accentColor.copy(alpha = 0.1f), shape = PixelShape(cornerSize = 6.dp))
+                        .background(PixelGreen.copy(alpha = 0.1f), shape = PixelShape(cornerSize = 6.dp))
                         .clickable { onUpgrade() }
                         .padding(horizontal = 10.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -1299,36 +1302,18 @@ private fun MobileShoppingPlanSummary(
                     ) {
                         ProBadge()
                         Text(
-                            "With Pro",
+                            "Save with Pro",
                             style = MaterialTheme.typography.caption,
-                            color = accentColor,
+                            color = PixelGreen,
                             fontWeight = FontWeight.Bold,
                         )
                     }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        Text(
-                            formatPrice(proPlan.totalPriceCents),
-                            style = MaterialTheme.typography.body1,
-                            color = accentColor,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        if (savingsDeltaCents > 0) {
-                            Text(
-                                "Save ${formatPrice(savingsDeltaCents)}",
-                                style = MaterialTheme.typography.overline,
-                                color = PixelGreen.copy(alpha = 0.8f),
-                            )
-                        } else if (plan.droppedCardCount > 0) {
-                            Text(
-                                "All cards included",
-                                style = MaterialTheme.typography.overline,
-                                color = accentColor.copy(alpha = 0.8f),
-                            )
-                        }
-                    }
+                    Text(
+                        "- ${formatPrice(savingsDeltaCents)}",
+                        style = MaterialTheme.typography.body1,
+                        color = PixelGreen,
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
             }
 
