@@ -252,68 +252,70 @@ class CatalogUseCase(
         _activePrefetchService?.requestPrefetch(variants)
     }
 
-    /**
-     * Refresh match data with the latest variant information from the catalog.
-     *
-     * When variants are updated in the database (e.g. image URLs enriched),
-     * this ensures the match list reflects those changes.
-     */
-    fun refreshMatchesFromCatalog(
-        matches: List<model.DeckEntryMatch>,
-        catalog: Catalog
-    ): List<model.DeckEntryMatch> {
-        if (matches.isEmpty() || catalog.variants.isEmpty()) return matches
+    companion object {
+        /**
+         * Refresh match data with the latest variant information from the catalog.
+         *
+         * When variants are updated in the database (e.g. image URLs enriched),
+         * this ensures the match list reflects those changes.
+         */
+        fun refreshMatchesFromCatalog(
+            matches: List<model.DeckEntryMatch>,
+            catalog: Catalog
+        ): List<model.DeckEntryMatch> {
+            if (matches.isEmpty() || catalog.variants.isEmpty()) return matches
 
-        val variantsBySku = catalog.variants.associateBy { it.sku }
+            val variantsBySku = catalog.variants.associateBy { it.sku }
 
-        return matches.map { match ->
-            val refreshedSelectedVariant = match.selectedVariant?.let { oldVariant ->
-                variantsBySku[oldVariant.sku] ?: oldVariant
+            return matches.map { match ->
+                val refreshedSelectedVariant = match.selectedVariant?.let { oldVariant ->
+                    variantsBySku[oldVariant.sku] ?: oldVariant
+                }
+
+                val refreshedCandidates = match.candidates.map { candidate ->
+                    val refreshedVariant = variantsBySku[candidate.variant.sku] ?: candidate.variant
+                    candidate.copy(variant = refreshedVariant)
+                }
+
+                match.copy(
+                    selectedVariant = refreshedSelectedVariant,
+                    candidates = refreshedCandidates
+                )
             }
+        }
 
-            val refreshedCandidates = match.candidates.map { candidate ->
-                val refreshedVariant = variantsBySku[candidate.variant.sku] ?: candidate.variant
-                candidate.copy(variant = refreshedVariant)
+        /**
+         * Refresh multi-match data with the latest variant information from the catalog.
+         *
+         * Same purpose as [refreshMatchesFromCatalog] but for [model.MultiMatch] objects
+         * used by the alt detail screen and shopping optimizer.
+         */
+        fun refreshMultiMatchesFromCatalog(
+            multiMatches: List<model.MultiMatch>,
+            catalog: Catalog
+        ): List<model.MultiMatch> {
+            if (multiMatches.isEmpty() || catalog.variants.isEmpty()) return multiMatches
+
+            val variantsBySku = catalog.variants.associateBy { it.sku }
+
+            return multiMatches.map { mm ->
+                val refreshedBest = mm.bestOption?.let { refreshMatchOption(it, variantsBySku) }
+                val refreshedAlts = mm.alternatives.map { refreshMatchOption(it, variantsBySku) }
+                val refreshedFallback = mm.realCardFallback?.let { refreshMatchOption(it, variantsBySku) }
+                mm.copy(
+                    bestOption = refreshedBest,
+                    alternatives = refreshedAlts,
+                    realCardFallback = refreshedFallback,
+                )
             }
-
-            match.copy(
-                selectedVariant = refreshedSelectedVariant,
-                candidates = refreshedCandidates
-            )
         }
-    }
 
-    /**
-     * Refresh multi-match data with the latest variant information from the catalog.
-     *
-     * Same purpose as [refreshMatchesFromCatalog] but for [model.MultiMatch] objects
-     * used by the alt detail screen and shopping optimizer.
-     */
-    fun refreshMultiMatchesFromCatalog(
-        multiMatches: List<model.MultiMatch>,
-        catalog: Catalog
-    ): List<model.MultiMatch> {
-        if (multiMatches.isEmpty() || catalog.variants.isEmpty()) return multiMatches
-
-        val variantsBySku = catalog.variants.associateBy { it.sku }
-
-        return multiMatches.map { mm ->
-            val refreshedBest = mm.bestOption?.let { refreshMatchOption(it, variantsBySku) }
-            val refreshedAlts = mm.alternatives.map { refreshMatchOption(it, variantsBySku) }
-            val refreshedFallback = mm.realCardFallback?.let { refreshMatchOption(it, variantsBySku) }
-            mm.copy(
-                bestOption = refreshedBest,
-                alternatives = refreshedAlts,
-                realCardFallback = refreshedFallback,
-            )
+        private fun refreshMatchOption(
+            option: model.MatchOption,
+            variantsBySku: Map<String, model.CardVariant>,
+        ): model.MatchOption {
+            val refreshed = variantsBySku[option.variant.sku] ?: option.variant
+            return option.copy(variant = refreshed)
         }
-    }
-
-    private fun refreshMatchOption(
-        option: model.MatchOption,
-        variantsBySku: Map<String, model.CardVariant>,
-    ): model.MatchOption {
-        val refreshed = variantsBySku[option.variant.sku] ?: option.variant
-        return option.copy(variant = refreshed)
     }
 }

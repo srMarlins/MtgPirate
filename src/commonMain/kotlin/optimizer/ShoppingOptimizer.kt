@@ -1,7 +1,5 @@
 package optimizer
 
-import match.NameNormalizer
-import model.MatchOption
 import model.MultiMatch
 import model.OrderItem
 import model.Seller
@@ -9,49 +7,175 @@ import model.SellerOrder
 import model.ShoppingPlan
 
 /**
- * Optimizer that assigns card matches to sellers to minimize the total order cost.
- * Handles bulk discounts and shipping thresholds.
+ * Optimizer that assigns card matches to sellers to minimize total order cost.
+ * Uses iterative discount-aware optimization: reassigns cards when crossing
+ * discount thresholds reduces total cost.
  */
 object ShoppingOptimizer {
 
-    fun optimize(matches: List<MultiMatch>): ShoppingPlan {
+    private const val MAX_ITERATIONS = 10
+
+    /**
+     * Optimize across all sellers in the match list.
+     */
+    fun optimize(matches: List<MultiMatch>): ShoppingPlan =
+        optimizeForSellers(matches, sellers = null)
+
+    /**
+     * Optimize restricting to a subset of sellers.
+     * Cards without any alternative in [sellers] are dropped from the plan.
+     * Pass `null` to use all sellers (same as [optimize]).
+     */
+    fun optimizeForSellers(
+        matches: List<MultiMatch>,
+        sellers: Set<Seller>?,
+    ): ShoppingPlan {
+        // Build the effective match list: filter alternatives to allowed sellers
+        // and recompute bestOption within that subset.
+        // When sellers is null (optimize all), preserve the original bestOption
+        // to respect user overrides from the UI.
+        val effectiveMatches = matches.mapNotNull { mm ->
+            if (sellers == null) {
+                // No filtering — keep original bestOption (may be a user override)
+                if (mm.bestOption == null || mm.alternatives.isEmpty()) return@mapNotNull null
+                mm
+            } else {
+                val filteredAlts = mm.alternatives.filter { it.seller in sellers }
+                if (filteredAlts.isEmpty()) return@mapNotNull null
+                val best = filteredAlts.minByOrNull { it.priceCents } ?: return@mapNotNull null
+                mm.copy(bestOption = best, alternatives = filteredAlts)
+            }
+        }
+
+        if (effectiveMatches.isEmpty()) {
+            return ShoppingPlan(orders = emptyList(), totalPriceCents = 0, savingsVsSingleSeller = 0)
+        }
+
+        // Index: for each match, which sellers offer it and at what price
+        val priceMatrix = effectiveMatches.map { mm ->
+            mm.alternatives.associate { it.seller to it.priceCents }
+        }
+
+        // Identify moveable cards (available from 2+ sellers and not user-pinned).
+        // A card is pinned if its bestOption is NOT the cheapest alternative,
+        // indicating the user explicitly chose a more expensive seller.
+        val moveableIndices = effectiveMatches.indices.filter { i ->
+            val mm = effectiveMatches[i]
+            val cheapest = priceMatrix[i].values.minOrNull() ?: return@filter false
+            priceMatrix[i].size > 1 && mm.bestOption!!.priceCents <= cheapest
+        }
+
         // Step 1: Naive assignment — each card to its bestOption seller
-        val naiveAssignment = mutableMapOf<Seller, MutableList<OrderItem>>()
-        matches.forEach { mm ->
-            val best = mm.bestOption ?: return@forEach
-            naiveAssignment.getOrPut(best.seller) { mutableListOf() }
-                .add(OrderItem(best.variant, mm.deckEntry.qty, best.isProxy))
+        val assignment = IntArray(effectiveMatches.size)
+        val sellerSubtotals = mutableMapOf<Seller, Int>()
+
+        effectiveMatches.forEachIndexed { i, mm ->
+            val seller = mm.bestOption!!.seller
+            assignment[i] = seller.ordinal
+            val amount = mm.bestOption!!.priceCents * mm.deckEntry.qty
+            sellerSubtotals[seller] = (sellerSubtotals[seller] ?: 0) + amount
         }
 
-        // Step 2: Try threshold optimization
-        val optimized = tryThresholdOptimization(matches, naiveAssignment)
+        // Cache discount configs
+        val configs = Seller.entries.associateWith { getDiscountConfig(it) }
 
-        // Step 3: Build SellerOrders with discount calculations
-        val orders = optimized.map { (seller, items) ->
-            buildSellerOrder(seller, items)
+        // Step 2: Iterative optimization
+        var improved = true
+        var iterations = 0
+
+        while (improved && iterations < MAX_ITERATIONS) {
+            improved = false
+            iterations++
+
+            for (i in moveableIndices) {
+                val mm = effectiveMatches[i]
+                val currentSeller = Seller.entries[assignment[i]]
+                val qty = mm.deckEntry.qty
+                val currentPrice = priceMatrix[i][currentSeller]!! * qty
+
+                for ((candidateSeller, unitPrice) in priceMatrix[i]) {
+                    if (candidateSeller == currentSeller) continue
+                    val candidatePrice = unitPrice * qty
+
+                    // Simulate the move: subtract from current, add to candidate
+                    val oldCurrentSubtotal = sellerSubtotals[currentSeller] ?: 0
+                    val oldCandidateSubtotal = sellerSubtotals[candidateSeller] ?: 0
+                    val newCurrentSubtotal = oldCurrentSubtotal - currentPrice
+                    val newCandidateSubtotal = oldCandidateSubtotal + candidatePrice
+
+                    // Calculate cost delta using only affected sellers
+                    val oldCost = sellerOrderCost(currentSeller, oldCurrentSubtotal, configs) +
+                        sellerOrderCost(candidateSeller, oldCandidateSubtotal, configs)
+                    val newCost = sellerOrderCost(currentSeller, newCurrentSubtotal, configs) +
+                        sellerOrderCost(candidateSeller, newCandidateSubtotal, configs)
+
+                    if (newCost < oldCost) {
+                        assignment[i] = candidateSeller.ordinal
+                        sellerSubtotals[currentSeller] = newCurrentSubtotal
+                        sellerSubtotals[candidateSeller] = newCandidateSubtotal
+                        if (newCurrentSubtotal <= 0) sellerSubtotals.remove(currentSeller)
+                        improved = true
+                        break
+                    }
+                }
+            }
         }
 
+        // Step 3: Build final plan from assignments
+        val sellerItems = mutableMapOf<Seller, MutableList<OrderItem>>()
+        effectiveMatches.forEachIndexed { i, mm ->
+            val seller = Seller.entries[assignment[i]]
+            val alt = mm.alternatives.first { it.seller == seller }
+            sellerItems.getOrPut(seller) { mutableListOf() }
+                .add(OrderItem(alt.variant, mm.deckEntry.qty, alt.isProxy))
+        }
+
+        val orders = sellerItems.map { (seller, items) -> buildSellerOrder(seller, items) }
         val totalCents = orders.sumOf { it.totalCents }
 
-        // Calculate savings vs worst-case (naive assignment without threshold optimization)
-        val naiveOrders = naiveAssignment.map { (seller, items) ->
-            buildSellerOrder(seller, items)
+        // Savings vs naive (no optimization)
+        val naiveItems = mutableMapOf<Seller, MutableList<OrderItem>>()
+        effectiveMatches.forEach { mm ->
+            val best = mm.bestOption!!
+            naiveItems.getOrPut(best.seller) { mutableListOf() }
+                .add(OrderItem(best.variant, mm.deckEntry.qty, best.isProxy))
         }
-        val naiveTotal = naiveOrders.sumOf { it.totalCents }
-        val savings = naiveTotal - totalCents
+        val naiveTotal = naiveItems.map { (seller, items) ->
+            buildSellerOrder(seller, items).totalCents
+        }.sum()
 
         return ShoppingPlan(
             orders = orders.sortedByDescending { it.subtotalCents },
             totalPriceCents = totalCents,
-            savingsVsSingleSeller = savings.coerceAtLeast(0),
+            savingsVsSingleSeller = (naiveTotal - totalCents).coerceAtLeast(0),
         )
+    }
+
+    /**
+     * Calculate total cost for a seller at a given subtotal (discount + shipping).
+     * Used for incremental cost comparison during iterative optimization.
+     */
+    private fun sellerOrderCost(
+        seller: Seller,
+        subtotalCents: Int,
+        configs: Map<Seller, SellerDiscountConfig>,
+    ): Int {
+        if (subtotalCents <= 0) return 0
+        val config = configs[seller] ?: return subtotalCents
+        val discountPercent = config.discountTiers
+            .sortedByDescending { it.minCents }
+            .firstOrNull { subtotalCents >= it.minCents }?.discountPercent ?: 0
+        val afterDiscount = subtotalCents * (100 - discountPercent) / 100
+        val shippingCents = config.shippingTiers
+            .sortedByDescending { it.minCents }
+            .firstOrNull { afterDiscount >= it.minCents }?.shippingCents ?: 0
+        return afterDiscount + shippingCents
     }
 
     private fun buildSellerOrder(seller: Seller, items: List<OrderItem>): SellerOrder {
         val config = getDiscountConfig(seller)
         val subtotal = items.sumOf { it.variant.priceInCents * it.qty }
 
-        // >= so hitting exactly the threshold qualifies (e.g., $400.00 gets 50%)
         val discountPercent = config.discountTiers
             .sortedByDescending { it.minCents }
             .firstOrNull { subtotal >= it.minCents }?.discountPercent ?: 0
@@ -69,94 +193,5 @@ object ShoppingOptimizer {
             shippingCents = shippingCents,
             totalCents = afterDiscount + shippingCents,
         )
-    }
-
-    private fun tryThresholdOptimization(
-        matches: List<MultiMatch>,
-        naiveAssignment: Map<Seller, List<OrderItem>>,
-    ): Map<Seller, List<OrderItem>> {
-        var bestPlan = naiveAssignment.mapValues { it.value.toMutableList() }
-        var bestTotal = calculateTotal(bestPlan)
-
-        // For each seller, check if pulling cards from other sellers
-        // would push it to a better discount tier
-        for (seller in naiveAssignment.keys) {
-            val config = getDiscountConfig(seller)
-            val currentSubtotal = bestPlan[seller]?.sumOf {
-                it.variant.priceInCents * it.qty
-            } ?: 0
-
-            // Find all potential discount tiers above current subtotal
-            val betterTiers = config.discountTiers
-                .filter { it.minCents > currentSubtotal }
-                .sortedBy { it.minCents }
-
-            for (nextTier in betterTiers) {
-                val deficit = nextTier.minCents - currentSubtotal // Need to reach threshold
-
-                // Find cards from other sellers that are also available from this seller
-                val pullable = matches.filter { mm ->
-                    val currentBest = mm.bestOption ?: return@filter false
-                    // Find which seller this card is currently assigned to in bestPlan
-                    val assignedSeller = findAssignedSeller(mm, bestPlan)
-                    assignedSeller != null && assignedSeller != seller &&
-                        mm.alternatives.any { it.seller == seller }
-                }.sortedBy { mm ->
-                    // Prefer pulling cards with smallest price difference
-                    val altPrice = mm.alternatives.first { it.seller == seller }.priceCents
-                    val currentAssignedSeller = findAssignedSeller(mm, bestPlan)!!
-                    val currentPrice = mm.alternatives.first { it.seller == currentAssignedSeller }.priceCents
-                    (altPrice - currentPrice) * mm.deckEntry.qty
-                }
-
-                // Try pulling cards until we hit the threshold
-                var pulledAmount = 0
-                val candidatePlan = bestPlan.mapValues { it.value.toMutableList() }.toMutableMap()
-                val cardsToMove = mutableListOf<Pair<MultiMatch, MatchOption>>()
-
-                for (mm in pullable) {
-                    if (pulledAmount >= deficit) break
-                    val alt = mm.alternatives.first { it.seller == seller }
-                    cardsToMove.add(mm to alt)
-                    pulledAmount += alt.priceCents * mm.deckEntry.qty
-                }
-
-                if (pulledAmount >= deficit) {
-                    // Apply the moves
-                    for ((mm, alt) in cardsToMove) {
-                        val currentAssignedSeller = findAssignedSeller(mm, candidatePlan)!!
-                        candidatePlan[currentAssignedSeller]?.removeAll {
-                            it.variant.nameNormalized == NameNormalizer.normalize(mm.deckEntry.cardName) &&
-                            it.variant.seller == currentAssignedSeller
-                        }
-                        val targetList = candidatePlan[seller] ?: mutableListOf<OrderItem>().also {
-                            candidatePlan[seller] = it
-                        }
-                        targetList.add(OrderItem(alt.variant, mm.deckEntry.qty, alt.isProxy))
-                    }
-
-                    val candidateTotal = calculateTotal(candidatePlan)
-                    if (candidateTotal < bestTotal) {
-                        bestPlan = candidatePlan
-                        bestTotal = candidateTotal
-                    }
-                }
-            }
-        }
-
-        return bestPlan
-    }
-
-    private fun findAssignedSeller(mm: MultiMatch, plan: Map<Seller, List<OrderItem>>): Seller? {
-        val normalizedName = NameNormalizer.normalize(mm.deckEntry.cardName)
-        return plan.entries.find { (_, items) ->
-            items.any { it.variant.nameNormalized == normalizedName }
-        }?.key
-    }
-
-    private fun calculateTotal(plan: Map<Seller, List<OrderItem>>): Int {
-        return plan.map { (seller, items) ->
-            buildSellerOrder(seller, items).totalCents
-        }.sum()
     }
 }

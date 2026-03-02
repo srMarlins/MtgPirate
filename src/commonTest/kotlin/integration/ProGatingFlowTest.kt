@@ -1,10 +1,10 @@
 package integration
 
-import model.ProFeature
 import model.ProStatus
 import model.PurchaseResult
 import model.Seller
 import purchase.PurchaseManager
+import state.shouldBlockSellerUpdate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -28,29 +28,64 @@ class MockPurchaseManager(
 
 class ProGatingFlowTest {
 
+    // -- shouldBlockSellerUpdate tests (production function) --
+
     @Test
     fun freeUser_cannotEnableMultipleSellers() {
-        val status = ProStatus.Free
-        val newSellers = listOf(Seller.USEA.name, Seller.BOOTLEG_MAGE.name)
-        val isOnlyUsea = newSellers.size == 1 && newSellers.first() == Seller.USEA.name
-        assertFalse(isOnlyUsea || status.isPro)
+        assertTrue(
+            shouldBlockSellerUpdate(
+                listOf(Seller.USEA.name, Seller.BOOTLEG_MAGE.name),
+                ProStatus.Free,
+            )
+        )
     }
 
     @Test
     fun freeUser_canEnableUseaOnly() {
-        val status = ProStatus.Free
-        val newSellers = listOf(Seller.USEA.name)
-        val isOnlyUsea = newSellers.size == 1 && newSellers.first() == Seller.USEA.name
-        assertTrue(isOnlyUsea || status.isPro)
+        assertFalse(
+            shouldBlockSellerUpdate(listOf(Seller.USEA.name), ProStatus.Free)
+        )
     }
 
     @Test
     fun proUser_canEnableMultipleSellers() {
-        val status = ProStatus.Pro
-        val newSellers = listOf(Seller.USEA.name, Seller.BOOTLEG_MAGE.name)
-        val isOnlyUsea = newSellers.size == 1 && newSellers.first() == Seller.USEA.name
-        assertTrue(isOnlyUsea || status.isPro)
+        assertFalse(
+            shouldBlockSellerUpdate(
+                listOf(Seller.USEA.name, Seller.BOOTLEG_MAGE.name),
+                ProStatus.Pro,
+            )
+        )
     }
+
+    @Test
+    fun emptySellerList_isAllowed() {
+        assertFalse(shouldBlockSellerUpdate(emptyList(), ProStatus.Free))
+    }
+
+    @Test
+    fun singleNonUseaSeller_blockedForFree() {
+        assertTrue(
+            shouldBlockSellerUpdate(listOf(Seller.BOOTLEG_MAGE.name), ProStatus.Free)
+        )
+    }
+
+    @Test
+    fun allSellers_allowedForPro() {
+        val allSellers = Seller.entries.map { it.name }
+        assertFalse(shouldBlockSellerUpdate(allSellers, ProStatus.Pro))
+    }
+
+    @Test
+    fun loadingStatus_blocksMultipleSellers() {
+        assertTrue(
+            shouldBlockSellerUpdate(
+                listOf(Seller.USEA.name, Seller.BOOTLEG_MAGE.name),
+                ProStatus.Loading,
+            )
+        )
+    }
+
+    // -- MockPurchaseManager tests --
 
     @Test
     fun mockPurchaseManager_purchaseSuccess_grantsPro() = runTest {
@@ -76,22 +111,12 @@ class ProGatingFlowTest {
         assertEquals(ProStatus.Pro, status)
     }
 
+    // -- ProStatus tests --
+
     @Test
     fun proStatus_isPro_correctForAllStates() {
         assertFalse(ProStatus.Free.isPro)
         assertTrue(ProStatus.Pro.isPro)
         assertFalse(ProStatus.Loading.isPro)
-    }
-
-    @Test
-    fun proFeature_allFeaturesPresent() {
-        val expected = setOf(
-            ProFeature.MULTI_SELLER,
-            ProFeature.SHOPPING_OPTIMIZER,
-            ProFeature.SELLER_OVERRIDE,
-            ProFeature.IMPORT_HISTORY,
-            ProFeature.THEME_CUSTOMIZATION,
-        )
-        assertEquals(expected, ProFeature.entries.toSet())
     }
 }

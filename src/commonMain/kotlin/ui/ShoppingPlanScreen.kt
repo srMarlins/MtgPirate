@@ -39,6 +39,7 @@ import model.OrderItem
 import model.Seller
 import model.SellerOrder
 import model.ShoppingPlan
+import model.ShoppingPlanComparison
 import util.buildManaPoolUrl
 import util.buildTcgPlayerUrl
 import util.encodeUrlParameter
@@ -89,17 +90,19 @@ internal fun formatForExport(seller: Seller, items: List<OrderItem>): String = w
  */
 @Composable
 fun ShoppingPlanScreen(
-    shoppingPlan: ShoppingPlan?,
+    shoppingPlanComparison: ShoppingPlanComparison?,
     multiMatches: List<MultiMatch>,
+    isPro: Boolean,
     onOptimize: () -> Unit,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
     onBack: () -> Unit,
+    onUpgrade: () -> Unit,
     isLoading: Boolean = false,
 ) {
     // Trigger optimization if we have multi-matches but no plan yet
-    LaunchedEffect(shoppingPlan, multiMatches) {
-        if (shoppingPlan == null && multiMatches.isNotEmpty()) {
+    LaunchedEffect(shoppingPlanComparison, multiMatches) {
+        if (shoppingPlanComparison == null && multiMatches.isNotEmpty()) {
             onOptimize()
         }
     }
@@ -129,7 +132,7 @@ fun ShoppingPlanScreen(
             )
             Spacer(Modifier.height(16.dp))
 
-            if (isLoading || shoppingPlan == null) {
+            if (isLoading || shoppingPlanComparison == null) {
                 // Loading state
                 Box(
                     modifier = Modifier.fillMaxWidth().weight(1f),
@@ -146,20 +149,32 @@ fun ShoppingPlanScreen(
                     }
                 }
             } else {
-                // Total summary header
-                ShoppingPlanSummary(shoppingPlan)
+                val activePlan = shoppingPlanComparison.activePlan
+                val proPlan = shoppingPlanComparison.proPlan
+                val showComparison = !isPro && shoppingPlanComparison.savingsDeltaCents > 0
+
+                ShoppingPlanSummary(activePlan)
                 Spacer(Modifier.height(16.dp))
 
-                // Per-seller order cards (scrollable)
                 Column(
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    shoppingPlan.orders.forEach { order ->
+                    activePlan.orders.forEach { order ->
                         SellerOrderCard(
                             order = order,
                             onCopyToClipboard = onCopyToClipboard,
                             onOpenUrl = onOpenUrl,
+                        )
+                    }
+
+                    if (showComparison) {
+                        Spacer(Modifier.height(8.dp))
+                        ProComparisonCard(
+                            activePlan = activePlan,
+                            proPlan = proPlan,
+                            savingsDeltaCents = shoppingPlanComparison.savingsDeltaCents,
+                            onUpgrade = onUpgrade,
                         )
                     }
                 }
@@ -246,6 +261,128 @@ private fun ShoppingPlanSummary(plan: ShoppingPlan) {
                     )
                 }
             }
+        }
+    }
+}
+
+/**
+ * Comparison card showing potential savings with Pro.
+ * Displays side-by-side plan totals, savings callout, locked seller previews,
+ * and an upgrade button.
+ */
+@Composable
+private fun ProComparisonCard(
+    activePlan: ShoppingPlan,
+    proPlan: ShoppingPlan,
+    savingsDeltaCents: Int,
+    onUpgrade: () -> Unit,
+) {
+    PixelCard(glowing = true) {
+        Column(
+            Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                "SAVE WITH DECKLOOT PRO",
+                style = MaterialTheme.typography.subtitle1,
+                color = MaterialTheme.colors.primary,
+                fontWeight = FontWeight.Bold
+            )
+
+            PixelDivider()
+
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        "Your Plan",
+                        style = MaterialTheme.typography.subtitle2,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        formatPrice(activePlan.totalPriceCents),
+                        style = MaterialTheme.typography.h5,
+                        color = MaterialTheme.colors.onSurface,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "${activePlan.orders.size} seller(s)",
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                    )
+                }
+
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        "Pro Plan",
+                        style = MaterialTheme.typography.subtitle2,
+                        color = PixelGreen
+                    )
+                    Text(
+                        formatPrice(proPlan.totalPriceCents),
+                        style = MaterialTheme.typography.h5,
+                        color = PixelGreen,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "${proPlan.orders.size} seller(s)",
+                        style = MaterialTheme.typography.caption,
+                        color = PixelGreen.copy(alpha = 0.7f)
+                    )
+                }
+            }
+
+            Row(
+                Modifier.fillMaxWidth()
+                    .background(PixelGreen.copy(alpha = 0.1f))
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "You could save ${formatPrice(savingsDeltaCents)} with Pro",
+                    style = MaterialTheme.typography.body1,
+                    color = PixelGreen,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            proPlan.orders
+                .filter { order -> activePlan.orders.none { it.seller == order.seller } }
+                .forEach { lockedOrder ->
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            PixelBadge(
+                                text = lockedOrder.seller.displayName,
+                                color = sellerColor(lockedOrder.seller)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "${lockedOrder.items.sumOf { it.qty }} cards",
+                                style = MaterialTheme.typography.body2,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                            )
+                        }
+                        Text(
+                            formatPrice(lockedOrder.totalCents),
+                            style = MaterialTheme.typography.body1,
+                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                        )
+                    }
+                }
+
+            PixelButton(
+                text = "Unlock Pro",
+                onClick = onUpgrade,
+                variant = PixelButtonVariant.PRIMARY,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
