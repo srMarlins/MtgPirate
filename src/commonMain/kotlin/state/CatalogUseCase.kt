@@ -1,5 +1,6 @@
 package state
 
+import catalog.AgamecardshopProductMapper
 import catalog.BootlegMageCatalogSource
 import catalog.CatalogDataSource
 import catalog.CatalogSource
@@ -9,12 +10,14 @@ import catalog.ScryfallApi
 import catalog.ScryfallPricingSource
 import catalog.UseaCatalogSource
 import database.CatalogStore
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import model.CardVariant
 import model.Catalog
@@ -111,7 +114,9 @@ class CatalogSourceRegistry(
  */
 class CatalogUseCase(
     private val catalogStore: CatalogStore,
-    private val platformServices: MviPlatformServices
+    private val platformServices: MviPlatformServices,
+    private val httpClient: HttpClient? = null,
+    private val scope: CoroutineScope? = null,
 ) {
     /**
      * Registry of all catalog sources.
@@ -215,6 +220,17 @@ class CatalogUseCase(
                     catalogStore.replaceCatalogForSeller(seller, variants)
                     log("USEA: stored ${variants.size} variants", "INFO")
                     loadedSellers.add(seller)
+
+                    // Fire-and-forget: map WooCommerce product IDs in background
+                    if (httpClient != null && scope != null) {
+                        scope.launch {
+                            try {
+                                AgamecardshopProductMapper.mapAll(httpClient, catalogStore, log)
+                            } catch (e: Exception) {
+                                log("WC product mapping failed: ${e.message}", "WARNING")
+                            }
+                        }
+                    }
                 }
 
                 // Await registry streaming results

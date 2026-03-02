@@ -5,12 +5,16 @@ package state
 import database.CatalogStore
 import database.Database
 import database.ImportsStore
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.*
+import kotlinx.serialization.json.Json
 import match.Matcher
 import match.MultiCatalogMatcher
 import model.CardVariant
@@ -58,7 +62,12 @@ class MviViewModel(
     private val purchaseManager: PurchaseManager? = null
 ) {
     // -- Use cases ----------------------------------------------------------
-    private val catalogUseCase = CatalogUseCase(catalogStore, platformServices)
+    private val wcMapperHttpClient = HttpClient {
+        install(ContentNegotiation) {
+            json(Json { ignoreUnknownKeys = true })
+        }
+    }
+    private val catalogUseCase = CatalogUseCase(catalogStore, platformServices, wcMapperHttpClient, scope)
     private val matchingUseCase = MatchingUseCase()
     private val importExportUseCase = ImportExportUseCase(importsStore, platformServices)
     private val preferencesUseCase = PreferencesUseCase(platformServices)
