@@ -282,4 +282,38 @@ class CatalogUseCase(
             )
         }
     }
+
+    /**
+     * Refresh multi-match data with the latest variant information from the catalog.
+     *
+     * Same purpose as [refreshMatchesFromCatalog] but for [model.MultiMatch] objects
+     * used by the alt detail screen and shopping optimizer.
+     */
+    fun refreshMultiMatchesFromCatalog(
+        multiMatches: List<model.MultiMatch>,
+        catalog: Catalog
+    ): List<model.MultiMatch> {
+        if (multiMatches.isEmpty() || catalog.variants.isEmpty()) return multiMatches
+
+        val variantsBySku = catalog.variants.associateBy { it.sku }
+
+        return multiMatches.map { mm ->
+            val refreshedBest = mm.bestOption?.let { refreshMatchOption(it, variantsBySku) }
+            val refreshedAlts = mm.alternatives.map { refreshMatchOption(it, variantsBySku) }
+            val refreshedFallback = mm.realCardFallback?.let { refreshMatchOption(it, variantsBySku) }
+            mm.copy(
+                bestOption = refreshedBest,
+                alternatives = refreshedAlts,
+                realCardFallback = refreshedFallback,
+            )
+        }
+    }
+
+    private fun refreshMatchOption(
+        option: model.MatchOption,
+        variantsBySku: Map<String, model.CardVariant>,
+    ): model.MatchOption {
+        val refreshed = variantsBySku[option.variant.sku] ?: option.variant
+        return option.copy(variant = refreshed)
+    }
 }

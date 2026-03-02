@@ -82,11 +82,20 @@ class MviViewModel(
 
         // Subscribe to database flows and combine into ViewState
         // No outer scope.launch needed — launchIn(scope) handles collection
+        val catalogFlow = database.observeCatalog().distinctUntilChanged()
+
         val refreshedMatchesFlow = combine(
-            database.observeCatalog().distinctUntilChanged(),
+            catalogFlow,
             _localState.map { it.matches }.distinctUntilChanged()
         ) { catalog, matches ->
             catalogUseCase.refreshMatchesFromCatalog(matches, catalog)
+        }
+
+        val refreshedMultiMatchesFlow = combine(
+            catalogFlow,
+            _localState.map { it.multiMatches }.distinctUntilChanged()
+        ) { catalog, multiMatches ->
+            catalogUseCase.refreshMultiMatchesFromCatalog(multiMatches, catalog)
         }
 
         // Derive match counts reactively from matches
@@ -95,9 +104,11 @@ class MviViewModel(
             .distinctUntilChanged()
             .map { matchingUseCase.calculateMatchCounts(it) }
 
-        // Group refreshedMatches + counts to stay within combine's 5-param limit
-        val derivedFlow = combine(refreshedMatchesFlow, matchCountsFlow) { refreshed, counts ->
-            refreshed to counts
+        // Group refreshedMatches + counts + multiMatches to stay within combine's 5-param limit
+        val derivedFlow = combine(
+            refreshedMatchesFlow, matchCountsFlow, refreshedMultiMatchesFlow
+        ) { refreshed, counts, refreshedMulti ->
+            Triple(refreshed, counts, refreshedMulti)
         }
 
         combine(
@@ -106,7 +117,7 @@ class MviViewModel(
             database.observeSavedImports(),
             _localState,
             derivedFlow
-        ) { catalog, preferences, savedImports, localState, (refreshedMatches, counts) ->
+        ) { catalog, preferences, savedImports, localState, (refreshedMatches, counts, refreshedMultiMatches) ->
             ViewState(
                 catalog = if (catalog.variants.isEmpty()) null else catalog,
                 preferences = preferences,
@@ -133,7 +144,7 @@ class MviViewModel(
                 unmatchedCount = counts.unmatched,
                 ambiguousCount = counts.ambiguous,
                 totalPriceCents = counts.totalPrice,
-                multiMatches = localState.multiMatches,
+                multiMatches = refreshedMultiMatches,
                 shoppingPlan = localState.shoppingPlan,
                 availableSellers = localState.availableSellers,
                 loadingMultiCatalogs = localState.searchProgress?.isSearching ?: localState.loadingMultiCatalogs,
