@@ -183,7 +183,12 @@ fun ShoppingPlanScreen(
                 val activePlan = shoppingPlanComparison.activePlan
                 val proPlan = shoppingPlanComparison.proPlan
 
-                ShoppingPlanSummary(activePlan)
+                ShoppingPlanSummary(
+                    plan = activePlan,
+                    proPlan = if (!isPro) proPlan else null,
+                    savingsDeltaCents = if (!isPro) shoppingPlanComparison.savingsDeltaCents else 0,
+                    onUpgrade = onUpgrade,
+                )
 
                 // Missing card warning for free users
                 if (activePlan.droppedCardCount > 0) {
@@ -214,90 +219,17 @@ fun ShoppingPlanScreen(
 
                 Spacer(Modifier.height(16.dp))
 
-                if (isPro) {
-                    // Pro users: single-column layout
-                    Column(
-                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        activePlan.orders.forEach { order ->
-                            SellerOrderCard(
-                                order = order,
-                                onCopyToClipboard = onCopyToClipboard,
-                                onOpenUrl = onOpenUrl,
-                                onCheckoutUsea = onCheckoutUsea,
-                            )
-                        }
-                    }
-                } else {
-                    // Free users: side-by-side comparison layout
-                    Row(
-                        modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        // Left column: user's current plan (functional)
-                        Column(
-                            modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text(
-                                "YOUR PLAN",
-                                style = MaterialTheme.typography.subtitle1,
-                                color = MaterialTheme.colors.onSurface,
-                                fontWeight = FontWeight.Bold,
-                            )
-                            activePlan.orders.forEach { order ->
-                                SellerOrderCard(
-                                    order = order,
-                                    onCopyToClipboard = onCopyToClipboard,
-                                    onOpenUrl = onOpenUrl,
-                                    onCheckoutUsea = onCheckoutUsea,
-                                )
-                            }
-                        }
-
-                        // Right column: Pro plan (dimmed with overlay)
-                        Box(modifier = Modifier.weight(1f)) {
-                            Column(
-                                modifier = Modifier.verticalScroll(rememberScrollState()),
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    Text(
-                                        "PRO PLAN",
-                                        style = MaterialTheme.typography.subtitle1,
-                                        color = PixelGreen,
-                                        fontWeight = FontWeight.Bold,
-                                    )
-                                    ProBadge()
-                                }
-                                proPlan.orders.forEach { order ->
-                                    SellerOrderCard(
-                                        order = order,
-                                        onCopyToClipboard = {},
-                                        onOpenUrl = {},
-                                        onCheckoutUsea = {},
-                                    )
-                                }
-                            }
-
-                            // Dimming overlay
-                            Box(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .background(MaterialTheme.colors.background.copy(alpha = 0.5f)),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                PixelButton(
-                                    text = "Unlock Pro — Save ${formatPrice(shoppingPlanComparison.savingsDeltaCents)}",
-                                    onClick = onUpgrade,
-                                    variant = PixelButtonVariant.PRIMARY,
-                                )
-                            }
-                        }
+                Column(
+                    modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    activePlan.orders.forEach { order ->
+                        SellerOrderCard(
+                            order = order,
+                            onCopyToClipboard = onCopyToClipboard,
+                            onOpenUrl = onOpenUrl,
+                            onCheckoutUsea = onCheckoutUsea,
+                        )
                     }
                 }
             }
@@ -325,7 +257,12 @@ fun ShoppingPlanScreen(
  * Summary card showing total price and savings across all sellers.
  */
 @Composable
-private fun ShoppingPlanSummary(plan: ShoppingPlan) {
+private fun ShoppingPlanSummary(
+    plan: ShoppingPlan,
+    proPlan: ShoppingPlan? = null,
+    savingsDeltaCents: Int = 0,
+    onUpgrade: () -> Unit = {},
+) {
     PixelCard(glowing = true) {
         Column(
             Modifier.fillMaxWidth().padding(16.dp),
@@ -348,6 +285,47 @@ private fun ShoppingPlanSummary(plan: ShoppingPlan) {
                     color = MaterialTheme.colors.primary,
                     fontWeight = FontWeight.Bold
                 )
+            }
+
+            // Pro price upsell — inline comparison
+            if (proPlan != null && savingsDeltaCents > 0) {
+                Row(
+                    Modifier.fillMaxWidth()
+                        .background(PixelGreen.copy(alpha = 0.1f), shape = PixelShape(cornerSize = 6.dp))
+                        .clickable { onUpgrade() }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        ProBadge()
+                        Text(
+                            "With Pro",
+                            style = MaterialTheme.typography.body2,
+                            color = PixelGreen,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            formatPrice(proPlan.totalPriceCents),
+                            style = MaterialTheme.typography.h6,
+                            color = PixelGreen,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            "Save ${formatPrice(savingsDeltaCents)}",
+                            style = MaterialTheme.typography.caption,
+                            color = PixelGreen.copy(alpha = 0.8f),
+                        )
+                    }
+                }
             }
 
             if (plan.savingsVsSingleSeller > 0) {

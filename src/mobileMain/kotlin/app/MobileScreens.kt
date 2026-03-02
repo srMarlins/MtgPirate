@@ -1125,11 +1125,16 @@ fun MobileShoppingPlanScreen(
                     val activePlan = shoppingPlanComparison.activePlan
                     val proPlan = shoppingPlanComparison.proPlan
                     val coroutineScope = rememberCoroutineScope()
-                    val pageCount = if (isPro) activePlan.orders.size else activePlan.orders.size + 1
+                    val pageCount = activePlan.orders.size
                     val pagerState = rememberPagerState { pageCount }
 
-                    // Grand total summary card
-                    MobileShoppingPlanSummary(activePlan)
+                    // Grand total summary card with inline Pro upsell
+                    MobileShoppingPlanSummary(
+                        plan = activePlan,
+                        proPlan = if (!isPro) proPlan else null,
+                        savingsDeltaCents = if (!isPro) shoppingPlanComparison.savingsDeltaCents else 0,
+                        onUpgrade = onUpgrade,
+                    )
 
                     // Missing card warning
                     if (activePlan.droppedCardCount > 0) {
@@ -1168,10 +1173,9 @@ fun MobileShoppingPlanScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                repeat(pageCount) { index ->
-                                    val isProPage = !isPro && index == activePlan.orders.size
+                                activePlan.orders.forEachIndexed { index, order ->
                                     val dotColor = if (index == pagerState.currentPage) {
-                                        if (isProPage) PixelGreen else sellerColor(activePlan.orders[index].seller)
+                                        sellerColor(order.seller)
                                     } else {
                                         MaterialTheme.colors.onSurface.copy(alpha = 0.3f)
                                     }
@@ -1201,28 +1205,19 @@ fun MobileShoppingPlanScreen(
                         pageSpacing = 12.dp,
                         contentPadding = if (pageCount > 1) PaddingValues(end = 24.dp) else PaddingValues(),
                     ) { page ->
-                        if (!isPro && page == activePlan.orders.size) {
-                            // Pro plan overview page
-                            MobileProPlanPage(
-                                proPlan = proPlan,
-                                savingsDeltaCents = shoppingPlanComparison.savingsDeltaCents,
-                                onUpgrade = onUpgrade,
-                            )
-                        } else {
-                            MobileSellerOrderCard(
-                                order = activePlan.orders[page],
-                                onCopyToClipboard = onCopyToClipboard,
-                                onOpenUrl = onOpenUrl,
-                                onCheckoutUsea = onCheckoutUsea,
-                                onCheckoutComplete = {
-                                    if (pagerState.currentPage < pageCount - 1) {
-                                        coroutineScope.launch {
-                                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                                        }
+                        MobileSellerOrderCard(
+                            order = activePlan.orders[page],
+                            onCopyToClipboard = onCopyToClipboard,
+                            onOpenUrl = onOpenUrl,
+                            onCheckoutUsea = onCheckoutUsea,
+                            onCheckoutComplete = {
+                                if (pagerState.currentPage < pageCount - 1) {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
                                     }
-                                },
-                            )
-                        }
+                                }
+                            },
+                        )
                     }
                 }
 
@@ -1244,7 +1239,12 @@ fun MobileShoppingPlanScreen(
  * Summary card showing seller count and grand total price.
  */
 @Composable
-private fun MobileShoppingPlanSummary(plan: ShoppingPlan) {
+private fun MobileShoppingPlanSummary(
+    plan: ShoppingPlan,
+    proPlan: ShoppingPlan? = null,
+    savingsDeltaCents: Int = 0,
+    onUpgrade: () -> Unit = {},
+) {
     val totalCards = plan.orders.sumOf { order -> order.items.sumOf { it.qty } }
 
     PixelCard(glowing = true) {
@@ -1253,7 +1253,7 @@ private fun MobileShoppingPlanSummary(plan: ShoppingPlan) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                "${plan.orders.size} SELLERS",
+                "${plan.orders.size} SELLER(S)",
                 style = MaterialTheme.typography.overline,
                 color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
             )
@@ -1275,6 +1275,47 @@ private fun MobileShoppingPlanSummary(plan: ShoppingPlan) {
                     color = MaterialTheme.colors.primary,
                     fontWeight = FontWeight.Bold
                 )
+            }
+
+            // Pro price upsell — inline comparison
+            if (proPlan != null && savingsDeltaCents > 0) {
+                Row(
+                    Modifier.fillMaxWidth()
+                        .background(PixelGreen.copy(alpha = 0.1f), shape = PixelShape(cornerSize = 6.dp))
+                        .clickable { onUpgrade() }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        ProBadge()
+                        Text(
+                            "With Pro",
+                            style = MaterialTheme.typography.caption,
+                            color = PixelGreen,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(
+                            formatPrice(proPlan.totalPriceCents),
+                            style = MaterialTheme.typography.body1,
+                            color = PixelGreen,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            "Save ${formatPrice(savingsDeltaCents)}",
+                            style = MaterialTheme.typography.overline,
+                            color = PixelGreen.copy(alpha = 0.8f),
+                        )
+                    }
+                }
             }
 
             PixelDivider()
