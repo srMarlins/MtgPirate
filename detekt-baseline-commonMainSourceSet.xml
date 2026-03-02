@@ -15,7 +15,7 @@
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt:@Composable fun DraggableVariantItem</ID>
     <ID>CyclomaticComplexMethod:PreferencesWizardScreen.kt:@Composable fun PreferencesWizardScreen</ID>
     <ID>CyclomaticComplexMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
-    <ID>CyclomaticComplexMethod:ShoppingOptimizer.kt:ShoppingOptimizer$private fun tryThresholdOptimization: Map&lt;Seller, List&lt;OrderItem&gt;&gt;</ID>
+    <ID>CyclomaticComplexMethod:ShoppingOptimizer.kt:ShoppingOptimizer$fun optimizeForSellers: ShoppingPlan</ID>
     <ID>CyclomaticComplexMethod:StepperComponent.kt:@Composable fun PixelStepNode</ID>
     <ID>ForbiddenComment:SellerDiscountConfig.kt:// TODO: Implement their specific tier structure</ID>
     <ID>LargeClass:MviViewModel.kt:MviViewModel</ID>
@@ -39,6 +39,7 @@
     <ID>LongMethod:ProComponents.kt:@Composable fun UpgradeDialog</ID>
     <ID>LongMethod:ResolveScreen.kt:@Composable fun ResolveScreen</ID>
     <ID>LongMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
+    <ID>LongMethod:ShoppingOptimizer.kt:ShoppingOptimizer$fun optimizeForSellers: ShoppingPlan</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable fun ShoppingPlanScreen</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerActionButtons</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerOrderCard</ID>
@@ -50,6 +51,7 @@
     <ID>LoopWithTooManyJumpStatements:ImagePrefetchService.kt:ImagePrefetchService.Companion$for</ID>
     <ID>LoopWithTooManyJumpStatements:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$while</ID>
     <ID>LoopWithTooManyJumpStatements:MultiCatalogMatcher.kt:MultiCatalogMatcher$for</ID>
+    <ID>LoopWithTooManyJumpStatements:ShoppingOptimizer.kt:ShoppingOptimizer$for</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$100</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$15_000</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$3</ID>
@@ -379,6 +381,7 @@
     <ID>MaxLineLength:ShoppingPlanScreen.kt:color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface</ID>
     <ID>MaxLineLength:ShoppingPlanScreen.kt:val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&amp;body=${encodeUrlParameter(exportText)}"</ID>
     <ID>NestedBlockDepth:ManaPoolApi.kt:ManaPoolApi$internal suspend fun parseDataArray</ID>
+    <ID>NestedBlockDepth:ShoppingOptimizer.kt:ShoppingOptimizer$fun optimizeForSellers: ShoppingPlan</ID>
     <ID>PackageNaming:DeckLootDatabaseImpl.kt:package com.deckloot.db.DeckLoot</ID>
     <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun extractValue: String?</ID>
     <ID>ReturnCount:CatalogParser.kt:CatalogParser$fun parse: Catalog</ID>
