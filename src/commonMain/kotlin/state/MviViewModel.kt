@@ -88,14 +88,14 @@ class MviViewModel(
             catalogFlow,
             _localState.map { it.matches }.distinctUntilChanged()
         ) { catalog, matches ->
-            catalogUseCase.refreshMatchesFromCatalog(matches, catalog)
+            CatalogUseCase.refreshMatchesFromCatalog(matches, catalog)
         }
 
         val refreshedMultiMatchesFlow = combine(
             catalogFlow,
             _localState.map { it.multiMatches }.distinctUntilChanged()
         ) { catalog, multiMatches ->
-            catalogUseCase.refreshMultiMatchesFromCatalog(multiMatches, catalog)
+            CatalogUseCase.refreshMultiMatchesFromCatalog(multiMatches, catalog)
         }
 
         // Derive match counts reactively from matches
@@ -488,9 +488,7 @@ class MviViewModel(
     }
 
     private suspend fun updateEnabledSellers(sellers: List<String>) {
-        // Allow if only USEA is selected (free tier), empty list (unchecking all), or if Pro
-        val isOnlyUsea = sellers.size == 1 && sellers.first() == Seller.USEA.name
-        if (!isOnlyUsea && sellers.isNotEmpty() && !_localState.value.proStatus.isPro) {
+        if (shouldBlockSellerUpdate(sellers, _localState.value.proStatus)) {
             _localState.update { it.copy(showUpgradePrompt = ProFeature.MULTI_SELLER) }
             return
         }

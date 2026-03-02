@@ -14,6 +14,9 @@ import model.Section
 import model.Seller
 import model.VariantType
 import optimizer.ShoppingOptimizer
+import model.MatchOption
+import model.MultiMatch
+import state.CatalogUseCase
 import state.MatchingUseCase
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -547,8 +550,6 @@ class WizardPipelineTest {
 
     @Test
     fun refreshMatches_updatesVariantsFromCatalog() {
-        // This tests the logic that CatalogUseCase.refreshMatchesFromCatalog performs:
-        // When catalog updates (e.g. image URLs enriched), matches should reflect those changes.
         val originalVariant = variant("Lightning Bolt", priceCents = 220)
         val matches = listOf(
             DeckEntryMatch(
@@ -559,23 +560,46 @@ class WizardPipelineTest {
             )
         )
 
-        // Simulate catalog update with image URL
         val updatedVariant = originalVariant.copy(imageUrl = "https://example.com/bolt.jpg")
         val updatedCatalog = Catalog(listOf(updatedVariant))
 
-        // Manually apply the same logic as refreshMatchesFromCatalog
-        val variantsBySku = updatedCatalog.variants.associateBy { it.sku }
-        val refreshed = matches.map { match ->
-            val refreshedSelected = match.selectedVariant?.let { variantsBySku[it.sku] ?: it }
-            val refreshedCandidates = match.candidates.map { c ->
-                c.copy(variant = variantsBySku[c.variant.sku] ?: c.variant)
-            }
-            match.copy(selectedVariant = refreshedSelected, candidates = refreshedCandidates)
-        }
+        val refreshed = CatalogUseCase.refreshMatchesFromCatalog(matches, updatedCatalog)
 
         assertEquals(1, refreshed.size)
         assertEquals("https://example.com/bolt.jpg", refreshed[0].selectedVariant?.imageUrl)
         assertEquals("https://example.com/bolt.jpg", refreshed[0].candidates[0].variant.imageUrl)
+    }
+
+    @Test
+    fun refreshMultiMatches_updatesVariantsFromCatalog() {
+        val bolt = variant("Lightning Bolt", Seller.USEA, priceCents = 220)
+        val boltBM = variant("Lightning Bolt", Seller.BOOTLEG_MAGE, priceCents = 180)
+        val boltTCG = variant("Lightning Bolt", Seller.TCGPLAYER, priceCents = 300)
+
+        val entry = DeckEntry("1", "4 Lightning Bolt", 4, "Lightning Bolt", Section.MAIN, true)
+        val multiMatches = listOf(
+            MultiMatch(
+                deckEntry = entry,
+                bestOption = MatchOption(boltBM, Seller.BOOTLEG_MAGE, 180, isProxy = true, matchScore = 0),
+                alternatives = listOf(
+                    MatchOption(bolt, Seller.USEA, 220, isProxy = true, matchScore = 0),
+                ),
+                realCardFallback = MatchOption(boltTCG, Seller.TCGPLAYER, 300, isProxy = false, matchScore = 0),
+            )
+        )
+
+        // Simulate catalog update — bestOption, alternative, and fallback all get image URLs
+        val updatedBoltBM = boltBM.copy(imageUrl = "https://example.com/bm-bolt.jpg")
+        val updatedBolt = bolt.copy(imageUrl = "https://example.com/usea-bolt.jpg")
+        val updatedBoltTCG = boltTCG.copy(imageUrl = "https://example.com/tcg-bolt.jpg")
+        val updatedCatalog = Catalog(listOf(updatedBoltBM, updatedBolt, updatedBoltTCG))
+
+        val refreshed = CatalogUseCase.refreshMultiMatchesFromCatalog(multiMatches, updatedCatalog)
+
+        assertEquals(1, refreshed.size)
+        assertEquals("https://example.com/bm-bolt.jpg", refreshed[0].bestOption?.variant?.imageUrl)
+        assertEquals("https://example.com/usea-bolt.jpg", refreshed[0].alternatives[0].variant.imageUrl)
+        assertEquals("https://example.com/tcg-bolt.jpg", refreshed[0].realCardFallback?.variant?.imageUrl)
     }
 
     // -----------------------------------------------------------------------
