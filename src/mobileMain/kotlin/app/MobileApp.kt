@@ -277,8 +277,8 @@ fun MobileNavigationHost(
                                 viewModel.processIntent(ViewIntent.CloseAltDetail)
                                 navigateTo(MobileScreen.RESULTS)
                             },
-                            onEnrichVariant = { variant ->
-                                viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                            onPrefetchImages = { variants ->
+                                viewModel.processIntent(ViewIntent.PrefetchImages(variants))
                             }
                         )
                     } else {
