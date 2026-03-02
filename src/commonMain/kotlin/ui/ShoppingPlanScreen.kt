@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import model.MultiMatch
 import model.OrderItem
 import model.Seller
@@ -184,6 +185,34 @@ fun ShoppingPlanScreen(
                 val showComparison = !isPro && shoppingPlanComparison.savingsDeltaCents > 0
 
                 ShoppingPlanSummary(activePlan)
+
+                // Missing card warning for free users
+                if (activePlan.droppedCardCount > 0) {
+                    Spacer(Modifier.height(8.dp))
+                    PixelCard {
+                        Row(
+                            Modifier.fillMaxWidth().padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text("\u26A0", fontSize = 18.sp)
+                            Column {
+                                Text(
+                                    "${activePlan.droppedCardCount} card(s) not available at your seller",
+                                    style = MaterialTheme.typography.body2,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colors.error,
+                                )
+                                Text(
+                                    "Upgrade to Pro for multi-seller support",
+                                    style = MaterialTheme.typography.caption,
+                                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                                )
+                            }
+                        }
+                    }
+                }
+
                 Spacer(Modifier.height(16.dp))
 
                 Column(

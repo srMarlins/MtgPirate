@@ -1127,6 +1127,34 @@ fun MobileShoppingPlanScreen(
 
                     // Grand total summary card
                     MobileShoppingPlanSummary(activePlan)
+
+                    // Missing card warning
+                    if (activePlan.droppedCardCount > 0) {
+                        Spacer(Modifier.height(6.dp))
+                        PixelCard {
+                            Row(
+                                Modifier.fillMaxWidth().padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Text("\u26A0", fontSize = 16.sp)
+                                Column {
+                                    Text(
+                                        "${activePlan.droppedCardCount} card(s) not available",
+                                        style = MaterialTheme.typography.caption,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colors.error,
+                                    )
+                                    Text(
+                                        "Upgrade to Pro for all sellers",
+                                        style = MaterialTheme.typography.overline,
+                                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                     Spacer(Modifier.height(8.dp))
 
                     // Page indicator dots with swipe hint
