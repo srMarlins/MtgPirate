@@ -932,26 +932,58 @@ class MviViewModel(
     }
 
     private suspend fun checkoutUsea(order: SellerOrder) {
-        withContext(Dispatchers.IO) {
-            val mapped = order.items.filter { it.variant.wcProductId != null }
-            val unmapped = order.items.filter { it.variant.wcProductId == null }
+        _viewEffects.emit(ViewEffect.UseaCheckoutLoading("Preparing checkout..."))
+        try {
+            withContext(Dispatchers.IO) {
+                var mapped = order.items.filter { it.variant.wcProductId != null }
 
-            if (mapped.isEmpty()) {
-                _viewEffects.emit(ViewEffect.ShowError("No products could be matched on the store. Use 'Copy for Sheet' instead."))
-                return@withContext
+                // If nothing mapped yet, run the mapper now and wait
+                if (mapped.isEmpty()) {
+                    _viewEffects.emit(ViewEffect.UseaCheckoutLoading("Mapping products to store..."))
+                    try {
+                        catalog.AgamecardshopProductMapper.mapAll(
+                            wcMapperHttpClient, catalogStore
+                        ) { msg, _ -> }
+                    } catch (e: Exception) {
+                        log("WC mapper failed during checkout: ${e.message}", "WARNING")
+                    }
+
+                    // Re-read fresh variants from DB after mapping
+                    val freshBySku = catalogStore.getAllVariants()
+                        .filter { it.wcProductId != null }
+                        .associateBy { "${it.seller.name}:${it.sku}" }
+
+                    mapped = order.items.mapNotNull { item ->
+                        val key = "${item.variant.seller.name}:${item.variant.sku}"
+                        val fresh = freshBySku[key]
+                        if (fresh != null) item.copy(variant = fresh) else null
+                    }
+                }
+
+                if (mapped.isEmpty()) {
+                    _viewEffects.emit(ViewEffect.UseaCheckoutDone)
+                    _viewEffects.emit(ViewEffect.ShowError(
+                        "No products could be matched on the store. Use 'Copy for Sheet' instead."
+                    ))
+                    return@withContext
+                }
+
+                val unmapped = order.items.filter { it.variant.wcProductId == null }
+                val itemsJson = mapped.joinToString(",", "[", "]") { item ->
+                    """{"id":${item.variant.wcProductId},"qty":${item.qty}}"""
+                }
+                val couponCode = ui.useaCouponCode(order.subtotalCents) ?: ""
+
+                _viewEffects.emit(ViewEffect.UseaCheckoutDone)
+                _viewEffects.emit(ViewEffect.OpenUseaCheckout(
+                    itemsJson = itemsJson,
+                    couponCode = couponCode,
+                    unmatchedItems = unmapped,
+                ))
             }
-
-            val itemsJson = mapped.joinToString(",", "[", "]") { item ->
-                """{"id":${item.variant.wcProductId},"qty":${item.qty}}"""
-            }
-
-            val couponCode = ui.useaCouponCode(order.subtotalCents) ?: ""
-
-            _viewEffects.emit(ViewEffect.OpenUseaCheckout(
-                itemsJson = itemsJson,
-                couponCode = couponCode,
-                unmatchedItems = unmapped,
-            ))
+        } catch (e: Exception) {
+            _viewEffects.emit(ViewEffect.UseaCheckoutDone)
+            _viewEffects.emit(ViewEffect.ShowError("Checkout failed: ${e.message}"))
         }
     }
 
@@ -1131,6 +1163,8 @@ sealed class ViewEffect {
         val couponCode: String,
         val unmatchedItems: List<OrderItem>,
     ) : ViewEffect()
+    data class UseaCheckoutLoading(val message: String) : ViewEffect()
+    data object UseaCheckoutDone : ViewEffect()
 }
 
 /**

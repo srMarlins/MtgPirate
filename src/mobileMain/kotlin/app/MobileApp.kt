@@ -4,13 +4,16 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -108,11 +111,21 @@ fun MobileApp(
         viewModel.processIntent(ViewIntent.Init)
     }
 
+    // USEA checkout loading state
+    var useaCheckoutLoading by remember { mutableStateOf<String?>(null) }
+
     // Collect view effects for USEA checkout
     LaunchedEffect(Unit) {
         viewModel.viewEffects.collect { effect ->
             when (effect) {
+                is state.ViewEffect.UseaCheckoutLoading -> {
+                    useaCheckoutLoading = effect.message
+                }
+                is state.ViewEffect.UseaCheckoutDone -> {
+                    useaCheckoutLoading = null
+                }
                 is state.ViewEffect.OpenUseaCheckout -> {
+                    useaCheckoutLoading = null
                     if (effect.unmatchedItems.isNotEmpty()) {
                         scope.launch {
                             platformServices.copyToClipboard(
@@ -122,7 +135,10 @@ fun MobileApp(
                     }
                     onOpenUseaCheckout(effect.itemsJson, effect.couponCode)
                 }
-                else -> {} // Other effects handled elsewhere
+                is state.ViewEffect.ShowError -> {
+                    useaCheckoutLoading = null
+                }
+                else -> {}
             }
         }
     }
@@ -133,13 +149,42 @@ fun MobileApp(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
         ) {
-            // Main navigation with wizard flow
-            MobileNavigationHost(
-                viewModel = viewModel,
-                state = state,
-                scope = scope,
-                platformServices = platformServices
-            )
+            Box(Modifier.fillMaxSize()) {
+                // Main navigation with wizard flow
+                MobileNavigationHost(
+                    viewModel = viewModel,
+                    state = state,
+                    scope = scope,
+                    platformServices = platformServices
+                )
+
+                // USEA checkout loading overlay
+                val loadingMsg = useaCheckoutLoading
+                if (loadingMsg != null) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.7f))
+                            .clickable(enabled = false) {},
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colors.primary
+                            )
+                            Text(
+                                loadingMsg,
+                                color = Color.White,
+                                style = MaterialTheme.typography.body1,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
