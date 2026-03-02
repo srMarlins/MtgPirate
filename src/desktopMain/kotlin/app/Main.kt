@@ -775,8 +775,9 @@ fun main() = application {
                                     }
                                 ) {
                                     ShoppingPlanScreen(
-                                        shoppingPlan = state.shoppingPlan,
+                                        shoppingPlanComparison = state.shoppingPlanComparison,
                                         multiMatches = state.multiMatches,
+                                        isPro = state.proStatus.isPro,
                                         onOptimize = {
                                             viewModel.processIntent(ViewIntent.OptimizeShoppingPlan)
                                         },
@@ -791,6 +792,7 @@ fun main() = application {
                                             }
                                         },
                                         onBack = { navController.navigateUp() },
+                                        onUpgrade = { viewModel.processIntent(ViewIntent.PurchasePro) },
                                         isLoading = state.isMatching,
                                     )
                                 }
