@@ -37,9 +37,13 @@ object ShoppingOptimizer {
         var droppedCount = 0
         val effectiveMatches = matches.mapNotNull { mm ->
             if (sellers == null) {
-                // No filtering — keep original bestOption (may be a user override)
-                if (mm.bestOption == null || mm.alternatives.isEmpty()) return@mapNotNull null
-                mm
+                // All-seller optimization (Pro plan): pick cheapest alternative as
+                // bestOption so the iterative optimizer treats every card as moveable
+                // and can freely reassign across sellers for lowest cost.
+                if (mm.alternatives.isEmpty()) return@mapNotNull null
+                val cheapest = mm.alternatives.minByOrNull { it.priceCents }
+                    ?: return@mapNotNull null
+                mm.copy(bestOption = cheapest)
             } else {
                 val filteredAlts = mm.alternatives.filter { it.seller in sellers }
                 if (filteredAlts.isEmpty()) {

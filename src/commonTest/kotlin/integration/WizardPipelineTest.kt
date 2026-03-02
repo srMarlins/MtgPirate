@@ -537,10 +537,16 @@ class WizardPipelineTest {
         assertEquals(Seller.USEA, overridden.bestOption?.seller)
         assertEquals(220, overridden.bestOption?.priceCents)
 
-        // Optimize with overridden match
+        // Optimize all-seller plan (Pro plan) — always picks cheapest regardless of override
         val plan = ShoppingOptimizer.optimize(listOf(overridden))
-        val useaOrder = plan.orders.find { it.seller == Seller.USEA }
-        assertNotNull(useaOrder, "Should have a USEA order")
+        val bmOrder = plan.orders.find { it.seller == Seller.BOOTLEG_MAGE }
+        assertNotNull(bmOrder, "Pro plan should pick cheapest seller (BM at 180)")
+        assertEquals(720, bmOrder.subtotalCents) // 4 * 180
+
+        // Optimize restricted to USEA only — override seller is respected within constraint
+        val useaPlan = ShoppingOptimizer.optimizeForSellers(listOf(overridden), setOf(Seller.USEA))
+        val useaOrder = useaPlan.orders.find { it.seller == Seller.USEA }
+        assertNotNull(useaOrder, "Should have a USEA order when restricted")
         assertEquals(880, useaOrder.subtotalCents) // 4 * 220
     }
 
