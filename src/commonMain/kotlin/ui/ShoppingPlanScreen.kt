@@ -85,6 +85,20 @@ internal fun formatForExport(seller: Seller, items: List<OrderItem>): String = w
 }
 
 /**
+ * Format order items as tab-separated values matching the USEA Google Sheet Cart tab columns.
+ * Columns: Card Name (with set), Set, SKU, Card Type (with dash prefix), Qty, Base Price
+ */
+internal fun formatForGoogleSheet(items: List<OrderItem>): String {
+    val header = "Card Name\tSet\tSKU\tCard Type\tQty\tBase Price"
+    val rows = items.joinToString("\n") { item ->
+        val v = item.variant
+        val cardType = "- ${v.variantType.displayName}"
+        "${v.nameOriginal} ${v.setCode}\t${v.setCode}\t${v.sku}\t$cardType\t${item.qty}\t${formatPrice(v.priceInCents)}"
+    }
+    return "$header\n$rows"
+}
+
+/**
  * Shopping Plan screen (Step 4) - shows the optimized multi-seller shopping plan
  * with per-seller order cards, expandable item lists, and checkout action buttons.
  */
