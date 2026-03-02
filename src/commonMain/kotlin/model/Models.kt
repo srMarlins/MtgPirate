@@ -161,6 +161,7 @@ data class ShoppingPlan(
     val orders: List<SellerOrder>,
     val totalPriceCents: Int,
     val savingsVsSingleSeller: Int,
+    val droppedCardCount: Int = 0,
 )
 
 data class ShoppingPlanComparison(
