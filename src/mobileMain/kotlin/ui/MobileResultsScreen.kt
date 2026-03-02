@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,7 +51,7 @@ fun MobileResultsScreen(
     onShowAllCandidates: (Int) -> Unit,
     onClose: () -> Unit,
     onExport: () -> Unit = {},
-    onEnrichVariant: ((CardVariant) -> Unit)? = null,
+    onPrefetchImages: ((List<CardVariant>) -> Unit)? = null,
     isLoading: Boolean = false,
     searchProgress: SearchProgress? = null,
     matchedCount: Int = 0,
@@ -63,6 +64,18 @@ fun MobileResultsScreen(
     onShowUpgradePrompt: (ProFeature) -> Unit = {},
     onShowAltDetail: (Int) -> Unit = {},
 ) {
+    // Batch prefetch images for all variants
+    val variantsNeedingImages = remember(matches) {
+        matches.flatMap { match ->
+            match.candidates.map { it.variant } + listOfNotNull(match.selectedVariant)
+        }.filter { it.smallImageUrl == null }
+    }
+    LaunchedEffect(variantsNeedingImages) {
+        if (variantsNeedingImages.isNotEmpty()) {
+            onPrefetchImages?.invoke(variantsNeedingImages)
+        }
+    }
+
     val state = rememberResultsState(multiMatches)
     val sorted = rememberSortedResults(matches, state)
 
@@ -73,7 +86,7 @@ fun MobileResultsScreen(
             if (!isLoading) {
                 ResultsContent(
                     sorted, matches, multiMatches, state, onResolve,
-                    onShowAllCandidates, onOverrideSeller, onEnrichVariant,
+                    onShowAllCandidates, onOverrideSeller,
                     onShowAltDetail,
                     Modifier.fillMaxWidth().weight(1f),
                 )
@@ -161,7 +174,6 @@ private fun ColumnScope.ResultsContent(
     onResolve: (Int) -> Unit,
     onShowAllCandidates: (Int) -> Unit,
     onOverrideSeller: (Int, Seller) -> Unit,
-    onEnrichVariant: ((CardVariant) -> Unit)?,
     onShowAltDetail: (Int) -> Unit,
     modifier: Modifier,
 ) {
@@ -179,7 +191,6 @@ private fun ColumnScope.ResultsContent(
                             val idx = multiMatches.indexOfFirst { it.deckEntry.id == m.deckEntry.id }
                             if (idx >= 0) onShowAltDetail(idx)
                         },
-                        onEnrichVariant = onEnrichVariant,
                     )
                 }
             }

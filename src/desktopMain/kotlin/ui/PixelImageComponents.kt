@@ -28,7 +28,7 @@ import coil3.compose.rememberAsyncImagePainter
  */
 @Composable
 fun PixelImagePreview(
-    imageUrl: String?,
+    smallImageUrl: String?,
     cardName: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
@@ -46,11 +46,11 @@ fun PixelImagePreview(
         contentAlignment = Alignment.Center
     ) {
         when {
-            imageUrl != null -> {
+            smallImageUrl != null -> {
                 var loadState by remember { mutableStateOf<AsyncImagePainter.State>(AsyncImagePainter.State.Empty) }
-                
+
                 AsyncImage(
-                    model = imageUrl,
+                    model = smallImageUrl,
                     contentDescription = cardName,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

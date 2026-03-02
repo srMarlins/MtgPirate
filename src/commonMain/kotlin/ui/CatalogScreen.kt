@@ -20,8 +20,18 @@ import util.formatPrice
 fun CatalogScreen(
     catalog: Catalog,
     onClose: () -> Unit,
-    onEnrichVariant: ((CardVariant) -> Unit)? = null
+    onPrefetchImages: ((List<CardVariant>) -> Unit)? = null
 ) {
+    // Batch prefetch images for visible catalog variants
+    val variantsNeedingImages = remember(catalog.variants) {
+        catalog.variants.filter { it.smallImageUrl == null }
+    }
+    LaunchedEffect(variantsNeedingImages) {
+        if (variantsNeedingImages.isNotEmpty()) {
+            onPrefetchImages?.invoke(variantsNeedingImages)
+        }
+    }
+
     var query by remember { mutableStateOf("") }
     var variantFilter by remember { mutableStateOf("All") }
     val variants = catalog.variants
@@ -110,13 +120,6 @@ fun CatalogScreen(
                 Box(Modifier.fillMaxSize()) {
                     LazyColumn(Modifier.fillMaxSize(), state = listState) {
                         items(filtered, key = { it.uniqueIdentifier }) { v ->
-                            // Trigger image enrichment when variant comes into view
-                            androidx.compose.runtime.LaunchedEffect(v.sku) {
-                                if (v.imageUrl == null) {
-                                    onEnrichVariant?.invoke(v)
-                                }
-                            }
-                            
                             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
                                 Row(Modifier.weight(0.40f), verticalAlignment = Alignment.CenterVertically) {
                                     Text(v.nameOriginal, style = MaterialTheme.typography.body2)

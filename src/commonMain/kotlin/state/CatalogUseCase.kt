@@ -3,12 +3,13 @@ package state
 import catalog.BootlegMageCatalogSource
 import catalog.CatalogDataSource
 import catalog.CatalogSource
+import catalog.ImagePrefetchService
 import catalog.ManaPoolCatalogSource
 import catalog.ScryfallApi
-import catalog.ScryfallImageEnricher
 import catalog.ScryfallPricingSource
 import catalog.UseaCatalogSource
 import database.CatalogStore
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.async
@@ -228,33 +229,27 @@ class CatalogUseCase(
             loadedSellers
         }
 
-    /**
-     * Fetch an image URL from Scryfall for the given variant and persist it.
-     *
-     * @return the enriched [CardVariant], or the original if enrichment failed
-     */
-    suspend fun enrichVariantWithImage(
-        variant: CardVariant,
-        log: (String, String) -> Unit
-    ): CardVariant {
-        if (variant.imageUrl != null) return variant
+    private var _activePrefetchService: ImagePrefetchService? = null
 
-        return try {
-            log("Fetching image for ${variant.nameOriginal} (${variant.setCode})...", "DEBUG")
-            val enrichedVariant = ScryfallImageEnricher.enrichVariant(
-                variant = variant,
-                imageSize = "normal",
-                log = { msg -> log(msg, "DEBUG") }
-            )
-            if (enrichedVariant.imageUrl != null) {
-                catalogStore.updateVariantImageUrl(variant.sku, enrichedVariant.imageUrl, variant.seller.name)
-                log("Updated image URL for ${variant.nameOriginal}", "DEBUG")
-            }
-            enrichedVariant
-        } catch (e: Exception) {
-            log("Failed to enrich variant ${variant.nameOriginal}: ${e.message}", "DEBUG")
-            variant
-        }
+    /**
+     * Start the batch image prefetch pipeline.
+     * Should be called once when the ViewModel scope is available.
+     */
+    fun startImagePrefetch(scope: CoroutineScope, log: (String, String) -> Unit) {
+        val service = ImagePrefetchService(
+            catalogStore = catalogStore,
+            log = log,
+        )
+        service.start(scope)
+        _activePrefetchService = service
+    }
+
+    /**
+     * Request batch image prefetch for a list of variants.
+     * Variants that already have images are automatically skipped by the service.
+     */
+    suspend fun prefetchImages(variants: List<CardVariant>) {
+        _activePrefetchService?.requestPrefetch(variants)
     }
 
     /**

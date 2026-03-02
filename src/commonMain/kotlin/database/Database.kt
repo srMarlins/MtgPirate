@@ -68,6 +68,7 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
             priceInCents = variant.priceInCents.toLong(),
             collectorNumber = variant.collectorNumber,
             imageUrl = variant.imageUrl,
+            smallImageUrl = variant.smallImageUrl,
             seller = variant.seller.name,
             purchaseUri = variant.purchaseUri,
         )
@@ -130,8 +131,12 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
         db.logEntryQueries.deleteOldLogs(keepCount)
     }
 
-    suspend fun updateVariantImageUrl(sku: String, imageUrl: String, seller: String) {
-        db.cardVariantQueries.updateImageUrl(imageUrl = imageUrl, seller = seller, sku = sku)
+    suspend fun updateVariantImageUrls(sku: String, imageUrl: String, smallImageUrl: String?, seller: String) {
+        db.cardVariantQueries.updateImageUrls(imageUrl = imageUrl, smallImageUrl = smallImageUrl, seller = seller, sku = sku)
+    }
+
+    fun getVariantsWithoutImages(): List<CardVariant> {
+        return db.cardVariantQueries.selectVariantsWithoutImages().executeAsList().map { it.toDomain() }
     }
 
     fun replaceCatalogTransaction(variants: List<CardVariant>) {
@@ -147,6 +152,7 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
                     priceInCents = variant.priceInCents.toLong(),
                     collectorNumber = variant.collectorNumber,
                     imageUrl = variant.imageUrl,
+                    smallImageUrl = variant.smallImageUrl,
                     seller = variant.seller.name,
                     purchaseUri = variant.purchaseUri,
                 )
@@ -166,6 +172,7 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
                     priceInCents = variant.priceInCents.toLong(),
                     collectorNumber = variant.collectorNumber,
                     imageUrl = variant.imageUrl,
+                    smallImageUrl = variant.smallImageUrl,
                     seller = variant.seller.name,
                     purchaseUri = variant.purchaseUri,
                 )
@@ -190,6 +197,7 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
                     priceInCents = variant.priceInCents.toLong(),
                     collectorNumber = variant.collectorNumber,
                     imageUrl = variant.imageUrl,
+                    smallImageUrl = variant.smallImageUrl,
                     seller = variant.seller.name,
                     purchaseUri = variant.purchaseUri,
                 )

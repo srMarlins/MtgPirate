@@ -850,8 +850,8 @@ fun main() = application {
                                                 viewModel.processIntent(ViewIntent.CloseResolve)
                                                 navController.navigateUp()
                                             },
-                                            onEnrichVariant = { variant ->
-                                                viewModel.processIntent(ViewIntent.EnrichVariantWithImage(variant))
+                                            onPrefetchImages = { variants ->
+                                                viewModel.processIntent(ViewIntent.PrefetchImages(variants))
                                             }
                                         )
                                     } else {

@@ -47,6 +47,7 @@
     <ID>LoopWithTooManyJumpStatements:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$for</ID>
     <ID>LoopWithTooManyJumpStatements:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$while</ID>
     <ID>LoopWithTooManyJumpStatements:DecklistParser.kt:DecklistParser$for</ID>
+    <ID>LoopWithTooManyJumpStatements:ImagePrefetchService.kt:ImagePrefetchService.Companion$for</ID>
     <ID>LoopWithTooManyJumpStatements:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$while</ID>
     <ID>LoopWithTooManyJumpStatements:MultiCatalogMatcher.kt:MultiCatalogMatcher$for</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$100</ID>
@@ -58,17 +59,19 @@
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$5</ID>
     <ID>MagicNumber:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$60_000</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$10</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$11</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$117_945_870</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$184_426_222</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_386_511_848</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_434_682_742</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_541_692_383</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$3</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$358_293_042</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$4</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$5</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$578_940_584</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$6</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$7</ID>
-    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$704_294_497</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$8</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$9</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries.GetByNameQuery$495_182_740</ID>
@@ -84,6 +87,7 @@
     <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$3</ID>
     <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$4</ID>
     <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$5</ID>
+    <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$6</ID>
     <ID>MagicNumber:DecklistParser.kt:DecklistParser$5</ID>
     <ID>MagicNumber:ExportScreen.kt:0.07f</ID>
     <ID>MagicNumber:ExportScreen.kt:0.09f</ID>
@@ -204,7 +208,6 @@
     <ID>MagicNumber:ScryfallApi.kt:ScryfallApi$15_000</ID>
     <ID>MagicNumber:ScryfallApi.kt:ScryfallApi$60_000</ID>
     <ID>MagicNumber:ScryfallApi.kt:ScryfallApi$75</ID>
-    <ID>MagicNumber:ScryfallImageEnricher.kt:ScryfallImageEnricher$10</ID>
     <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$1_517_078_527</ID>
     <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$1_842_316_798</ID>
     <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$2_054_145_787</ID>
@@ -290,6 +293,7 @@
     <ID>MaxLineLength:CatalogScreen.kt:Text("TYPE", modifier = Modifier.weight(0.12f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:CatalogScreen.kt:Text(v.variantType.displayName, Modifier.weight(0.12f), style = MaterialTheme.typography.body2)</ID>
     <ID>MaxLineLength:CatalogUseCase.kt:CatalogUseCase$log("Loaded catalogs from ${loadedSellers.size} seller(s): ${loadedSellers.joinToString { it.displayName }}", "INFO")</ID>
+    <ID>MaxLineLength:Database.kt:Database$db.cardVariantQueries.updateImageUrls(imageUrl = imageUrl, smallImageUrl = smallImageUrl, seller = seller, sku = sku)</ID>
     <ID>MaxLineLength:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$driver.execute(null, "ALTER TABLE PreferencesEntity ADD COLUMN enabledSellers TEXT NOT NULL DEFAULT 'USEA,BOOTLEG_MAGE,TCGPLAYER,MANAPOOL'", 0)</ID>
     <ID>MaxLineLength:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$driver.execute(null, "CREATE UNIQUE INDEX IF NOT EXISTS idx_variant_seller_sku ON CardVariantEntity(seller, sku)", 0)</ID>
     <ID>MaxLineLength:DecklistParser.kt:DecklistParser$// Heuristic: if we saw a blank line after sideboard marker and now a new card line, treat as commander section</ID>
@@ -386,6 +390,7 @@
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogSourceRegistry$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:DeckSearchUseCase.kt:DeckSearchUseCase$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ImagePrefetchService.kt:ImagePrefetchService$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ImportExportUseCase.kt:ImportExportUseCase$e: Exception</ID>
     <ID>TooGenericExceptionCaught:KtorRemoteCatalogDataSource.kt:KtorRemoteCatalogDataSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:MviViewModel.kt:MviViewModel$e: Exception</ID>

@@ -1,0 +1,2 @@
+-- Migration: Add smallImageUrl column to CardVariantEntity for small card image support.
+ALTER TABLE CardVariantEntity ADD COLUMN smallImageUrl TEXT;

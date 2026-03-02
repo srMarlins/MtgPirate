@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,7 +67,7 @@ fun ResultsScreen(
     onOverrideSeller: (Int, Seller) -> Unit = { _, _ -> },
     onClose: () -> Unit,
     onExport: () -> Unit = {},
-    onEnrichVariant: ((CardVariant) -> Unit)? = null,
+    onPrefetchImages: ((List<CardVariant>) -> Unit)? = null,
     isLoading: Boolean = false,
     searchProgress: SearchProgress? = null,
     matchedCount: Int = 0,
@@ -76,6 +77,18 @@ fun ResultsScreen(
     proStatus: ProStatus = ProStatus.Free,
     onShowUpgradePrompt: (ProFeature) -> Unit = {},
 ) {
+    // Batch prefetch images for all variants
+    val variantsNeedingImages = remember(matches) {
+        matches.flatMap { match ->
+            match.candidates.map { it.variant } + listOfNotNull(match.selectedVariant)
+        }.filter { it.smallImageUrl == null }
+    }
+    LaunchedEffect(variantsNeedingImages) {
+        if (variantsNeedingImages.isNotEmpty()) {
+            onPrefetchImages?.invoke(variantsNeedingImages)
+        }
+    }
+
     val totalMatched = matches.filter { it.selectedVariant != null }
     val totalCents = totalPriceCents
     val missed = unmatchedCount
@@ -529,15 +542,6 @@ fun ResultsScreen(
                             val multiMatch = multiMatchByEntryId[m.deckEntry.id]
                             val hasAlternatives = multiMatch != null && multiMatch.alternatives.size > 1
                             val isExpanded = expandedRows.contains(m.uniqueIdentifier)
-
-                            // Trigger image enrichment when variant comes into view
-                            variant?.let { v ->
-                                androidx.compose.runtime.LaunchedEffect(v.sku) {
-                                    if (v.imageUrl == null) {
-                                        onEnrichVariant?.invoke(v)
-                                    }
-                                }
-                            }
 
                             Column {
                                 Row(
