@@ -13,6 +13,7 @@ import model.VariantType
 import optimizer.ShoppingOptimizer
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ShoppingFlowTest {
@@ -104,32 +105,27 @@ class ShoppingFlowTest {
         // 4. Run ShoppingOptimizer
         val plan = ShoppingOptimizer.optimize(matches)
 
-        // 5. Assert: all cards matched, shopping plan has correct seller split, totals are correct
-        assertEquals(3, plan.orders.size) // USEA, BM, MANAPOOL
+        // 5. Assert: shopping plan has correct seller split and totals.
+        // The iterative optimizer moves Counterspell from USEA to BM because eliminating
+        // USEA's $10 shipping outweighs the per-card price increase (220->250, 4x = 120).
+        // Net savings: 1000 (shipping) - 120 (price delta) = 880.
+        assertEquals(2, plan.orders.size) // BM, MANAPOOL (USEA eliminated)
 
-        val useaOrder = plan.orders.find { it.seller == Seller.USEA }!!
         val bmOrder = plan.orders.find { it.seller == Seller.BOOTLEG_MAGE }!!
         val mpOrder = plan.orders.find { it.seller == Seller.MANAPOOL }!!
 
-        // USEA Order: 4 Counterspell @ 220 = 880. Discount tier < 60_00 -> 0%. Shipping 10_00.
-        // Wait, USEA_DISCOUNT_CONFIG has 0 -> 10_00 shipping if afterDiscount < 100_00.
-        assertEquals(880, useaOrder.subtotalCents)
-        assertEquals(0, useaOrder.discountPercent)
-        assertEquals(10_00, useaOrder.shippingCents)
-        assertEquals(1880, useaOrder.totalCents)
-
-        // BM Order: 4 Lightning Bolt @ 180 (720) + 1 Black Lotus @ 500 (500) = 1220.
+        // BM Order: 4 Lightning Bolt @ 180 (720) + 1 Black Lotus @ 500 (500)
+        //         + 4 Counterspell @ 250 (1000) = 2220.
         // BOOTLEG_MAGE_DISCOUNT_CONFIG: free shipping.
-        assertEquals(1220, bmOrder.subtotalCents)
+        assertEquals(2220, bmOrder.subtotalCents)
         assertEquals(0, bmOrder.shippingCents)
-        assertEquals(1220, bmOrder.totalCents)
+        assertEquals(2220, bmOrder.totalCents)
 
         // ManaPool Order: 2 Tarmogoyf @ 5000 = 10000.
-        // MANAPOOL_DISCOUNT_CONFIG: free shipping in mock config (actually "Varies by seller" but 0 in config).
         assertEquals(10000, mpOrder.subtotalCents)
         assertEquals(10000, mpOrder.totalCents)
 
-        assertEquals(1880 + 1220 + 10000, plan.totalPriceCents)
+        assertEquals(2220 + 10000, plan.totalPriceCents)
     }
 
     @Test
@@ -167,5 +163,98 @@ class ShoppingFlowTest {
         assertTrue(useaOrder.items.any { it.variant.nameOriginal == "Shared Card" }, "Shared Card should be in USEA order to hit discount tier")
         assertEquals(105_00, useaOrder.subtotalCents)
         assertEquals(15, useaOrder.discountPercent)
+    }
+
+    @Test
+    fun iterativeOptimization_crossesDiscountThresholdByReassigning() {
+        val entries = listOf(
+            testDeckEntry("Volcanic Island", 1),
+            testDeckEntry("Underground Sea", 1),
+            testDeckEntry("Mystic Remora", 1),
+        )
+
+        val useaCatalog = catalogOf(
+            testVariant("Volcanic Island", Seller.USEA, 50_00),
+            testVariant("Underground Sea", Seller.USEA, 40_00),
+            testVariant("Mystic Remora", Seller.USEA, 15_00),
+        )
+        val bmCatalog = catalogOf(
+            testVariant("Mystic Remora", Seller.BOOTLEG_MAGE, 12_00),
+        )
+
+        val matches = MultiCatalogMatcher.match(
+            entries = entries,
+            catalogs = mapOf(Seller.USEA to useaCatalog, Seller.BOOTLEG_MAGE to bmCatalog),
+            config = MultiCatalogMatcher.Config(proxyFirst = true),
+        )
+
+        val plan = ShoppingOptimizer.optimize(matches)
+
+        val useaOrder = plan.orders.find { it.seller == Seller.USEA }!!
+        assertTrue(
+            useaOrder.items.any { it.variant.nameOriginal == "Mystic Remora" },
+            "Mystic Remora should be pulled to USEA to cross discount threshold"
+        )
+        assertEquals(105_00, useaOrder.subtotalCents)
+        assertEquals(15, useaOrder.discountPercent)
+        assertEquals(89_25 + 10_00, useaOrder.totalCents)
+    }
+
+    @Test
+    fun iterativeOptimization_doesNotMoveWhenWorsens() {
+        val entries = listOf(
+            testDeckEntry("Tropical Island", 1),
+            testDeckEntry("Ponder", 1),
+        )
+
+        val useaCatalog = catalogOf(
+            testVariant("Tropical Island", Seller.USEA, 55_00),
+            testVariant("Ponder", Seller.USEA, 8_00),
+        )
+        val bmCatalog = catalogOf(
+            testVariant("Ponder", Seller.BOOTLEG_MAGE, 2_00),
+        )
+
+        val matches = MultiCatalogMatcher.match(
+            entries = entries,
+            catalogs = mapOf(Seller.USEA to useaCatalog, Seller.BOOTLEG_MAGE to bmCatalog),
+            config = MultiCatalogMatcher.Config(proxyFirst = true),
+        )
+
+        val plan = ShoppingOptimizer.optimize(matches)
+
+        val bmOrder = plan.orders.find { it.seller == Seller.BOOTLEG_MAGE }
+        assertNotNull(bmOrder, "BM order should exist")
+        assertTrue(bmOrder.items.any { it.variant.nameOriginal == "Ponder" })
+    }
+
+    @Test
+    fun optimizeSubset_filtersBySeller() {
+        val entries = listOf(
+            testDeckEntry("Lightning Bolt", 4),
+            testDeckEntry("Counterspell", 4),
+        )
+
+        val useaCatalog = catalogOf(
+            testVariant("Lightning Bolt", Seller.USEA, 220),
+            testVariant("Counterspell", Seller.USEA, 220),
+        )
+        val bmCatalog = catalogOf(
+            testVariant("Lightning Bolt", Seller.BOOTLEG_MAGE, 180),
+            testVariant("Counterspell", Seller.BOOTLEG_MAGE, 250),
+        )
+
+        val matches = MultiCatalogMatcher.match(
+            entries = entries,
+            catalogs = mapOf(Seller.USEA to useaCatalog, Seller.BOOTLEG_MAGE to bmCatalog),
+            config = MultiCatalogMatcher.Config(proxyFirst = true),
+        )
+
+        val useaOnly = ShoppingOptimizer.optimizeForSellers(matches, setOf(Seller.USEA))
+        assertTrue(useaOnly.orders.all { it.seller == Seller.USEA })
+        assertEquals(2, useaOnly.orders.first().items.size)
+
+        val fullPlan = ShoppingOptimizer.optimize(matches)
+        assertTrue(fullPlan.orders.any { it.seller == Seller.BOOTLEG_MAGE })
     }
 }
