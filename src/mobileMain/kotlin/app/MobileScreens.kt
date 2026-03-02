@@ -46,6 +46,7 @@ import model.ProStatus
 import model.Seller
 import model.SellerOrder
 import model.ShoppingPlan
+import model.ShoppingPlanComparison
 import platform.HapticFeedback
 import ui.AnimatedLoadingDots
 import ui.BlinkingCursor
@@ -1035,17 +1036,26 @@ fun MobileAltDetailScreen(
  */
 @Composable
 fun MobileShoppingPlanScreen(
-    shoppingPlan: ShoppingPlan?,
+    shoppingPlanComparison: ShoppingPlanComparison?,
     multiMatches: List<MultiMatch>,
+    isPro: Boolean,
     onOptimize: () -> Unit,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
     onBack: () -> Unit,
+    onUpgrade: () -> Unit,
     isLoading: Boolean = false,
     isDarkTheme: Boolean = false,
     onToggleTheme: () -> Unit = {},
     proStatus: ProStatus = ProStatus.Free,
 ) {
+    // Trigger optimization if we have multi-matches but no plan yet
+    LaunchedEffect(shoppingPlanComparison, multiMatches) {
+        if (shoppingPlanComparison == null && multiMatches.isNotEmpty()) {
+            onOptimize()
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         ScanlineEffect(alpha = 0.03f)
 
@@ -1083,7 +1093,7 @@ fun MobileShoppingPlanScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                if (isLoading || shoppingPlan == null) {
+                if (isLoading || shoppingPlanComparison == null) {
                     // Loading state — glowing card with animated content
                     PixelCard(glowing = true, modifier = Modifier.fillMaxWidth().weight(1f)) {
                         Column(
@@ -1108,22 +1118,25 @@ fun MobileShoppingPlanScreen(
                         }
                     }
                 } else {
+                    val activePlan = shoppingPlanComparison.activePlan
+                    val proPlan = shoppingPlanComparison.proPlan
+                    val showComparison = !isPro && shoppingPlanComparison.savingsDeltaCents > 0
                     val coroutineScope = rememberCoroutineScope()
-                    val pagerState = rememberPagerState { shoppingPlan.orders.size }
+                    val pagerState = rememberPagerState { activePlan.orders.size }
 
                     // Grand total summary card
-                    MobileShoppingPlanSummary(shoppingPlan)
+                    MobileShoppingPlanSummary(activePlan)
                     Spacer(Modifier.height(8.dp))
 
                     // Page indicator dots with swipe hint
-                    if (shoppingPlan.orders.size > 1) {
+                    if (activePlan.orders.size > 1) {
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp),
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                shoppingPlan.orders.forEachIndexed { index, order ->
+                                activePlan.orders.forEachIndexed { index, order ->
                                     val dotColor = if (index == pagerState.currentPage) {
                                         sellerColor(order.seller)
                                     } else {
@@ -1139,7 +1152,7 @@ fun MobileShoppingPlanScreen(
                             }
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                "${pagerState.currentPage + 1}/${shoppingPlan.orders.size}",
+                                "${pagerState.currentPage + 1}/${activePlan.orders.size}",
                                 style = MaterialTheme.typography.caption,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
@@ -1154,19 +1167,29 @@ fun MobileShoppingPlanScreen(
                         state = pagerState,
                         modifier = Modifier.weight(1f).fillMaxWidth(),
                         pageSpacing = 12.dp,
-                        contentPadding = if (shoppingPlan.orders.size > 1) PaddingValues(end = 24.dp) else PaddingValues(),
+                        contentPadding = if (activePlan.orders.size > 1) PaddingValues(end = 24.dp) else PaddingValues(),
                     ) { page ->
                         MobileSellerOrderCard(
-                            order = shoppingPlan.orders[page],
+                            order = activePlan.orders[page],
                             onCopyToClipboard = onCopyToClipboard,
                             onOpenUrl = onOpenUrl,
                             onCheckoutComplete = {
-                                if (pagerState.currentPage < shoppingPlan.orders.size - 1) {
+                                if (pagerState.currentPage < activePlan.orders.size - 1) {
                                     coroutineScope.launch {
                                         pagerState.animateScrollToPage(pagerState.currentPage + 1)
                                     }
                                 }
                             },
+                        )
+                    }
+
+                    if (showComparison) {
+                        Spacer(Modifier.height(8.dp))
+                        MobileProComparisonCard(
+                            activePlan = activePlan,
+                            proPlan = proPlan,
+                            savingsDeltaCents = shoppingPlanComparison.savingsDeltaCents,
+                            onUpgrade = onUpgrade,
                         )
                     }
                 }
@@ -1257,6 +1280,127 @@ private fun MobileShoppingPlanSummary(plan: ShoppingPlan) {
                     )
                 }
             }
+        }
+    }
+}
+
+/**
+ * Mobile Pro comparison card showing potential savings with Pro.
+ * Compact layout optimized for mobile screens.
+ */
+@Composable
+private fun MobileProComparisonCard(
+    activePlan: ShoppingPlan,
+    proPlan: ShoppingPlan,
+    savingsDeltaCents: Int,
+    onUpgrade: () -> Unit,
+) {
+    PixelCard(glowing = true) {
+        Column(
+            Modifier.fillMaxWidth().padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                "SAVE WITH DECKLOOT PRO",
+                style = MaterialTheme.typography.subtitle2,
+                color = MaterialTheme.colors.primary,
+                fontWeight = FontWeight.Bold
+            )
+
+            PixelDivider()
+
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        "Your Plan",
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        formatPrice(activePlan.totalPriceCents),
+                        style = MaterialTheme.typography.h6,
+                        color = MaterialTheme.colors.onSurface,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "${activePlan.orders.size} seller(s)",
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                    )
+                }
+
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        "Pro Plan",
+                        style = MaterialTheme.typography.caption,
+                        color = PixelGreen
+                    )
+                    Text(
+                        formatPrice(proPlan.totalPriceCents),
+                        style = MaterialTheme.typography.h6,
+                        color = PixelGreen,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "${proPlan.orders.size} seller(s)",
+                        style = MaterialTheme.typography.caption,
+                        color = PixelGreen.copy(alpha = 0.7f)
+                    )
+                }
+            }
+
+            Row(
+                Modifier.fillMaxWidth()
+                    .background(PixelGreen.copy(alpha = 0.1f))
+                    .padding(10.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "You could save ${formatPrice(savingsDeltaCents)} with Pro",
+                    style = MaterialTheme.typography.body2,
+                    color = PixelGreen,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            proPlan.orders
+                .filter { order -> activePlan.orders.none { it.seller == order.seller } }
+                .forEach { lockedOrder ->
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            PixelBadge(
+                                text = lockedOrder.seller.displayName,
+                                color = sellerColor(lockedOrder.seller)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                "${lockedOrder.items.sumOf { it.qty }} cards",
+                                style = MaterialTheme.typography.caption,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                            )
+                        }
+                        Text(
+                            formatPrice(lockedOrder.totalCents),
+                            style = MaterialTheme.typography.body2,
+                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                        )
+                    }
+                }
+
+            PixelButton(
+                text = "Unlock Pro",
+                onClick = onUpgrade,
+                variant = PixelButtonVariant.PRIMARY,
+                modifier = Modifier.fillMaxWidth().height(44.dp)
+            )
         }
     }
 }

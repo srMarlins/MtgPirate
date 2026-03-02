@@ -287,8 +287,9 @@ fun MobileNavigationHost(
                 }
 
                 MobileScreen.EXPORT -> MobileShoppingPlanScreen(
-                    shoppingPlan = state.shoppingPlan,
+                    shoppingPlanComparison = state.shoppingPlanComparison,
                     multiMatches = state.multiMatches,
+                    isPro = state.proStatus.isPro,
                     onOptimize = {
                         viewModel.processIntent(ViewIntent.OptimizeShoppingPlan)
                     },
@@ -299,6 +300,7 @@ fun MobileNavigationHost(
                         scope.launch { platformServices.openUrl(url) }
                     },
                     onBack = { navigateTo(MobileScreen.RESULTS) },
+                    onUpgrade = { viewModel.processIntent(ViewIntent.PurchasePro) },
                     isLoading = state.isMatching,
                     isDarkTheme = state.isDarkTheme,
                     onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
