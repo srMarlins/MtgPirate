@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import model.MultiMatch
 import model.OrderItem
 import model.Seller
@@ -46,6 +47,9 @@ import util.buildTcgPlayerUrl
 import util.encodeUrlParameter
 import util.formatPrice
 import util.sellerCheckoutUrl
+
+/** Duration in ms to show "Copied!" feedback before resetting. */
+private const val COPIED_FEEDBACK_MS = 2000L
 
 /**
  * Returns the themed color for a given seller.
@@ -365,128 +369,6 @@ private fun ShoppingPlanSummary(
 }
 
 /**
- * Comparison card showing potential savings with Pro.
- * Displays side-by-side plan totals, savings callout, locked seller previews,
- * and an upgrade button.
- */
-@Composable
-private fun ProComparisonCard(
-    activePlan: ShoppingPlan,
-    proPlan: ShoppingPlan,
-    savingsDeltaCents: Int,
-    onUpgrade: () -> Unit,
-) {
-    PixelCard(glowing = true) {
-        Column(
-            Modifier.fillMaxWidth().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                "SAVE WITH DECKLOOT PRO",
-                style = MaterialTheme.typography.subtitle1,
-                color = MaterialTheme.colors.primary,
-                fontWeight = FontWeight.Bold
-            )
-
-            PixelDivider()
-
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        "Your Plan",
-                        style = MaterialTheme.typography.subtitle2,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                    )
-                    Text(
-                        formatPrice(activePlan.totalPriceCents),
-                        style = MaterialTheme.typography.h5,
-                        color = MaterialTheme.colors.onSurface,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "${activePlan.orders.size} seller(s)",
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
-                    )
-                }
-
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        "Pro Plan",
-                        style = MaterialTheme.typography.subtitle2,
-                        color = PixelGreen
-                    )
-                    Text(
-                        formatPrice(proPlan.totalPriceCents),
-                        style = MaterialTheme.typography.h5,
-                        color = PixelGreen,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "${proPlan.orders.size} seller(s)",
-                        style = MaterialTheme.typography.caption,
-                        color = PixelGreen.copy(alpha = 0.7f)
-                    )
-                }
-            }
-
-            Row(
-                Modifier.fillMaxWidth()
-                    .background(PixelGreen.copy(alpha = 0.1f))
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    "You could save ${formatPrice(savingsDeltaCents)} with Pro",
-                    style = MaterialTheme.typography.body1,
-                    color = PixelGreen,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            proPlan.orders
-                .filter { order -> activePlan.orders.none { it.seller == order.seller } }
-                .forEach { lockedOrder ->
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            PixelBadge(
-                                text = lockedOrder.seller.displayName,
-                                color = sellerColor(lockedOrder.seller)
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                "${lockedOrder.items.sumOf { it.qty }} cards",
-                                style = MaterialTheme.typography.body2,
-                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
-                            )
-                        }
-                        Text(
-                            formatPrice(lockedOrder.totalCents),
-                            style = MaterialTheme.typography.body1,
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
-                        )
-                    }
-                }
-
-            PixelButton(
-                text = "Unlock Pro",
-                onClick = onUpgrade,
-                variant = PixelButtonVariant.PRIMARY,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    }
-}
-
-/**
  * Expandable card for a single seller's order.
  */
 @Composable
@@ -744,7 +626,7 @@ private fun SellerActionButtons(
     // Auto-reset "Copied!" feedback after 2 seconds
     LaunchedEffect(copied) {
         if (copied) {
-            kotlinx.coroutines.delay(2000)
+            delay(COPIED_FEEDBACK_MS)
             copied = false
         }
     }

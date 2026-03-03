@@ -41,7 +41,6 @@
     <ID>LongMethod:ResultsScreen.kt:@Composable fun ResultsScreen</ID>
     <ID>LongMethod:ShoppingOptimizer.kt:ShoppingOptimizer$fun optimizeForSellers: ShoppingPlan</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable fun ShoppingPlanScreen</ID>
-    <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun ProComparisonCard</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerActionButtons</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerOrderCard</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun ShoppingPlanSummary</ID>
@@ -185,7 +184,7 @@
     <ID>MagicNumber:PreferencesWizardScreen.kt:600</ID>
     <ID>MagicNumber:PreferencesWizardScreen.kt:64f</ID>
     <ID>MagicNumber:Price.kt:100.0</ID>
-    <ID>MagicNumber:ProComponents.kt:0xFF4A2800</ID>
+    <ID>MagicNumber:Theme.kt:0xFF4A2800</ID>
     <ID>MagicNumber:ProComponents.kt:2000</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$100</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$100_00</ID>
@@ -222,6 +221,7 @@
     <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$1_842_316_798</ID>
     <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$2_054_145_787</ID>
     <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries.GetCacheQuery$1_012_674_590</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:1000_00</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:100_00</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:10_00</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:15</ID>
@@ -234,13 +234,13 @@
     <ID>MagicNumber:SellerDiscountConfig.kt:400_00</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:5</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:50</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:56</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:60_00</ID>
     <ID>MagicNumber:ShoppingOptimizer.kt:ShoppingOptimizer$100</ID>
     <ID>MagicNumber:ShoppingPlanScreen.kt:100</ID>
     <ID>MagicNumber:ShoppingPlanScreen.kt:1000_00</ID>
     <ID>MagicNumber:ShoppingPlanScreen.kt:100_00</ID>
     <ID>MagicNumber:ShoppingPlanScreen.kt:160_00</ID>
-    <ID>MagicNumber:ShoppingPlanScreen.kt:2000</ID>
     <ID>MagicNumber:ShoppingPlanScreen.kt:200_00</ID>
     <ID>MagicNumber:ShoppingPlanScreen.kt:300_00</ID>
     <ID>MagicNumber:ShoppingPlanScreen.kt:400_00</ID>
@@ -437,7 +437,6 @@
     <ID>WildcardImport:MobilePixelImageComponents.kt:import androidx.compose.animation.core.*</ID>
     <ID>WildcardImport:MobilePixelImageComponents.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:MobilePixelImageComponents.kt:import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:MviViewModel.kt:import kotlinx.coroutines.flow.*</ID>
     <ID>WildcardImport:PixelComponents.kt:import androidx.compose.animation.core.*</ID>
     <ID>WildcardImport:PixelComponents.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:PixelComponents.kt:import androidx.compose.runtime.*</ID>

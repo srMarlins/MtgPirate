@@ -51,21 +51,29 @@ class UseaWebViewCheckoutController(
             const items = $items;
             const couponCode = '$coupon';
             let added = 0;
+            let failed = 0;
             window.webkit.messageHandlers.DeckLoot.postMessage(JSON.stringify({type:'total', count:items.length}));
 
             for (const item of items) {
-                const formData = new FormData();
-                formData.append('product_id', item.id);
-                formData.append('quantity', item.qty);
-                await fetch('/?wc-ajax=add_to_cart', { method: 'POST', body: formData });
+                try {
+                    const formData = new FormData();
+                    formData.append('product_id', item.id);
+                    formData.append('quantity', item.qty);
+                    const resp = await fetch('/?wc-ajax=add_to_cart', { method: 'POST', body: formData });
+                    if (!resp.ok) failed++;
+                } catch (e) {
+                    failed++;
+                }
                 added++;
                 window.webkit.messageHandlers.DeckLoot.postMessage(JSON.stringify({type:'progress', count:added}));
             }
 
             if (couponCode) {
-                const couponData = new FormData();
-                couponData.append('coupon_code', couponCode);
-                await fetch('/?wc-ajax=apply_coupon', { method: 'POST', body: couponData });
+                try {
+                    const couponData = new FormData();
+                    couponData.append('coupon_code', couponCode);
+                    await fetch('/?wc-ajax=apply_coupon', { method: 'POST', body: couponData });
+                } catch (e) { /* coupon is best-effort */ }
             }
 
             window.webkit.messageHandlers.DeckLoot.postMessage(JSON.stringify({type:'complete'}));

@@ -166,6 +166,22 @@ object ShoppingOptimizer {
     }
 
     /**
+     * Resolve the applicable discount percent for a subtotal using the config's tiers.
+     */
+    private fun resolveDiscountPercent(config: SellerDiscountConfig, subtotalCents: Int): Int =
+        config.discountTiers
+            .sortedByDescending { it.minCents }
+            .firstOrNull { subtotalCents >= it.minCents }?.discountPercent ?: 0
+
+    /**
+     * Resolve the shipping cost for a post-discount amount using the config's tiers.
+     */
+    private fun resolveShippingCents(config: SellerDiscountConfig, afterDiscountCents: Int): Int =
+        config.shippingTiers
+            .sortedByDescending { it.minCents }
+            .firstOrNull { afterDiscountCents >= it.minCents }?.shippingCents ?: 0
+
+    /**
      * Calculate total cost for a seller at a given subtotal (discount + shipping).
      * Used for incremental cost comparison during iterative optimization.
      */
@@ -176,28 +192,18 @@ object ShoppingOptimizer {
     ): Int {
         if (subtotalCents <= 0) return 0
         val config = configs[seller] ?: return subtotalCents
-        val discountPercent = config.discountTiers
-            .sortedByDescending { it.minCents }
-            .firstOrNull { subtotalCents >= it.minCents }?.discountPercent ?: 0
+        val discountPercent = resolveDiscountPercent(config, subtotalCents)
         val afterDiscount = subtotalCents * (100 - discountPercent) / 100
-        val shippingCents = config.shippingTiers
-            .sortedByDescending { it.minCents }
-            .firstOrNull { afterDiscount >= it.minCents }?.shippingCents ?: 0
+        val shippingCents = resolveShippingCents(config, afterDiscount)
         return afterDiscount + shippingCents
     }
 
     private fun buildSellerOrder(seller: Seller, items: List<OrderItem>): SellerOrder {
         val config = getDiscountConfig(seller)
         val subtotal = items.sumOf { it.variant.priceInCents * it.qty }
-
-        val discountPercent = config.discountTiers
-            .sortedByDescending { it.minCents }
-            .firstOrNull { subtotal >= it.minCents }?.discountPercent ?: 0
+        val discountPercent = resolveDiscountPercent(config, subtotal)
         val afterDiscount = subtotal * (100 - discountPercent) / 100
-
-        val shippingCents = config.shippingTiers
-            .sortedByDescending { it.minCents }
-            .firstOrNull { afterDiscount >= it.minCents }?.shippingCents ?: 0
+        val shippingCents = resolveShippingCents(config, afterDiscount)
 
         return SellerOrder(
             seller = seller,

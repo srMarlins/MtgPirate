@@ -93,21 +93,29 @@ class UseaWebViewCheckoutActivity : ComponentActivity() {
             const items = $itemsJson;
             const couponCode = '$couponCode';
             let added = 0;
+            let failed = 0;
             DeckLoot.onTotal(items.length);
 
             for (const item of items) {
-                const formData = new FormData();
-                formData.append('product_id', item.id);
-                formData.append('quantity', item.qty);
-                await fetch('/?wc-ajax=add_to_cart', { method: 'POST', body: formData });
+                try {
+                    const formData = new FormData();
+                    formData.append('product_id', item.id);
+                    formData.append('quantity', item.qty);
+                    const resp = await fetch('/?wc-ajax=add_to_cart', { method: 'POST', body: formData });
+                    if (!resp.ok) failed++;
+                } catch (e) {
+                    failed++;
+                }
                 added++;
                 DeckLoot.onProgress(added);
             }
 
             if (couponCode) {
-                const couponData = new FormData();
-                couponData.append('coupon_code', couponCode);
-                await fetch('/?wc-ajax=apply_coupon', { method: 'POST', body: couponData });
+                try {
+                    const couponData = new FormData();
+                    couponData.append('coupon_code', couponCode);
+                    await fetch('/?wc-ajax=apply_coupon', { method: 'POST', body: couponData });
+                } catch (e) { /* coupon is best-effort */ }
             }
 
             DeckLoot.onComplete();
@@ -117,12 +125,12 @@ class UseaWebViewCheckoutActivity : ComponentActivity() {
 
     inner class DeckLootBridge {
         @JavascriptInterface
-        fun onTotal(count: Int) { total.intValue = count }
+        fun onTotal(count: Int) { runOnUiThread { total.intValue = count } }
 
         @JavascriptInterface
-        fun onProgress(count: Int) { progress.intValue = count }
+        fun onProgress(count: Int) { runOnUiThread { progress.intValue = count } }
 
         @JavascriptInterface
-        fun onComplete() { isBuilding.value = false }
+        fun onComplete() { runOnUiThread { isBuilding.value = false } }
     }
 }
