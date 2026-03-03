@@ -46,7 +46,7 @@ import state.MviPlatformServices
 import state.MviViewModel
 import state.ViewIntent
 import ui.AppTheme
-import ui.ProBadge
+import ui.UpgradeChip
 import ui.UpgradeDialog
 import ui.PixelShape
 import ui.SavedImportsDialog
@@ -235,6 +235,7 @@ fun MobileNavigationHost(
                 isDarkTheme = state.isDarkTheme,
                 onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
                 proStatus = state.proStatus,
+                onUpgradeClick = { viewModel.processIntent(ViewIntent.ShowUpgradePrompt(ProFeature.MULTI_SELLER)) },
             )
 
             MobileScreen.PREFERENCES -> MobilePreferencesScreen(
@@ -424,7 +425,8 @@ fun MobileInlineHeader(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     proStatus: ProStatus = ProStatus.Free,
-    modifier: Modifier = Modifier
+    onUpgradeClick: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
@@ -456,7 +458,7 @@ fun MobileInlineHeader(
             horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)
         ) {
             if (!proStatus.isPro) {
-                ProBadge()
+                UpgradeChip(onClick = onUpgradeClick)
             }
             Box(
                 modifier = Modifier

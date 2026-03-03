@@ -99,6 +99,7 @@ fun MobileImportScreen(
     isDarkTheme: Boolean = false,
     onToggleTheme: () -> Unit = {},
     proStatus: ProStatus = ProStatus.Free,
+    onUpgradeClick: () -> Unit = {},
 ) {
     // Dismiss keyboard when tapping outside the text field
     val focusManager = LocalFocusManager.current
@@ -125,6 +126,7 @@ fun MobileImportScreen(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
                 proStatus = proStatus,
+                onUpgradeClick = onUpgradeClick,
             )
 
             Spacer(Modifier.height(8.dp))
@@ -247,6 +249,7 @@ fun MobilePreferencesScreen(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
                 proStatus = proStatus,
+                onUpgradeClick = { onShowUpgradePrompt(ProFeature.MULTI_SELLER) },
             )
 
             Spacer(Modifier.height(8.dp))
@@ -519,6 +522,7 @@ fun MobileResultsScreenWrapper(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
                 proStatus = proStatus,
+                onUpgradeClick = { onShowUpgradePrompt(ProFeature.MULTI_SELLER) },
             )
 
             // Results screen content - will handle its own padding and loading display
@@ -1070,6 +1074,7 @@ fun MobileShoppingPlanScreen(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
                 proStatus = proStatus,
+                onUpgradeClick = onUpgrade,
             )
 
             Spacer(Modifier.height(8.dp))

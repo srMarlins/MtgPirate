@@ -3,6 +3,7 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>CyclomaticComplexMethod:MobileApp.kt:@Composable fun MobileNavigationHost</ID>
+    <ID>LongMethod:MobileApp.kt:@Composable fun MobileApp</ID>
     <ID>LongMethod:MobileApp.kt:@Composable fun MobileNavigationHost</ID>
     <ID>LongMethod:MobileReorderableList.kt:@Composable fun &lt;T&gt; MobileReorderableListWithPixelStyle</ID>
     <ID>LongMethod:MobileReorderableList.kt:@Composable fun HybridVariantPriorityItem</ID>
@@ -15,6 +16,7 @@
     <ID>LongMethod:MobileScreens.kt:@Composable fun MobileResolveScreen</ID>
     <ID>LongMethod:MobileScreens.kt:@Composable fun MobileShoppingPlanScreen</ID>
     <ID>LongMethod:MobileScreens.kt:@Composable private fun MobileProComparisonCard</ID>
+    <ID>LongMethod:MobileScreens.kt:@Composable private fun MobileProPlanPage</ID>
     <ID>LongMethod:MobileScreens.kt:@Composable private fun MobileSellerOrderCard</ID>
     <ID>LongMethod:MobileScreens.kt:@Composable private fun MobileShoppingPlanSummary</ID>
     <ID>MagicNumber:MobileReorderableList.kt:1000</ID>
@@ -46,7 +48,6 @@
     <ID>MaxLineLength:MobileScreens.kt:Text(formatPrice(order.subtotalCents), style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSurface)</ID>
     <ID>MaxLineLength:MobileScreens.kt:Text(formatPrice(order.totalCents), style = MaterialTheme.typography.body2, fontWeight = FontWeight.Bold, color = color)</ID>
     <ID>MaxLineLength:MobileScreens.kt:color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface</ID>
-    <ID>MaxLineLength:MobileScreens.kt:contentPadding = if (activePlan.orders.size &gt; 1) PaddingValues(end = 24.dp) else PaddingValues()</ID>
     <ID>MaxLineLength:MobileScreens.kt:isLoading = isLoadingCatalog || isMatching || (searchProgress != null &amp;&amp; searchProgress.isSearching)</ID>
     <ID>SwallowedException:MobileSavedImportsDialog.kt:e: Exception</ID>
     <ID>TooGenericExceptionCaught:MobileSavedImportsDialog.kt:e: Exception</ID>

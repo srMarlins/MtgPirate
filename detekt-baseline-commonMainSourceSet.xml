@@ -44,6 +44,7 @@
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun ProComparisonCard</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerActionButtons</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerOrderCard</ID>
+    <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun ShoppingPlanSummary</ID>
     <ID>LongMethod:StepperComponent.kt:@Composable fun PixelStepNode</ID>
     <ID>LongMethod:StepperComponent.kt:@Composable fun RowScope.PixelStepConnector</ID>
     <ID>LoopWithTooManyJumpStatements:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$for</ID>
@@ -184,6 +185,8 @@
     <ID>MagicNumber:PreferencesWizardScreen.kt:600</ID>
     <ID>MagicNumber:PreferencesWizardScreen.kt:64f</ID>
     <ID>MagicNumber:Price.kt:100.0</ID>
+    <ID>MagicNumber:ProComponents.kt:0xFF4A2800</ID>
+    <ID>MagicNumber:ProComponents.kt:2000</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$100</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$100_00</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$10_00</ID>
@@ -359,7 +362,6 @@
     <ID>MaxLineLength:MatchesScreen.kt:color = if (rowTotal != null) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.5f)</ID>
     <ID>MaxLineLength:MatchesScreen.kt:val content = unmatched.joinToString("\n") { "${it.deckEntry.qty} ${it.deckEntry.cardName}" }</ID>
     <ID>MaxLineLength:MobilePixelImageComponents.kt:var loadState by remember { mutableStateOf&lt;AsyncImagePainter.State&gt;(AsyncImagePainter.State.Empty) }</ID>
-    <ID>MaxLineLength:MviViewModel.kt:MviViewModel$_viewEffects.emit(ViewEffect.ShowError("No products could be matched on the store. Use 'Copy for Sheet' instead."))</ID>
     <ID>MaxLineLength:MviViewModel.kt:MviViewModel$private suspend</ID>
     <ID>MaxLineLength:PreferencesQueries.kt:PreferencesQueries$)</ID>
     <ID>MaxLineLength:PreferencesWizardScreen.kt:.</ID>

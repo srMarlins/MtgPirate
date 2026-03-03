@@ -592,7 +592,8 @@ fun PixelBadge(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colors.primary,
-    style: PixelBadgeStyle = PixelBadgeStyle.FILLED
+    style: PixelBadgeStyle = PixelBadgeStyle.FILLED,
+    textColorOverride: Color? = null,
 ) {
     val colors = MaterialTheme.colors
     val backgroundColor = when (style) {
@@ -600,7 +601,7 @@ fun PixelBadge(
         PixelBadgeStyle.MUTED -> color.copy(alpha = 0.15f)
         PixelBadgeStyle.ACCENT -> PixelAccent1
     }
-    val textColor = when (style) {
+    val textColor = textColorOverride ?: when (style) {
         PixelBadgeStyle.FILLED -> colors.onPrimary
         PixelBadgeStyle.MUTED -> color
         PixelBadgeStyle.ACCENT -> colors.onPrimary
