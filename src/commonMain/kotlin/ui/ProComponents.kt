@@ -1,5 +1,11 @@
 package ui
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,10 +37,54 @@ fun ProBadge(
 ) {
     val mod = if (onClick != null) modifier.clickable(onClick = onClick) else modifier
     PixelBadge(
-        text = "\uD83D\uDD12 PRO",
+        text = "\u2726 PRO",
         color = PixelGold,
+        textColorOverride = ProBadgeText,
         modifier = mod,
     )
+}
+
+/**
+ * Compact upgrade chip for top bars. Gold-bordered pill with sparkle + "PRO"
+ * and a subtle pulsing glow to draw attention without being obnoxious.
+ */
+@Composable
+fun UpgradeChip(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.7f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+    )
+
+    Box(
+        modifier = modifier
+            .clip(PixelShape(cornerSize = 6.dp))
+            .background(PixelGold.copy(alpha = 0.15f), shape = PixelShape(cornerSize = 6.dp))
+            .pixelBorder(
+                borderWidth = 2.dp,
+                cornerSize = 6.dp,
+                enabled = true,
+                glowAlpha = glowAlpha,
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "UPGRADE \u25B8",
+            style = MaterialTheme.typography.caption,
+            color = PixelGold,
+            fontWeight = FontWeight.Bold,
+            fontSize = 10.sp,
+        )
+    }
 }
 
 /** Returns a user-facing title for a Pro feature. */

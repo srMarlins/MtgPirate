@@ -66,6 +66,9 @@ val PixelBlue = Color(0xFF2196F3)
 val PixelYellow = Color(0xFFFFEB3B)
 val PixelGold = Color(0xFFFBBF24)
 
+// Pro Badge
+val ProBadgeText = Color(0xFF4A2800) // Dark brown on gold for contrast
+
 // Seller Colors
 val SellerUsea = Color(0xFFB794F6)        // Purple — proxy seller
 val SellerBootlegMage = Color(0xFF63B3ED)  // Blue — proxy seller

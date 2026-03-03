@@ -17,6 +17,7 @@ data class SellerDiscountConfig(
 val USEA_DISCOUNT_CONFIG = SellerDiscountConfig(
     seller = Seller.USEA,
     discountTiers = listOf(
+        DiscountTier(1000_00, 56), // >$1000 → 56%
         DiscountTier(400_00, 50),  // >$400 → 50%
         DiscountTier(300_00, 35),  // >$300 → 35%
         DiscountTier(200_00, 30),  // >$200 → 30%

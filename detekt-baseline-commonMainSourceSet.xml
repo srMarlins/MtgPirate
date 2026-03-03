@@ -43,6 +43,7 @@
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable fun ShoppingPlanScreen</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerActionButtons</ID>
     <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun SellerOrderCard</ID>
+    <ID>LongMethod:ShoppingPlanScreen.kt:@Composable private fun ShoppingPlanSummary</ID>
     <ID>LongMethod:StepperComponent.kt:@Composable fun PixelStepNode</ID>
     <ID>LongMethod:StepperComponent.kt:@Composable fun RowScope.PixelStepConnector</ID>
     <ID>LoopWithTooManyJumpStatements:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$for</ID>
@@ -63,10 +64,13 @@
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$10</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$11</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$117_945_870</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$12</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$184_426_222</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_373_656_350</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_386_511_848</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_434_682_742</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_541_692_383</ID>
+    <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$1_920_040_559</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$3</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$358_293_042</ID>
     <ID>MagicNumber:CardVariantQueries.kt:CardVariantQueries$4</ID>
@@ -90,6 +94,7 @@
     <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$4</ID>
     <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$5</ID>
     <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$6</ID>
+    <ID>MagicNumber:DeckLootDatabaseImpl.kt:DeckLootDatabaseImpl.Schema$7</ID>
     <ID>MagicNumber:DecklistParser.kt:DecklistParser$5</ID>
     <ID>MagicNumber:ExportScreen.kt:0.07f</ID>
     <ID>MagicNumber:ExportScreen.kt:0.09f</ID>
@@ -179,6 +184,8 @@
     <ID>MagicNumber:PreferencesWizardScreen.kt:600</ID>
     <ID>MagicNumber:PreferencesWizardScreen.kt:64f</ID>
     <ID>MagicNumber:Price.kt:100.0</ID>
+    <ID>MagicNumber:Theme.kt:0xFF4A2800</ID>
+    <ID>MagicNumber:ProComponents.kt:2000</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$100</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$100_00</ID>
     <ID>MagicNumber:Promotions.kt:Promotions$10_00</ID>
@@ -214,6 +221,7 @@
     <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$1_842_316_798</ID>
     <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries$2_054_145_787</ID>
     <ID>MagicNumber:SellerCacheQueries.kt:SellerCacheQueries.GetCacheQuery$1_012_674_590</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:1000_00</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:100_00</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:10_00</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:15</ID>
@@ -226,10 +234,17 @@
     <ID>MagicNumber:SellerDiscountConfig.kt:400_00</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:5</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:50</ID>
+    <ID>MagicNumber:SellerDiscountConfig.kt:56</ID>
     <ID>MagicNumber:SellerDiscountConfig.kt:60_00</ID>
     <ID>MagicNumber:ShoppingOptimizer.kt:ShoppingOptimizer$100</ID>
     <ID>MagicNumber:ShoppingPlanScreen.kt:100</ID>
-    <ID>MagicNumber:ShoppingPlanScreen.kt:2000</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:1000_00</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:100_00</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:160_00</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:200_00</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:300_00</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:400_00</ID>
+    <ID>MagicNumber:ShoppingPlanScreen.kt:60_00</ID>
     <ID>MagicNumber:StepperComponent.kt:1200</ID>
     <ID>MagicNumber:StepperComponent.kt:12f</ID>
     <ID>MagicNumber:StepperComponent.kt:4f</ID>
@@ -281,6 +296,7 @@
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$)</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public fun getByName: Query&lt;CardVariantEntity&gt;</ID>
+    <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$public fun selectUseaVariantsWithoutWcProductId: Query&lt;CardVariantEntity&gt;</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries$val</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries.GetByNameQuery$override</ID>
     <ID>MaxLineLength:CardVariantQueries.kt:CardVariantQueries.SelectBySellerQuery$override</ID>
@@ -379,7 +395,6 @@
     <ID>MaxLineLength:SellerCacheQueries.kt:SellerCacheQueries$val</ID>
     <ID>MaxLineLength:SellerCacheQueries.kt:SellerCacheQueries.GetCacheQuery$override</ID>
     <ID>MaxLineLength:ShoppingPlanScreen.kt:color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface</ID>
-    <ID>MaxLineLength:ShoppingPlanScreen.kt:val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&amp;body=${encodeUrlParameter(exportText)}"</ID>
     <ID>NestedBlockDepth:ManaPoolApi.kt:ManaPoolApi$internal suspend fun parseDataArray</ID>
     <ID>NestedBlockDepth:ShoppingOptimizer.kt:ShoppingOptimizer$fun optimizeForSellers: ShoppingPlan</ID>
     <ID>PackageNaming:DeckLootDatabaseImpl.kt:package com.deckloot.db.DeckLoot</ID>
@@ -389,6 +404,7 @@
     <ID>ReturnCount:Matcher.kt:Matcher$private fun matchEntry: DeckEntryMatch</ID>
     <ID>ReturnCount:MviViewModel.kt:MviViewModel$fun processIntent</ID>
     <ID>SwallowedException:ScryfallApi.kt:ScryfallApi$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:AgamecardshopProductMapper.kt:AgamecardshopProductMapper$e: Exception</ID>
     <ID>TooGenericExceptionCaught:BootlegMageCatalogSource.kt:BootlegMageCatalogSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogSourceRegistry$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CatalogUseCase.kt:CatalogUseCase$e: Exception</ID>
@@ -409,6 +425,7 @@
     <ID>TooManyFunctions:PixelComponents.kt:ui.PixelComponents.kt</ID>
     <ID>UnusedParameter:PixelComponents.kt:index: Int</ID>
     <ID>UnusedParameter:ResultsScreen.kt:matchedCount: Int = 0</ID>
+    <ID>UnusedParameter:ShoppingPlanScreen.kt:onCheckoutUsea: (SellerOrder) -&gt; Unit = {}</ID>
     <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.material.*</ID>
     <ID>WildcardImport:CatalogScreen.kt:import androidx.compose.runtime.*</ID>
@@ -420,7 +437,6 @@
     <ID>WildcardImport:MobilePixelImageComponents.kt:import androidx.compose.animation.core.*</ID>
     <ID>WildcardImport:MobilePixelImageComponents.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:MobilePixelImageComponents.kt:import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:MviViewModel.kt:import kotlinx.coroutines.flow.*</ID>
     <ID>WildcardImport:PixelComponents.kt:import androidx.compose.animation.core.*</ID>
     <ID>WildcardImport:PixelComponents.kt:import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:PixelComponents.kt:import androidx.compose.runtime.*</ID>

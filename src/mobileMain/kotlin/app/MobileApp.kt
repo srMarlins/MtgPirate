@@ -4,13 +4,16 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -43,7 +46,7 @@ import state.MviPlatformServices
 import state.MviViewModel
 import state.ViewIntent
 import ui.AppTheme
-import ui.ProBadge
+import ui.UpgradeChip
 import ui.UpgradeDialog
 import ui.PixelShape
 import ui.SavedImportsDialog
@@ -72,6 +75,7 @@ fun MobileApp(
     database: Database,
     platformServices: MviPlatformServices,
     purchaseManager: PurchaseManager? = null,
+    onOpenUseaCheckout: (itemsJson: String, couponCode: String) -> Unit = { _, _ -> },
 ) {
     // Create app-level coroutine scope
     val scope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
@@ -107,19 +111,80 @@ fun MobileApp(
         viewModel.processIntent(ViewIntent.Init)
     }
 
+    // USEA checkout loading state
+    var useaCheckoutLoading by remember { mutableStateOf<String?>(null) }
+
+    // Collect view effects for USEA checkout
+    LaunchedEffect(Unit) {
+        viewModel.viewEffects.collect { effect ->
+            when (effect) {
+                is state.ViewEffect.UseaCheckoutLoading -> {
+                    useaCheckoutLoading = effect.message
+                }
+                is state.ViewEffect.UseaCheckoutDone -> {
+                    useaCheckoutLoading = null
+                }
+                is state.ViewEffect.OpenUseaCheckout -> {
+                    useaCheckoutLoading = null
+                    if (effect.unmatchedItems.isNotEmpty()) {
+                        scope.launch {
+                            platformServices.copyToClipboard(
+                                ui.formatForGoogleSheet(effect.unmatchedItems)
+                            )
+                        }
+                    }
+                    onOpenUseaCheckout(effect.itemsJson, effect.couponCode)
+                }
+                is state.ViewEffect.ShowError -> {
+                    useaCheckoutLoading = null
+                }
+                else -> {}
+            }
+        }
+    }
+
     // Apply pixel theme
     AppTheme(darkTheme = state.isDarkTheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
         ) {
-            // Main navigation with wizard flow
-            MobileNavigationHost(
-                viewModel = viewModel,
-                state = state,
-                scope = scope,
-                platformServices = platformServices
-            )
+            Box(Modifier.fillMaxSize()) {
+                // Main navigation with wizard flow
+                MobileNavigationHost(
+                    viewModel = viewModel,
+                    state = state,
+                    scope = scope,
+                    platformServices = platformServices
+                )
+
+                // USEA checkout loading overlay
+                val loadingMsg = useaCheckoutLoading
+                if (loadingMsg != null) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.7f))
+                            .clickable(enabled = false) {},
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colors.primary
+                            )
+                            Text(
+                                loadingMsg,
+                                color = Color.White,
+                                style = MaterialTheme.typography.body1,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -170,6 +235,7 @@ fun MobileNavigationHost(
                 isDarkTheme = state.isDarkTheme,
                 onToggleTheme = { viewModel.processIntent(ViewIntent.ToggleTheme) },
                 proStatus = state.proStatus,
+                onUpgradeClick = { viewModel.processIntent(ViewIntent.ShowUpgradePrompt(ProFeature.MULTI_SELLER)) },
             )
 
             MobileScreen.PREFERENCES -> MobilePreferencesScreen(
@@ -299,6 +365,9 @@ fun MobileNavigationHost(
                     onOpenUrl = { url ->
                         scope.launch { platformServices.openUrl(url) }
                     },
+                    onCheckoutUsea = { order ->
+                        viewModel.processIntent(ViewIntent.CheckoutUsea(order))
+                    },
                     onBack = { navigateTo(MobileScreen.RESULTS) },
                     onUpgrade = { viewModel.processIntent(ViewIntent.PurchasePro) },
                     isLoading = state.isMatching,
@@ -356,7 +425,8 @@ fun MobileInlineHeader(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     proStatus: ProStatus = ProStatus.Free,
-    modifier: Modifier = Modifier
+    onUpgradeClick: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
@@ -388,7 +458,7 @@ fun MobileInlineHeader(
             horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)
         ) {
             if (!proStatus.isPro) {
-                ProBadge()
+                UpgradeChip(onClick = onUpgradeClick)
             }
             Box(
                 modifier = Modifier

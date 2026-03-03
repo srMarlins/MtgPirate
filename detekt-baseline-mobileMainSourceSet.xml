@@ -3,6 +3,7 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>CyclomaticComplexMethod:MobileApp.kt:@Composable fun MobileNavigationHost</ID>
+    <ID>LongMethod:MobileApp.kt:@Composable fun MobileApp</ID>
     <ID>LongMethod:MobileApp.kt:@Composable fun MobileNavigationHost</ID>
     <ID>LongMethod:MobileReorderableList.kt:@Composable fun &lt;T&gt; MobileReorderableListWithPixelStyle</ID>
     <ID>LongMethod:MobileReorderableList.kt:@Composable fun HybridVariantPriorityItem</ID>
@@ -14,6 +15,8 @@
     <ID>LongMethod:MobileScreens.kt:@Composable fun MobilePreferencesScreen</ID>
     <ID>LongMethod:MobileScreens.kt:@Composable fun MobileResolveScreen</ID>
     <ID>LongMethod:MobileScreens.kt:@Composable fun MobileShoppingPlanScreen</ID>
+    <ID>LongMethod:MobileScreens.kt:@Composable private fun MobileProComparisonCard</ID>
+    <ID>LongMethod:MobileScreens.kt:@Composable private fun MobileProPlanPage</ID>
     <ID>LongMethod:MobileScreens.kt:@Composable private fun MobileSellerOrderCard</ID>
     <ID>LongMethod:MobileScreens.kt:@Composable private fun MobileShoppingPlanSummary</ID>
     <ID>MagicNumber:MobileReorderableList.kt:1000</ID>
@@ -25,6 +28,7 @@
     <ID>MagicNumber:MobileScreens.kt:2000</ID>
     <ID>MatchingDeclarationName:MobileApp.kt:MobileScreen</ID>
     <ID>MatchingDeclarationName:MobileReorderableList.kt:MobileDragState&lt;T&gt;</ID>
+    <ID>MatchingDeclarationName:WebViewCheckout.kt:WebViewCheckoutLauncher</ID>
     <ID>MaxLineLength:MobileResultsComponents.kt:PixelBadge(text = variant.setCode, color = MaterialTheme.colors.secondary, style = PixelBadgeStyle.MUTED)</ID>
     <ID>MaxLineLength:MobileResultsComponents.kt:PixelBadge(text = variant.variantType.displayName.uppercase(), color = PixelAccent1, style = PixelBadgeStyle.ACCENT)</ID>
     <ID>MaxLineLength:MobileScreens.kt:.</ID>
@@ -44,7 +48,6 @@
     <ID>MaxLineLength:MobileScreens.kt:Text(formatPrice(order.subtotalCents), style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSurface)</ID>
     <ID>MaxLineLength:MobileScreens.kt:Text(formatPrice(order.totalCents), style = MaterialTheme.typography.body2, fontWeight = FontWeight.Bold, color = color)</ID>
     <ID>MaxLineLength:MobileScreens.kt:color = if (hasLink) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface</ID>
-    <ID>MaxLineLength:MobileScreens.kt:contentPadding = if (shoppingPlan.orders.size &gt; 1) PaddingValues(end = 24.dp) else PaddingValues()</ID>
     <ID>MaxLineLength:MobileScreens.kt:isLoading = isLoadingCatalog || isMatching || (searchProgress != null &amp;&amp; searchProgress.isSearching)</ID>
     <ID>SwallowedException:MobileSavedImportsDialog.kt:e: Exception</ID>
     <ID>TooGenericExceptionCaught:MobileSavedImportsDialog.kt:e: Exception</ID>
@@ -52,7 +55,5 @@
     <ID>UnusedParameter:MobileResultsScreen.kt:onOverrideSeller: (Int, Seller) -&gt; Unit</ID>
     <ID>UnusedParameter:MobileResultsScreen.kt:onShowUpgradePrompt: (ProFeature) -&gt; Unit = {}</ID>
     <ID>UnusedParameter:MobileResultsScreen.kt:proStatus: ProStatus = ProStatus.Free</ID>
-    <ID>UnusedParameter:MobileScreens.kt:multiMatches: List&lt;MultiMatch&gt;</ID>
-    <ID>UnusedParameter:MobileScreens.kt:onOptimize: () -&gt; Unit</ID>
   </CurrentIssues>
 </SmellBaseline>

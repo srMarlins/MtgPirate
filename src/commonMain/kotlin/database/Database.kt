@@ -71,6 +71,7 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
             smallImageUrl = variant.smallImageUrl,
             seller = variant.seller.name,
             purchaseUri = variant.purchaseUri,
+            wcProductId = variant.wcProductId?.toString(),
         )
     }
 
@@ -155,6 +156,7 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
                     smallImageUrl = variant.smallImageUrl,
                     seller = variant.seller.name,
                     purchaseUri = variant.purchaseUri,
+                    wcProductId = variant.wcProductId?.toString(),
                 )
             }
         }
@@ -175,6 +177,7 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
                     smallImageUrl = variant.smallImageUrl,
                     seller = variant.seller.name,
                     purchaseUri = variant.purchaseUri,
+                    wcProductId = variant.wcProductId?.toString(),
                 )
             }
         }
@@ -200,6 +203,7 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
                     smallImageUrl = variant.smallImageUrl,
                     seller = variant.seller.name,
                     purchaseUri = variant.purchaseUri,
+                    wcProductId = variant.wcProductId?.toString(),
                 )
             }
         }
@@ -211,5 +215,18 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
 
     fun getSellerCacheTimestamp(seller: String): Long? {
         return db.sellerCacheQueries.getCache(seller).executeAsOneOrNull()
+    }
+
+    fun updateWcProductId(wcProductId: Int, seller: String, sku: String) {
+        db.cardVariantQueries.updateWcProductId(
+            wcProductId = wcProductId.toString(),
+            seller = seller,
+            sku = sku,
+        )
+    }
+
+    fun getUseaVariantsWithoutWcProductId(): List<CardVariant> {
+        return db.cardVariantQueries.selectUseaVariantsWithoutWcProductId()
+            .executeAsList().map { it.toDomain() }
     }
 }

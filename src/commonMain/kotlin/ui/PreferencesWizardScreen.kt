@@ -122,7 +122,7 @@ fun PreferencesWizardScreen(
                     )
                     Seller.entries.forEach { seller ->
                         val isEnabled = seller.name in enabledSellers
-                        val isLocked = seller != Seller.USEA && !proStatus.isPro
+                        val isLocked = seller != Seller.BOOTLEG_MAGE && !proStatus.isPro
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(
                                 checked = isEnabled,

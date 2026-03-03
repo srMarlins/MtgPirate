@@ -34,6 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import model.MultiMatch
 import model.OrderItem
 import model.Seller
@@ -45,6 +47,9 @@ import util.buildTcgPlayerUrl
 import util.encodeUrlParameter
 import util.formatPrice
 import util.sellerCheckoutUrl
+
+/** Duration in ms to show "Copied!" feedback before resetting. */
+private const val COPIED_FEEDBACK_MS = 2000L
 
 /**
  * Returns the themed color for a given seller.
@@ -85,6 +90,35 @@ internal fun formatForExport(seller: Seller, items: List<OrderItem>): String = w
 }
 
 /**
+ * Select the best USEA coupon code for the given subtotal (in cents).
+ * Returns null if no coupon threshold is met.
+ */
+internal fun useaCouponCode(subtotalCents: Int): String? = when {
+    subtotalCents > 1000_00 -> "c56for1000"
+    subtotalCents > 400_00 -> "c50for400"
+    subtotalCents > 300_00 -> "c35for300"
+    subtotalCents > 200_00 -> "c30for200"
+    subtotalCents > 160_00 -> "c25for160"
+    subtotalCents > 100_00 -> "c15for100"
+    subtotalCents > 60_00 -> "c5for60"
+    else -> null
+}
+
+/**
+ * Format order items as tab-separated values matching the USEA Google Sheet Cart tab columns.
+ * Columns: Card Name (with set), Set, SKU, Card Type (with dash prefix), Qty, Base Price
+ */
+internal fun formatForGoogleSheet(items: List<OrderItem>): String {
+    val header = "Card Name\tSet\tSKU\tCard Type\tQty\tBase Price"
+    val rows = items.joinToString("\n") { item ->
+        val v = item.variant
+        val cardType = "- ${v.variantType.displayName}"
+        "${v.nameOriginal} ${v.setCode}\t${v.setCode}\t${v.sku}\t$cardType\t${item.qty}\t${formatPrice(v.priceInCents)}"
+    }
+    return "$header\n$rows"
+}
+
+/**
  * Shopping Plan screen (Step 4) - shows the optimized multi-seller shopping plan
  * with per-seller order cards, expandable item lists, and checkout action buttons.
  */
@@ -96,6 +130,7 @@ fun ShoppingPlanScreen(
     onOptimize: () -> Unit,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
+    onCheckoutUsea: (SellerOrder) -> Unit = {},
     onBack: () -> Unit,
     onUpgrade: () -> Unit,
     isLoading: Boolean = false,
@@ -151,9 +186,50 @@ fun ShoppingPlanScreen(
             } else {
                 val activePlan = shoppingPlanComparison.activePlan
                 val proPlan = shoppingPlanComparison.proPlan
-                val showComparison = !isPro && shoppingPlanComparison.savingsDeltaCents > 0
 
-                ShoppingPlanSummary(activePlan)
+                ShoppingPlanSummary(
+                    plan = activePlan,
+                    proPlan = if (!isPro) proPlan else null,
+                    savingsDeltaCents = if (!isPro) shoppingPlanComparison.savingsDeltaCents else 0,
+                    onUpgrade = onUpgrade,
+                )
+
+                // Missing card warning + Pro upsell for free users
+                if (activePlan.droppedCardCount > 0 && !isPro) {
+                    Spacer(Modifier.height(8.dp))
+                    PixelCard {
+                        Column(
+                            Modifier.fillMaxWidth().padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Text("\u26A0", fontSize = 18.sp)
+                                Text(
+                                    "${activePlan.droppedCardCount} card(s) not available from Bootleg Mage",
+                                    style = MaterialTheme.typography.body2,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colors.error,
+                                )
+                            }
+                            Text(
+                                "Upgrade to Pro to shop across TCGPlayer, ManaPool, and USEA — " +
+                                    "get all your cards at the best prices.",
+                                style = MaterialTheme.typography.caption,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                            )
+                            PixelButton(
+                                text = "Unlock All Sellers",
+                                onClick = onUpgrade,
+                                variant = PixelButtonVariant.PRIMARY,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    }
+                }
+
                 Spacer(Modifier.height(16.dp))
 
                 Column(
@@ -165,16 +241,7 @@ fun ShoppingPlanScreen(
                             order = order,
                             onCopyToClipboard = onCopyToClipboard,
                             onOpenUrl = onOpenUrl,
-                        )
-                    }
-
-                    if (showComparison) {
-                        Spacer(Modifier.height(8.dp))
-                        ProComparisonCard(
-                            activePlan = activePlan,
-                            proPlan = proPlan,
-                            savingsDeltaCents = shoppingPlanComparison.savingsDeltaCents,
-                            onUpgrade = onUpgrade,
+                            onCheckoutUsea = onCheckoutUsea,
                         )
                     }
                 }
@@ -203,7 +270,12 @@ fun ShoppingPlanScreen(
  * Summary card showing total price and savings across all sellers.
  */
 @Composable
-private fun ShoppingPlanSummary(plan: ShoppingPlan) {
+private fun ShoppingPlanSummary(
+    plan: ShoppingPlan,
+    proPlan: ShoppingPlan? = null,
+    savingsDeltaCents: Int = 0,
+    onUpgrade: () -> Unit = {},
+) {
     PixelCard(glowing = true) {
         Column(
             Modifier.fillMaxWidth().padding(16.dp),
@@ -226,6 +298,37 @@ private fun ShoppingPlanSummary(plan: ShoppingPlan) {
                     color = MaterialTheme.colors.primary,
                     fontWeight = FontWeight.Bold
                 )
+            }
+
+            // Pro price upsell — shows savings on matched cards
+            if (proPlan != null && savingsDeltaCents > 0) {
+                Row(
+                    Modifier.fillMaxWidth()
+                        .background(PixelGreen.copy(alpha = 0.1f), shape = PixelShape(cornerSize = 6.dp))
+                        .clickable { onUpgrade() }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        ProBadge()
+                        Text(
+                            "Save with Pro",
+                            style = MaterialTheme.typography.body2,
+                            color = PixelGreen,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                    Text(
+                        "- ${formatPrice(savingsDeltaCents)}",
+                        style = MaterialTheme.typography.h6,
+                        color = PixelGreen,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
             }
 
             if (plan.savingsVsSingleSeller > 0) {
@@ -266,128 +369,6 @@ private fun ShoppingPlanSummary(plan: ShoppingPlan) {
 }
 
 /**
- * Comparison card showing potential savings with Pro.
- * Displays side-by-side plan totals, savings callout, locked seller previews,
- * and an upgrade button.
- */
-@Composable
-private fun ProComparisonCard(
-    activePlan: ShoppingPlan,
-    proPlan: ShoppingPlan,
-    savingsDeltaCents: Int,
-    onUpgrade: () -> Unit,
-) {
-    PixelCard(glowing = true) {
-        Column(
-            Modifier.fillMaxWidth().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                "SAVE WITH DECKLOOT PRO",
-                style = MaterialTheme.typography.subtitle1,
-                color = MaterialTheme.colors.primary,
-                fontWeight = FontWeight.Bold
-            )
-
-            PixelDivider()
-
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        "Your Plan",
-                        style = MaterialTheme.typography.subtitle2,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                    )
-                    Text(
-                        formatPrice(activePlan.totalPriceCents),
-                        style = MaterialTheme.typography.h5,
-                        color = MaterialTheme.colors.onSurface,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "${activePlan.orders.size} seller(s)",
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
-                    )
-                }
-
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        "Pro Plan",
-                        style = MaterialTheme.typography.subtitle2,
-                        color = PixelGreen
-                    )
-                    Text(
-                        formatPrice(proPlan.totalPriceCents),
-                        style = MaterialTheme.typography.h5,
-                        color = PixelGreen,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "${proPlan.orders.size} seller(s)",
-                        style = MaterialTheme.typography.caption,
-                        color = PixelGreen.copy(alpha = 0.7f)
-                    )
-                }
-            }
-
-            Row(
-                Modifier.fillMaxWidth()
-                    .background(PixelGreen.copy(alpha = 0.1f))
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    "You could save ${formatPrice(savingsDeltaCents)} with Pro",
-                    style = MaterialTheme.typography.body1,
-                    color = PixelGreen,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            proPlan.orders
-                .filter { order -> activePlan.orders.none { it.seller == order.seller } }
-                .forEach { lockedOrder ->
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            PixelBadge(
-                                text = lockedOrder.seller.displayName,
-                                color = sellerColor(lockedOrder.seller)
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                "${lockedOrder.items.sumOf { it.qty }} cards",
-                                style = MaterialTheme.typography.body2,
-                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
-                            )
-                        }
-                        Text(
-                            formatPrice(lockedOrder.totalCents),
-                            style = MaterialTheme.typography.body1,
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
-                        )
-                    }
-                }
-
-            PixelButton(
-                text = "Unlock Pro",
-                onClick = onUpgrade,
-                variant = PixelButtonVariant.PRIMARY,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    }
-}
-
-/**
  * Expandable card for a single seller's order.
  */
 @Composable
@@ -395,6 +376,7 @@ private fun SellerOrderCard(
     order: SellerOrder,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
+    onCheckoutUsea: (SellerOrder) -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(false) }
     val color = sellerColor(order.seller)
@@ -622,6 +604,7 @@ private fun SellerOrderCard(
                 order = order,
                 onCopyToClipboard = onCopyToClipboard,
                 onOpenUrl = onOpenUrl,
+                onCheckoutUsea = onCheckoutUsea,
             )
         }
     }
@@ -636,13 +619,14 @@ private fun SellerActionButtons(
     order: SellerOrder,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
+    onCheckoutUsea: (SellerOrder) -> Unit = {},
 ) {
     var copied by remember { mutableStateOf(false) }
 
     // Auto-reset "Copied!" feedback after 2 seconds
     LaunchedEffect(copied) {
         if (copied) {
-            kotlinx.coroutines.delay(2000)
+            delay(COPIED_FEEDBACK_MS)
             copied = false
         }
     }
@@ -653,14 +637,12 @@ private fun SellerActionButtons(
     ) {
         when (order.seller) {
             Seller.USEA -> {
+                // Desktop: clipboard + Google Sheet fallback
                 PixelButton(
-                    text = "Email Order",
+                    text = "Copy for Sheet",
                     onClick = {
-                        val exportText = formatForExport(Seller.USEA, order.items)
-                        onCopyToClipboard(exportText)
-                        val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
-                        val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&body=${encodeUrlParameter(exportText)}"
-                        onOpenUrl(mailtoUrl)
+                        onCopyToClipboard(formatForGoogleSheet(order.items))
+                        copied = true
                     },
                     variant = PixelButtonVariant.PRIMARY,
                     modifier = Modifier.weight(1f)

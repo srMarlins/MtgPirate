@@ -5,12 +5,28 @@ package state
 import database.CatalogStore
 import database.Database
 import database.ImportsStore
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
+import kotlinx.serialization.json.Json
 import match.Matcher
 import match.MultiCatalogMatcher
 import model.CardVariant
@@ -25,7 +41,9 @@ import model.ProFeature
 import model.ProStatus
 import model.PurchaseResult
 import model.SavedImport
+import model.OrderItem
 import model.Seller
+import model.SellerOrder
 import model.ShoppingPlan
 import model.ShoppingPlanComparison
 import optimizer.ShoppingOptimizer
@@ -58,7 +76,12 @@ class MviViewModel(
     private val purchaseManager: PurchaseManager? = null
 ) {
     // -- Use cases ----------------------------------------------------------
-    private val catalogUseCase = CatalogUseCase(catalogStore, platformServices)
+    private val wcMapperHttpClient = HttpClient {
+        install(ContentNegotiation) {
+            json(Json { ignoreUnknownKeys = true })
+        }
+    }
+    private val catalogUseCase = CatalogUseCase(catalogStore, platformServices, wcMapperHttpClient, scope)
     private val matchingUseCase = MatchingUseCase()
     private val importExportUseCase = ImportExportUseCase(importsStore, platformServices)
     private val preferencesUseCase = PreferencesUseCase(platformServices)
@@ -222,6 +245,8 @@ class MviViewModel(
                 ViewIntent.PurchasePro -> purchasePro()
                 ViewIntent.RestorePurchases -> restorePurchases()
                 ViewIntent.CheckProStatus -> checkProStatus()
+                // USEA checkout
+                is ViewIntent.CheckoutUsea -> checkoutUsea(intent.order)
                 // Sync intents already handled above — exhaustive match requires listing them
                 is ViewIntent.UpdateDeckText,
                 is ViewIntent.OpenResolve,
@@ -615,10 +640,12 @@ class MviViewModel(
 
     private suspend fun searchDeck() {
         val preferences = _viewState.value.preferences
+        // Always search all sellers so the Pro plan comparison has full data.
+        // The active plan restricts to the free-tier seller in the optimizer.
         val enabledSellerNames = if (_localState.value.proStatus.isPro) {
             preferences.enabledSellers.toSet()
         } else {
-            setOf(Seller.USEA.name)
+            Seller.entries.map { it.name }.toSet()
         }
         val filteredSources = catalogUseCase.sourceRegistry.allSources
             .filter { it.seller.name in enabledSellerNames }
@@ -780,14 +807,28 @@ class MviViewModel(
                 val activePlan = if (isPro) {
                     proPlan
                 } else {
-                    ShoppingOptimizer.optimizeForSellers(multiMatches, setOf(Seller.USEA))
+                    ShoppingOptimizer.optimizeForSellers(multiMatches, setOf(Seller.BOOTLEG_MAGE))
+                }
+
+                // Apples-to-apples comparison: what would the SAME cards
+                // that BM covers cost with Pro (across all sellers)?
+                // This makes the savings clearly positive and meaningful.
+                val savingsDelta = if (!isPro && activePlan.droppedCardCount > 0) {
+                    val bmCardMatches = multiMatches.filter { mm ->
+                        mm.alternatives.any { it.seller == Seller.BOOTLEG_MAGE }
+                    }
+                    val proSameCards = ShoppingOptimizer.optimize(bmCardMatches)
+                    (activePlan.totalPriceCents - proSameCards.totalPriceCents)
+                        .coerceAtLeast(0)
+                } else {
+                    (activePlan.totalPriceCents - proPlan.totalPriceCents)
+                        .coerceAtLeast(0)
                 }
 
                 val comparison = ShoppingPlanComparison(
                     activePlan = activePlan,
                     proPlan = proPlan,
-                    savingsDeltaCents = (activePlan.totalPriceCents - proPlan.totalPriceCents)
-                        .coerceAtLeast(0),
+                    savingsDeltaCents = savingsDelta,
                 )
 
                 _localState.update { it.copy(shoppingPlanComparison = comparison) }
@@ -916,6 +957,63 @@ class MviViewModel(
         }
         _localState.update { it.copy(proStatus = status) }
         database.updateIsPro(status.isPro)
+    }
+
+    private suspend fun checkoutUsea(order: SellerOrder) {
+        _viewEffects.emit(ViewEffect.UseaCheckoutLoading("Preparing checkout..."))
+        try {
+            withContext(Dispatchers.IO) {
+                var mapped = order.items.filter { it.variant.wcProductId != null }
+
+                // If nothing mapped yet, run the mapper now and wait
+                if (mapped.isEmpty()) {
+                    _viewEffects.emit(ViewEffect.UseaCheckoutLoading("Mapping products to store..."))
+                    try {
+                        catalog.AgamecardshopProductMapper.mapAll(
+                            wcMapperHttpClient, catalogStore
+                        ) { msg, _ -> }
+                    } catch (e: Exception) {
+                        log("WC mapper failed during checkout: ${e.message}", "WARNING")
+                    }
+
+                    // Re-read fresh variants from DB after mapping
+                    val freshBySku = catalogStore.getAllVariants()
+                        .filter { it.wcProductId != null }
+                        .associateBy { "${it.seller.name}:${it.sku}" }
+
+                    mapped = order.items.mapNotNull { item ->
+                        val key = "${item.variant.seller.name}:${item.variant.sku}"
+                        val fresh = freshBySku[key]
+                        if (fresh != null) item.copy(variant = fresh) else null
+                    }
+                }
+
+                if (mapped.isEmpty()) {
+                    _viewEffects.emit(ViewEffect.UseaCheckoutDone)
+                    _viewEffects.emit(ViewEffect.ShowError(
+                        "No products could be matched on the store. Use 'Copy for Sheet' instead."
+                    ))
+                    return@withContext
+                }
+
+                val unmapped = order.items.filter { it.variant.wcProductId == null }
+                val itemsJson = mapped.joinToString(",", "[", "]") { item ->
+                    """{"id":${item.variant.wcProductId},"qty":${item.qty}}"""
+                }
+                val mappedSubtotal = mapped.sumOf { it.variant.priceInCents * it.qty }
+                val couponCode = ui.useaCouponCode(mappedSubtotal) ?: ""
+
+                _viewEffects.emit(ViewEffect.UseaCheckoutDone)
+                _viewEffects.emit(ViewEffect.OpenUseaCheckout(
+                    itemsJson = itemsJson,
+                    couponCode = couponCode,
+                    unmatchedItems = unmapped,
+                ))
+            }
+        } catch (e: Exception) {
+            _viewEffects.emit(ViewEffect.UseaCheckoutDone)
+            _viewEffects.emit(ViewEffect.ShowError("Checkout failed: ${e.message}"))
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -1078,6 +1176,9 @@ sealed class ViewIntent {
     data object CheckProStatus : ViewIntent()
     data class ShowUpgradePrompt(val feature: ProFeature) : ViewIntent()
     data object DismissUpgradePrompt : ViewIntent()
+
+    // USEA checkout
+    data class CheckoutUsea(val order: SellerOrder) : ViewIntent()
 }
 
 /**
@@ -1086,6 +1187,13 @@ sealed class ViewIntent {
 sealed class ViewEffect {
     data class ShowMessage(val message: String) : ViewEffect()
     data class ShowError(val message: String) : ViewEffect()
+    data class OpenUseaCheckout(
+        val itemsJson: String,
+        val couponCode: String,
+        val unmatchedItems: List<OrderItem>,
+    ) : ViewEffect()
+    data class UseaCheckoutLoading(val message: String) : ViewEffect()
+    data object UseaCheckoutDone : ViewEffect()
 }
 
 /**

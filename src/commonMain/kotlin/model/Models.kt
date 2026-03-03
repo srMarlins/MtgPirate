@@ -39,6 +39,7 @@ data class CardVariant(
     val smallImageUrl: String? = null,
     val seller: Seller = Seller.USEA,
     val purchaseUri: String? = null,
+    val wcProductId: Int? = null,
 ) {
     val uniqueIdentifier: String get() = sku
 }
@@ -160,6 +161,7 @@ data class ShoppingPlan(
     val orders: List<SellerOrder>,
     val totalPriceCents: Int,
     val savingsVsSingleSeller: Int,
+    val droppedCardCount: Int = 0,
 )
 
 data class ShoppingPlanComparison(

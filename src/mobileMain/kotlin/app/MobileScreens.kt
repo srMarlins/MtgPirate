@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.MaterialTheme
@@ -37,6 +39,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import model.MultiMatch
 import state.SearchProgress
@@ -96,6 +99,7 @@ fun MobileImportScreen(
     isDarkTheme: Boolean = false,
     onToggleTheme: () -> Unit = {},
     proStatus: ProStatus = ProStatus.Free,
+    onUpgradeClick: () -> Unit = {},
 ) {
     // Dismiss keyboard when tapping outside the text field
     val focusManager = LocalFocusManager.current
@@ -122,6 +126,7 @@ fun MobileImportScreen(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
                 proStatus = proStatus,
+                onUpgradeClick = onUpgradeClick,
             )
 
             Spacer(Modifier.height(8.dp))
@@ -244,6 +249,7 @@ fun MobilePreferencesScreen(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
                 proStatus = proStatus,
+                onUpgradeClick = { onShowUpgradePrompt(ProFeature.MULTI_SELLER) },
             )
 
             Spacer(Modifier.height(8.dp))
@@ -353,7 +359,7 @@ fun MobilePreferencesScreen(
                 ) {
                     Seller.entries.forEach { seller ->
                         val isEnabled = seller.name in enabledSellers
-                        val isLocked = seller != Seller.USEA && !proStatus.isPro
+                        val isLocked = seller != Seller.BOOTLEG_MAGE && !proStatus.isPro
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -516,6 +522,7 @@ fun MobileResultsScreenWrapper(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
                 proStatus = proStatus,
+                onUpgradeClick = { onShowUpgradePrompt(ProFeature.MULTI_SELLER) },
             )
 
             // Results screen content - will handle its own padding and loading display
@@ -1042,6 +1049,7 @@ fun MobileShoppingPlanScreen(
     onOptimize: () -> Unit,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
+    onCheckoutUsea: (SellerOrder) -> Unit = {},
     onBack: () -> Unit,
     onUpgrade: () -> Unit,
     isLoading: Boolean = false,
@@ -1066,6 +1074,7 @@ fun MobileShoppingPlanScreen(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
                 proStatus = proStatus,
+                onUpgradeClick = onUpgrade,
             )
 
             Spacer(Modifier.height(8.dp))
@@ -1120,16 +1129,58 @@ fun MobileShoppingPlanScreen(
                 } else {
                     val activePlan = shoppingPlanComparison.activePlan
                     val proPlan = shoppingPlanComparison.proPlan
-                    val showComparison = !isPro && shoppingPlanComparison.savingsDeltaCents > 0
                     val coroutineScope = rememberCoroutineScope()
-                    val pagerState = rememberPagerState { activePlan.orders.size }
+                    val pageCount = activePlan.orders.size
+                    val pagerState = rememberPagerState { pageCount }
 
-                    // Grand total summary card
-                    MobileShoppingPlanSummary(activePlan)
+                    // Grand total summary card with inline Pro upsell
+                    MobileShoppingPlanSummary(
+                        plan = activePlan,
+                        proPlan = if (!isPro) proPlan else null,
+                        savingsDeltaCents = if (!isPro) shoppingPlanComparison.savingsDeltaCents else 0,
+                        onUpgrade = onUpgrade,
+                    )
+
+                    // Missing card warning + Pro upsell for free users
+                    if (activePlan.droppedCardCount > 0 && !isPro) {
+                        Spacer(Modifier.height(6.dp))
+                        PixelCard {
+                            Column(
+                                Modifier.fillMaxWidth().padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp),
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                ) {
+                                    Text("\u26A0", fontSize = 16.sp)
+                                    Text(
+                                        "${activePlan.droppedCardCount} card(s) not available from Bootleg Mage",
+                                        style = MaterialTheme.typography.caption,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colors.error,
+                                    )
+                                }
+                                Text(
+                                    "Upgrade to Pro to shop across TCGPlayer, ManaPool, and USEA — " +
+                                        "get all your cards at the best prices.",
+                                    style = MaterialTheme.typography.overline,
+                                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                                )
+                                PixelButton(
+                                    text = "Unlock All Sellers",
+                                    onClick = onUpgrade,
+                                    variant = PixelButtonVariant.PRIMARY,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
+                        }
+                    }
+
                     Spacer(Modifier.height(8.dp))
 
                     // Page indicator dots with swipe hint
-                    if (activePlan.orders.size > 1) {
+                    if (pageCount > 1) {
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp),
                             horizontalArrangement = Arrangement.Center,
@@ -1152,7 +1203,7 @@ fun MobileShoppingPlanScreen(
                             }
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                "${pagerState.currentPage + 1}/${activePlan.orders.size}",
+                                "${pagerState.currentPage + 1}/$pageCount",
                                 style = MaterialTheme.typography.caption,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
@@ -1161,35 +1212,25 @@ fun MobileShoppingPlanScreen(
                         Spacer(Modifier.height(4.dp))
                     }
 
-                    // Horizontal pager of seller order cards
-                    // End padding lets the next card peek in as a visual swipe affordance
+                    // Horizontal pager of seller order cards (+ Pro plan page for free users)
                     HorizontalPager(
                         state = pagerState,
                         modifier = Modifier.weight(1f).fillMaxWidth(),
                         pageSpacing = 12.dp,
-                        contentPadding = if (activePlan.orders.size > 1) PaddingValues(end = 24.dp) else PaddingValues(),
+                        contentPadding = if (pageCount > 1) PaddingValues(end = 24.dp) else PaddingValues(),
                     ) { page ->
                         MobileSellerOrderCard(
                             order = activePlan.orders[page],
                             onCopyToClipboard = onCopyToClipboard,
                             onOpenUrl = onOpenUrl,
+                            onCheckoutUsea = onCheckoutUsea,
                             onCheckoutComplete = {
-                                if (pagerState.currentPage < activePlan.orders.size - 1) {
+                                if (pagerState.currentPage < pageCount - 1) {
                                     coroutineScope.launch {
                                         pagerState.animateScrollToPage(pagerState.currentPage + 1)
                                     }
                                 }
                             },
-                        )
-                    }
-
-                    if (showComparison) {
-                        Spacer(Modifier.height(8.dp))
-                        MobileProComparisonCard(
-                            activePlan = activePlan,
-                            proPlan = proPlan,
-                            savingsDeltaCents = shoppingPlanComparison.savingsDeltaCents,
-                            onUpgrade = onUpgrade,
                         )
                     }
                 }
@@ -1212,7 +1253,12 @@ fun MobileShoppingPlanScreen(
  * Summary card showing seller count and grand total price.
  */
 @Composable
-private fun MobileShoppingPlanSummary(plan: ShoppingPlan) {
+private fun MobileShoppingPlanSummary(
+    plan: ShoppingPlan,
+    proPlan: ShoppingPlan? = null,
+    savingsDeltaCents: Int = 0,
+    onUpgrade: () -> Unit = {},
+) {
     val totalCards = plan.orders.sumOf { order -> order.items.sumOf { it.qty } }
 
     PixelCard(glowing = true) {
@@ -1221,7 +1267,7 @@ private fun MobileShoppingPlanSummary(plan: ShoppingPlan) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                "${plan.orders.size} SELLERS",
+                "${plan.orders.size} SELLER(S)",
                 style = MaterialTheme.typography.overline,
                 color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
             )
@@ -1243,6 +1289,37 @@ private fun MobileShoppingPlanSummary(plan: ShoppingPlan) {
                     color = MaterialTheme.colors.primary,
                     fontWeight = FontWeight.Bold
                 )
+            }
+
+            // Pro price upsell — shows savings on matched cards
+            if (proPlan != null && savingsDeltaCents > 0) {
+                Row(
+                    Modifier.fillMaxWidth()
+                        .background(PixelGreen.copy(alpha = 0.1f), shape = PixelShape(cornerSize = 6.dp))
+                        .clickable { onUpgrade() }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        ProBadge()
+                        Text(
+                            "Save with Pro",
+                            style = MaterialTheme.typography.caption,
+                            color = PixelGreen,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                    Text(
+                        "- ${formatPrice(savingsDeltaCents)}",
+                        style = MaterialTheme.typography.body1,
+                        color = PixelGreen,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
             }
 
             PixelDivider()
@@ -1281,6 +1358,124 @@ private fun MobileShoppingPlanSummary(plan: ShoppingPlan) {
                 }
             }
         }
+    }
+}
+
+/**
+ * Full-page Pro plan overview shown as the last pager page for free users.
+ */
+@Composable
+private fun MobileProPlanPage(
+    proPlan: ShoppingPlan,
+    savingsDeltaCents: Int,
+    onUpgrade: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                "PRO PLAN",
+                style = MaterialTheme.typography.subtitle2,
+                color = PixelGreen,
+                fontWeight = FontWeight.Bold,
+            )
+            ProBadge()
+        }
+
+        PixelCard(glowing = true) {
+            Column(
+                Modifier.fillMaxWidth().padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "Total",
+                        style = MaterialTheme.typography.body1,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        formatPrice(proPlan.totalPriceCents),
+                        style = MaterialTheme.typography.h6,
+                        color = PixelGreen,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+
+                PixelDivider()
+
+                proPlan.orders.forEach { order ->
+                    val orderCards = order.items.sumOf { it.qty }
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            Box(
+                                Modifier.size(4.dp, 16.dp)
+                                    .background(sellerColor(order.seller))
+                            )
+                            Text(
+                                order.seller.displayName,
+                                style = MaterialTheme.typography.caption,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Text(
+                                "$orderCards cards",
+                                style = MaterialTheme.typography.overline,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
+                            )
+                        }
+                        Text(
+                            formatPrice(order.totalCents),
+                            style = MaterialTheme.typography.caption,
+                            fontWeight = FontWeight.Bold,
+                            color = PixelGreen,
+                        )
+                    }
+                }
+            }
+        }
+
+        if (savingsDeltaCents > 0) {
+            PixelCard {
+                Row(
+                    Modifier.fillMaxWidth()
+                        .background(PixelGreen.copy(alpha = 0.1f))
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "Save ${formatPrice(savingsDeltaCents)} with Pro",
+                        style = MaterialTheme.typography.body2,
+                        fontWeight = FontWeight.Bold,
+                        color = PixelGreen,
+                    )
+                }
+            }
+        }
+
+        PixelButton(
+            text = "Unlock Pro",
+            onClick = onUpgrade,
+            variant = PixelButtonVariant.PRIMARY,
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+        )
     }
 }
 
@@ -1414,6 +1609,7 @@ private fun MobileSellerOrderCard(
     order: SellerOrder,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
+    onCheckoutUsea: (SellerOrder) -> Unit = {},
     onCheckoutComplete: () -> Unit = {},
 ) {
     val color = sellerColor(order.seller)
@@ -1556,7 +1752,7 @@ private fun MobileSellerOrderCard(
                 text = sellerCheckoutLabel(order.seller),
                 onClick = {
                     HapticFeedback.triggerImpact(HapticFeedback.ImpactStyle.MEDIUM)
-                    performSellerCheckout(order.seller, order, onCopyToClipboard, onOpenUrl)
+                    performSellerCheckout(order.seller, order, onCopyToClipboard, onOpenUrl, onCheckoutUsea)
                     onCheckoutComplete()
                 },
                 variant = PixelButtonVariant.SECONDARY,
@@ -1589,7 +1785,7 @@ private fun MobileSellerOrderCard(
 
 /** Seller-specific checkout button label. */
 private fun sellerCheckoutLabel(seller: Seller): String = when (seller) {
-    Seller.USEA -> "Email Order"
+    Seller.USEA -> "Checkout on USEA"
     Seller.BOOTLEG_MAGE -> "Buy on Bootleg Mage"
     Seller.TCGPLAYER -> "Buy on TCGPlayer"
     Seller.MANAPOOL -> "Buy on ManaPool"
@@ -1601,15 +1797,10 @@ private fun performSellerCheckout(
     order: SellerOrder,
     onCopyToClipboard: (String) -> Unit,
     onOpenUrl: (String) -> Unit,
+    onCheckoutUsea: (SellerOrder) -> Unit = {},
 ) {
     when (seller) {
-        Seller.USEA -> {
-            val exportText = formatForExport(Seller.USEA, order.items)
-            onCopyToClipboard(exportText)
-            val subject = "MTG Proxy Order - ${order.items.sumOf { it.qty }} cards"
-            val mailtoUrl = "mailto:?subject=${encodeUrlParameter(subject)}&body=${encodeUrlParameter(exportText)}"
-            onOpenUrl(mailtoUrl)
-        }
+        Seller.USEA -> onCheckoutUsea(order)
         Seller.BOOTLEG_MAGE -> {
             onCopyToClipboard(formatForExport(Seller.BOOTLEG_MAGE, order.items))
             sellerCheckoutUrl(Seller.BOOTLEG_MAGE, order.items)?.let { onOpenUrl(it) }

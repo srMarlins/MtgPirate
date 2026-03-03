@@ -17,6 +17,7 @@
     <ID>MagicNumber:Main.kt:3</ID>
     <ID>MagicNumber:Main.kt:4</ID>
     <ID>MagicNumber:Main.kt:400</ID>
+    <ID>MatchingDeclarationName:DesktopWebViewCheckout.kt:WebViewCheckoutLauncher</ID>
     <ID>MaxLineLength:DesktopResolveScreen.kt:.</ID>
     <ID>MaxLineLength:DesktopResolveScreen.kt:Text("ACTION", Modifier.width(100.dp), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:DesktopResolveScreen.kt:Text("CARD NAME", Modifier.weight(0.3f), style = MaterialTheme.typography.subtitle2, fontWeight = FontWeight.Bold)</ID>

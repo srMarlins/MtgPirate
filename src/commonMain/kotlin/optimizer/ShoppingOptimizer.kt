@@ -34,21 +34,34 @@ object ShoppingOptimizer {
         // and recompute bestOption within that subset.
         // When sellers is null (optimize all), preserve the original bestOption
         // to respect user overrides from the UI.
+        var droppedCount = 0
         val effectiveMatches = matches.mapNotNull { mm ->
             if (sellers == null) {
-                // No filtering — keep original bestOption (may be a user override)
-                if (mm.bestOption == null || mm.alternatives.isEmpty()) return@mapNotNull null
-                mm
+                // All-seller optimization (Pro plan): pick cheapest alternative as
+                // bestOption so the iterative optimizer treats every card as moveable
+                // and can freely reassign across sellers for lowest cost.
+                if (mm.alternatives.isEmpty()) return@mapNotNull null
+                val cheapest = mm.alternatives.minByOrNull { it.priceCents }
+                    ?: return@mapNotNull null
+                mm.copy(bestOption = cheapest)
             } else {
                 val filteredAlts = mm.alternatives.filter { it.seller in sellers }
-                if (filteredAlts.isEmpty()) return@mapNotNull null
+                if (filteredAlts.isEmpty()) {
+                    droppedCount += mm.deckEntry.qty
+                    return@mapNotNull null
+                }
                 val best = filteredAlts.minByOrNull { it.priceCents } ?: return@mapNotNull null
                 mm.copy(bestOption = best, alternatives = filteredAlts)
             }
         }
 
         if (effectiveMatches.isEmpty()) {
-            return ShoppingPlan(orders = emptyList(), totalPriceCents = 0, savingsVsSingleSeller = 0)
+            return ShoppingPlan(
+                orders = emptyList(),
+                totalPriceCents = 0,
+                savingsVsSingleSeller = 0,
+                droppedCardCount = droppedCount,
+            )
         }
 
         // Index: for each match, which sellers offer it and at what price
@@ -148,8 +161,25 @@ object ShoppingOptimizer {
             orders = orders.sortedByDescending { it.subtotalCents },
             totalPriceCents = totalCents,
             savingsVsSingleSeller = (naiveTotal - totalCents).coerceAtLeast(0),
+            droppedCardCount = droppedCount,
         )
     }
+
+    /**
+     * Resolve the applicable discount percent for a subtotal using the config's tiers.
+     */
+    private fun resolveDiscountPercent(config: SellerDiscountConfig, subtotalCents: Int): Int =
+        config.discountTiers
+            .sortedByDescending { it.minCents }
+            .firstOrNull { subtotalCents >= it.minCents }?.discountPercent ?: 0
+
+    /**
+     * Resolve the shipping cost for a post-discount amount using the config's tiers.
+     */
+    private fun resolveShippingCents(config: SellerDiscountConfig, afterDiscountCents: Int): Int =
+        config.shippingTiers
+            .sortedByDescending { it.minCents }
+            .firstOrNull { afterDiscountCents >= it.minCents }?.shippingCents ?: 0
 
     /**
      * Calculate total cost for a seller at a given subtotal (discount + shipping).
@@ -162,28 +192,18 @@ object ShoppingOptimizer {
     ): Int {
         if (subtotalCents <= 0) return 0
         val config = configs[seller] ?: return subtotalCents
-        val discountPercent = config.discountTiers
-            .sortedByDescending { it.minCents }
-            .firstOrNull { subtotalCents >= it.minCents }?.discountPercent ?: 0
+        val discountPercent = resolveDiscountPercent(config, subtotalCents)
         val afterDiscount = subtotalCents * (100 - discountPercent) / 100
-        val shippingCents = config.shippingTiers
-            .sortedByDescending { it.minCents }
-            .firstOrNull { afterDiscount >= it.minCents }?.shippingCents ?: 0
+        val shippingCents = resolveShippingCents(config, afterDiscount)
         return afterDiscount + shippingCents
     }
 
     private fun buildSellerOrder(seller: Seller, items: List<OrderItem>): SellerOrder {
         val config = getDiscountConfig(seller)
         val subtotal = items.sumOf { it.variant.priceInCents * it.qty }
-
-        val discountPercent = config.discountTiers
-            .sortedByDescending { it.minCents }
-            .firstOrNull { subtotal >= it.minCents }?.discountPercent ?: 0
+        val discountPercent = resolveDiscountPercent(config, subtotal)
         val afterDiscount = subtotal * (100 - discountPercent) / 100
-
-        val shippingCents = config.shippingTiers
-            .sortedByDescending { it.minCents }
-            .firstOrNull { afterDiscount >= it.minCents }?.shippingCents ?: 0
+        val shippingCents = resolveShippingCents(config, afterDiscount)
 
         return SellerOrder(
             seller = seller,

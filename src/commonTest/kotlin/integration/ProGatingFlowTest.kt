@@ -41,8 +41,15 @@ class ProGatingFlowTest {
     }
 
     @Test
-    fun freeUser_canEnableUseaOnly() {
+    fun freeUser_canEnableBootlegMageOnly() {
         assertFalse(
+            shouldBlockSellerUpdate(listOf(Seller.BOOTLEG_MAGE.name), ProStatus.Free)
+        )
+    }
+
+    @Test
+    fun freeUser_cannotEnableUseaAlone() {
+        assertTrue(
             shouldBlockSellerUpdate(listOf(Seller.USEA.name), ProStatus.Free)
         )
     }
@@ -63,9 +70,9 @@ class ProGatingFlowTest {
     }
 
     @Test
-    fun singleNonUseaSeller_blockedForFree() {
+    fun singleNonBmSeller_blockedForFree() {
         assertTrue(
-            shouldBlockSellerUpdate(listOf(Seller.BOOTLEG_MAGE.name), ProStatus.Free)
+            shouldBlockSellerUpdate(listOf(Seller.USEA.name), ProStatus.Free)
         )
     }
 

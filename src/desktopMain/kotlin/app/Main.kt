@@ -66,6 +66,7 @@ fun FrameWindowScope.CustomTitleBar(
     onMatchesClick: () -> Unit,
     onResultsClick: () -> Unit,
     proStatus: ProStatus = ProStatus.Free,
+    onUpgradeClick: () -> Unit = {},
 ) {
     WindowDraggableArea {
         Box(
@@ -152,9 +153,13 @@ fun FrameWindowScope.CustomTitleBar(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Pro badge next to theme toggle (when not Pro)
+                    // Upgrade chip next to theme toggle (when not Pro)
                     if (!proStatus.isPro) {
-                        ProBadge()
+                        UpgradeChip(
+                            onClick = onUpgradeClick,
+                            modifier = Modifier
+                                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                        )
                     }
 
                     // Theme toggle
@@ -415,6 +420,7 @@ fun main() = application {
                         }
                     },
                     proStatus = state.proStatus,
+                    onUpgradeClick = { viewModel.processIntent(ViewIntent.ShowUpgradePrompt(ProFeature.MULTI_SELLER)) },
                 )
 
                 // Main content

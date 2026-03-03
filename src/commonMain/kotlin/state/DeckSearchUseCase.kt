@@ -25,7 +25,6 @@ import model.Seller
  */
 class DeckSearchUseCase(
     private val sources: List<CatalogSource>,
-    private val isSellerCacheFresh: (Seller) -> Boolean,
     private val replaceCatalogForSeller: suspend (Seller, List<CardVariant>) -> Unit,
     private val markSellerFetched: (Seller) -> Unit,
     private val getAllVariants: () -> List<CardVariant>,
@@ -37,7 +36,6 @@ class DeckSearchUseCase(
         catalogStore: CatalogStore,
     ) : this(
         sources = sources,
-        isSellerCacheFresh = catalogStore::isSellerCacheFresh,
         replaceCatalogForSeller = catalogStore::replaceCatalogForSeller,
         markSellerFetched = catalogStore::markSellerFetched,
         getAllVariants = catalogStore::getAllVariants,
@@ -110,61 +108,44 @@ class DeckSearchUseCase(
                             )
                         }
 
-                        // Check if cache is fresh AND has actual data.
-                        // A seller with 0 cached variants should always re-fetch
-                        // (could be stale from a failed previous session).
-                        val cachedVariants = if (isSellerCacheFresh(source.seller)) {
-                            getAllVariants().filter { it.seller == source.seller }
-                        } else emptyList()
+                        // Always re-fetch from APIs. Previous searches store only
+                        // filtered variants (matching that deck), so cached data is
+                        // unreliable for a different deck list.
+                        val matchingVariants = mutableListOf<CardVariant>()
+                        source.streamCatalog(
+                            onBatch = { batch ->
+                                val filtered = batch.filter { it.nameNormalized in deckNormalizedNames }
+                                matchingVariants.addAll(filtered)
+                            },
+                        )
 
-                        if (isSellerCacheFresh(source.seller) && cachedVariants.isNotEmpty()) {
-                            // Cache is fresh with data — skip API call; serialize status update
-                            val matchCount = cachedVariants.count { it.nameNormalized in deckNormalizedNames }
-                            mutex.withLock {
-                                sellerStatuses[source.seller] = SellerSearchStatus(
-                                    seller = source.seller,
-                                    state = SearchState.DONE,
-                                    cardsFound = matchCount,
-                                )
+                        // If streaming returned nothing and source supports bulk search,
+                        // fall back to searchBulk with deck card names.
+                        // Include canonical names for alternate-name cards so the API
+                        // can find e.g. "Arcane Signet" when the deck has "Earth's Mightiest Emblem".
+                        if (matchingVariants.isEmpty() && source.supportsBulkSearch) {
+                            val cardNames = includedEntries.flatMap { entry ->
+                                val canonical = Matcher.resolveAlternateName(entry.cardName)
+                                if (canonical != null) listOf(entry.cardName, canonical) else listOf(entry.cardName)
                             }
-                        } else {
-                            // Stream from API with per-batch filtering to avoid OOM
-                            val matchingVariants = mutableListOf<CardVariant>()
-                            source.streamCatalog(
-                                onBatch = { batch ->
-                                    val filtered = batch.filter { it.nameNormalized in deckNormalizedNames }
-                                    matchingVariants.addAll(filtered)
-                                },
+                            val bulkResults = source.searchBulk(cardNames)
+                            matchingVariants.addAll(
+                                bulkResults.filter { it.nameNormalized in deckNormalizedNames }
                             )
+                        }
 
-                            // If streaming returned nothing and source supports bulk search,
-                            // fall back to searchBulk with deck card names.
-                            // Include canonical names for alternate-name cards so the API
-                            // can find e.g. "Arcane Signet" when the deck has "Earth's Mightiest Emblem".
-                            if (matchingVariants.isEmpty() && source.supportsBulkSearch) {
-                                val cardNames = includedEntries.flatMap { entry ->
-                                    val canonical = Matcher.resolveAlternateName(entry.cardName)
-                                    if (canonical != null) listOf(entry.cardName, canonical) else listOf(entry.cardName)
-                                }
-                                val bulkResults = source.searchBulk(cardNames)
-                                matchingVariants.addAll(
-                                    bulkResults.filter { it.nameNormalized in deckNormalizedNames }
-                                )
-                            }
-
-                            // Serialize DB writes + status update to avoid concurrent SQLite access
-                            mutex.lock()
-                            try {
-                                replaceCatalogForSeller(source.seller, matchingVariants)
-                                markSellerFetched(source.seller)
-                                sellerStatuses[source.seller] = SellerSearchStatus(
-                                    seller = source.seller,
-                                    state = SearchState.DONE,
-                                    cardsFound = matchingVariants.size,
-                                )
-                            } finally {
-                                mutex.unlock()
-                            }
+                        // Serialize DB writes + status update to avoid concurrent SQLite access
+                        mutex.lock()
+                        try {
+                            replaceCatalogForSeller(source.seller, matchingVariants)
+                            markSellerFetched(source.seller)
+                            sellerStatuses[source.seller] = SellerSearchStatus(
+                                seller = source.seller,
+                                state = SearchState.DONE,
+                                cardsFound = matchingVariants.size,
+                            )
+                        } finally {
+                            mutex.unlock()
                         }
                     } catch (e: CancellationException) {
                         throw e
