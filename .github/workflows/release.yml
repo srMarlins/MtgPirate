@@ -144,7 +144,7 @@ jobs:
         run: ./gradlew.bat -PappVersion=%APP_VERSION% packageReleaseDistributionForCurrentOS --stacktrace --no-daemon
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: DeckLoot-Windows-${{ needs.setup.outputs.APP_VERSION }}
           path: build/compose/binaries/**/*.exe
@@ -190,7 +190,7 @@ jobs:
           ./gradlew -PappVersion=$APP_VERSION packageReleaseDistributionForCurrentOS --stacktrace --no-daemon
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: DeckLoot-macOS-${{ env.APP_VERSION }}
           path: build/compose/binaries/**/*.dmg
@@ -275,7 +275,7 @@ jobs:
             -exportPath $PWD/build/ipa
 
       - name: Upload iOS Artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: DeckLoot-iOS-${{ env.APP_VERSION }}
           path: |
@@ -320,7 +320,7 @@ jobs:
         run: ./gradlew -PappVersion=$APP_VERSION assembleRelease --stacktrace --no-daemon
 
       - name: Upload Android artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: DeckLoot-Android-${{ env.APP_VERSION }}
           path: |
