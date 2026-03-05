@@ -11,7 +11,7 @@ ktor = "3.4.0"
 sqldelight = "2.2.1"
 detekt = "2.0.0-alpha.2"
 agp = "8.8.2"
-androidx-activity-compose = "1.10.1"
+androidx-activity-compose = "1.12.4"
 
 [libraries]
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
