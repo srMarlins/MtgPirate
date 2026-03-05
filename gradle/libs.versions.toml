@@ -10,7 +10,7 @@ coil = "3.4.0"
 ktor = "3.4.0"
 sqldelight = "2.2.1"
 detekt = "2.0.0-alpha.2"
-agp = "8.8.2"
+agp = "9.1.0"
 androidx-activity-compose = "1.10.1"
 
 [libraries]
